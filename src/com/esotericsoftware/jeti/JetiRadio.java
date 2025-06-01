@@ -15,6 +15,12 @@ import com.sun.jna.ptr.ShortByReference;
 public class JetiRadio implements AutoCloseable {
 	private Pointer deviceHandle;
 
+	private final FloatByReference floatRef1 = new FloatByReference(), floatRef2 = new FloatByReference(),
+		floatRef3 = new FloatByReference();
+	private final IntByReference intRef = new IntByReference();
+	private final ShortByReference shortRef = new ShortByReference();
+	private final float[] floatArray2 = new float[2], floatArray3 = new float[3];
+
 	private JetiRadio (Pointer deviceHandle) {
 		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
@@ -40,21 +46,17 @@ public class JetiRadio implements AutoCloseable {
 
 	public JetiResult<Boolean> getMeasurementStatus () {
 		ensureOpen();
-		var status = new IntByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureStatus(deviceHandle, status);
-		if (result == SUCCESS) return JetiResult.success(status.getValue() != 0);
+		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureStatus(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue() != 0);
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<AdaptationStatus> getAdaptationStatus () {
 		ensureOpen();
-		var tint = new FloatByReference();
-		var average = new ShortByReference();
-		var status = new IntByReference();
-
-		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureAdaptStatus(deviceHandle, tint, average, status);
-		if (result == SUCCESS)
-			return JetiResult.success(new AdaptationStatus(tint.getValue(), average.getValue(), status.getValue() != 0));
+		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureAdaptStatus(deviceHandle, floatRef1, shortRef, intRef);
+		if (result == SUCCESS) {
+			return JetiResult.success(new AdaptationStatus(floatRef1.getValue(), shortRef.getValue(), intRef.getValue() != 0));
+		}
 		return JetiResult.error(result);
 	}
 
@@ -74,109 +76,97 @@ public class JetiRadio implements AutoCloseable {
 
 	public JetiResult<Float> getRadiometricValue () {
 		ensureOpen();
-		var radioValue = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Radio(deviceHandle, radioValue);
-		if (result == SUCCESS) return JetiResult.success(radioValue.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_Radio(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getPhotometricValue () {
 		ensureOpen();
-		var photoValue = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Photo(deviceHandle, photoValue);
-		if (result == SUCCESS) return JetiResult.success(photoValue.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_Photo(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityXY () {
 		ensureOpen();
-		var chromX = new FloatByReference();
-		var chromY = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Chromxy(deviceHandle, chromX, chromY);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromX.getValue(), chromY.getValue()});
+		int result = JetiRadioLibrary.INSTANCE.JETI_Chromxy(deviceHandle, floatRef1, floatRef2);
+		if (result == SUCCESS) {
+			floatArray2[0] = floatRef1.getValue();
+			floatArray2[1] = floatRef2.getValue();
+			return JetiResult.success(floatArray2.clone());
+		}
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityXY10 () {
 		ensureOpen();
-		var chromX10 = new FloatByReference();
-		var chromY10 = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Chromxy10(deviceHandle, chromX10, chromY10);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromX10.getValue(), chromY10.getValue()});
+		int result = JetiRadioLibrary.INSTANCE.JETI_Chromxy10(deviceHandle, floatRef1, floatRef2);
+		if (result == SUCCESS) return JetiResult.success(new float[] {floatRef1.getValue(), floatRef2.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityUV () {
 		ensureOpen();
-		var chromU = new FloatByReference();
-		var chromV = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Chromuv(deviceHandle, chromU, chromV);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromU.getValue(), chromV.getValue()});
+		int result = JetiRadioLibrary.INSTANCE.JETI_Chromuv(deviceHandle, floatRef1, floatRef2);
+		if (result == SUCCESS) return JetiResult.success(new float[] {floatRef1.getValue(), floatRef2.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getXYZValues () {
 		ensureOpen();
-		var X = new FloatByReference();
-		var Y = new FloatByReference();
-		var Z = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_ChromXYZ(deviceHandle, X, Y, Z);
-		if (result == SUCCESS) return JetiResult.success(new float[] {X.getValue(), Y.getValue(), Z.getValue()});
+		int result = JetiRadioLibrary.INSTANCE.JETI_ChromXYZ(deviceHandle, floatRef1, floatRef2, floatRef3);
+		if (result == SUCCESS)
+			return JetiResult.success(new float[] {floatRef1.getValue(), floatRef2.getValue(), floatRef3.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getDominantWavelengthAndPurity () {
 		ensureOpen();
-		var dwl = new FloatByReference();
-		var pe = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_DWLPE(deviceHandle, dwl, pe);
-		if (result == SUCCESS) return JetiResult.success(new float[] {dwl.getValue(), pe.getValue()});
+		int result = JetiRadioLibrary.INSTANCE.JETI_DWLPE(deviceHandle, floatRef1, floatRef2);
+		if (result == SUCCESS) return JetiResult.success(new float[] {floatRef1.getValue(), floatRef2.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getCorrelatedColorTemperature () {
 		ensureOpen();
-		var cct = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_CCT(deviceHandle, cct);
-		if (result == SUCCESS) return JetiResult.success(cct.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_CCT(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getDuv () {
 		ensureOpen();
-		var duv = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_Duv(deviceHandle, duv);
-		if (result == SUCCESS) return JetiResult.success(duv.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_Duv(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getColorRenderingIndex () {
 		ensureOpen();
-		var cri = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_CRI(deviceHandle, cri);
-		if (result == SUCCESS) return JetiResult.success(cri.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_CRI(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
 		ensureOpen();
-		var tint = new FloatByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_RadioTint(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_RadioTint(deviceHandle, floatRef1);
+		if (result == SUCCESS) return JetiResult.success(floatRef1.getValue());
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<Boolean> setMeasurementDistance (int distance) {
+	public JetiResult<Boolean> setMeasurementDistance (int mm) {
 		ensureOpen();
-		int result = JetiRadioLibrary.INSTANCE.JETI_SetMeasDist(deviceHandle, distance);
+		if (mm < 0) return JetiResult.error(INVALID_ARGUMENT);
+		int result = JetiRadioLibrary.INSTANCE.JETI_SetMeasDist(deviceHandle, mm);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
 	public JetiResult<Integer> getMeasurementDistance () {
 		ensureOpen();
-		var distance = new IntByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_GetMeasDist(deviceHandle, distance);
-		if (result == SUCCESS) return JetiResult.success(distance.getValue());
+		int result = JetiRadioLibrary.INSTANCE.JETI_GetMeasDist(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue());
 		return JetiResult.error(result);
 	}
 

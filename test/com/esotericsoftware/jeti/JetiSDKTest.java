@@ -1,7 +1,7 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.JetiException.*;
+import static com.esotericsoftware.jeti.JetiSDK.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,21 +17,18 @@ public class JetiSDKTest {
 	static public final String IP = "10.1.0.55";
 
 	static private String getTestLicenseKey () {
-		// Check environment variable first
 		String licenseKey = System.getenv("JETI_LICENSE_KEY");
 		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
 
-		// Check system property second
 		licenseKey = System.getProperty("jeti.license.key");
 		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
 
-		// Return null if no license key is configured
 		return null;
 	}
 
 	@Test
 	@Order(1)
-	@DisplayName("SDK should initialize successfully")
+	@DisplayName("Initialize SDK")
 	void testInitialization () {
 		Log.TRACE();
 		assertDoesNotThrow( () -> {
@@ -42,10 +39,10 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(2)
-	@DisplayName("Should get SDK version information")
+	@DisplayName("Get SDK version information")
 	void testGetSDKVersion () {
 		JetiResult<JetiSDK.SDKVersion> versionResult = JetiSDK.getSDKVersion();
-		assertTrue(versionResult.isSuccess());
+		assertTrue(versionResult.isSuccess(), versionResult.toString());
 
 		JetiSDK.SDKVersion version = versionResult.getValue();
 		assertNotNull(version);
@@ -58,12 +55,12 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(3)
-	@DisplayName("Should discover devices without error")
+	@DisplayName("Discover devices without error")
 	void testDeviceDiscovery () {
 		JetiResult<DeviceInfo[]> devicesResult = JetiSDK.discoverDevices();
 
 		// Should succeed even if no devices are connected
-		assertTrue(devicesResult.isSuccess());
+		assertTrue(devicesResult.isSuccess(), devicesResult.toString());
 		assertNotNull(devicesResult.getValue());
 
 		System.out.println("Found " + devicesResult.getValue().length + " devices");
@@ -74,18 +71,18 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(4)
-	@DisplayName("Should get number of devices")
+	@DisplayName("Get number of devices")
 	void testGetNumberOfDevices () {
 		JetiResult<Integer> coreDevicesResult = JetiSDK.getNumberOfCoreDevices();
-		assertTrue(coreDevicesResult.isSuccess());
+		assertTrue(coreDevicesResult.isSuccess(), coreDevicesResult.toString());
 		assertTrue(coreDevicesResult.getValue() >= 0);
 
 		JetiResult<Integer> radioDevicesResult = JetiSDK.getNumberOfRadioDevices();
-		assertTrue(radioDevicesResult.isSuccess());
+		assertTrue(radioDevicesResult.isSuccess(), radioDevicesResult.toString());
 		assertTrue(radioDevicesResult.getValue() >= 0);
 
 		JetiResult<Integer> spectroDevicesResult = JetiSDK.getNumberOfSpectroDevices();
-		assertTrue(spectroDevicesResult.isSuccess());
+		assertTrue(spectroDevicesResult.isSuccess(), spectroDevicesResult.toString());
 		assertTrue(spectroDevicesResult.getValue() >= 0);
 
 		System.out.println("Core devices: " + coreDevicesResult.getValue());
@@ -98,7 +95,6 @@ public class JetiSDKTest {
 	@DisplayName("License key")
 	void testLicenseKey () {
 		String testLicenseKey = getTestLicenseKey();
-
 		if (testLicenseKey != null) {
 			// Test with real license key if provided
 			System.out.println("Testing with provided license key");
@@ -130,11 +126,9 @@ public class JetiSDKTest {
 		JetiResult<Boolean> ignoreResult = JetiSDK.ignoreStraylightMatrix(true);
 		assertNotNull(ignoreResult);
 
-		// Test importing non-existent file (behavior may vary - just ensure it doesn't crash)
+		// Test importing non-existent file (just ensure it doesn't crash)
 		JetiResult<Boolean> importResult = JetiSDK.importStraylightMatrix("non-existent-file.slm");
 		assertNotNull(importResult);
-		// Note: Some implementations may return success even for non-existent files
-		// The important thing is that it doesn't crash the application
 	}
 
 	@Test
@@ -162,7 +156,7 @@ public class JetiSDKTest {
 	void testOpenDeviceByInvalidSerial () {
 		JetiResult<JetiCore> result = JetiSDK.openCoreDeviceBySerial("INVALID-SERIAL");
 		assertTrue(result.isError());
-		assertEquals(invalidDeviceNumber, result.getErrorCode());
+		assertEquals(INVALID_DEVICE_NUMBER, result.getErrorCode());
 	}
 
 	@Test

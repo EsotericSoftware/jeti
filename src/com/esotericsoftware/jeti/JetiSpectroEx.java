@@ -1,7 +1,6 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.JetiException.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import java.util.Objects;
@@ -16,6 +15,9 @@ import com.sun.jna.ptr.ShortByReference;
 public class JetiSpectroEx implements AutoCloseable {
 	private Pointer deviceHandle;
 
+	private final FloatByReference floatRef = new FloatByReference();
+	private final IntByReference intRef = new IntByReference();
+
 	private JetiSpectroEx (Pointer deviceHandle) {
 		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
@@ -24,8 +26,8 @@ public class JetiSpectroEx implements AutoCloseable {
 	// Dark measurement functions
 	public JetiResult<Boolean> startDarkMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		if (integrationTime < 0) return JetiResult.error(invalidArgument);
-		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
+		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartDarkEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
@@ -40,7 +42,7 @@ public class JetiSpectroEx implements AutoCloseable {
 
 	public JetiResult<float[]> getDarkWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		ensureOpen();
-		int dataSize = (int)((endWavelength - beginWavelength) / stepSize) + 1;
+		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var darkData = new float[dataSize];
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_DarkWaveEx(deviceHandle, beginWavelength, endWavelength, stepSize,
 			darkData);
@@ -51,16 +53,16 @@ public class JetiSpectroEx implements AutoCloseable {
 	// Light measurement functions
 	public JetiResult<Boolean> startLightMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		if (integrationTime < 0) return JetiResult.error(invalidArgument);
-		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
+		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartLightEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
 	public JetiResult<Boolean> prepareLightMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		if (integrationTime < 0) return JetiResult.error(invalidArgument);
-		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
+		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareLightEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
@@ -75,7 +77,7 @@ public class JetiSpectroEx implements AutoCloseable {
 
 	public JetiResult<float[]> getLightWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		ensureOpen();
-		int dataSize = (int)((endWavelength - beginWavelength) / stepSize) + 1;
+		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var lightData = new float[dataSize];
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_LightWaveEx(deviceHandle, beginWavelength, endWavelength, stepSize,
 			lightData);
@@ -106,7 +108,7 @@ public class JetiSpectroEx implements AutoCloseable {
 
 	public JetiResult<float[]> getReferenceWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		ensureOpen();
-		int dataSize = (int)((endWavelength - beginWavelength) / stepSize) + 1;
+		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var referenceData = new float[dataSize];
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_ReferWaveEx(deviceHandle, beginWavelength, endWavelength, stepSize,
 			referenceData);
@@ -137,7 +139,7 @@ public class JetiSpectroEx implements AutoCloseable {
 
 	public JetiResult<float[]> getTransmissionReflectionWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		ensureOpen();
-		int dataSize = (int)((endWavelength - beginWavelength) / stepSize) + 1;
+		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var transReflData = new float[dataSize];
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_TransReflWaveEx(deviceHandle, beginWavelength, endWavelength, stepSize,
 			transReflData);
@@ -263,9 +265,8 @@ public class JetiSpectroEx implements AutoCloseable {
 	// Device status and control
 	public JetiResult<Boolean> getSpectroStatus () {
 		ensureOpen();
-		var status = new IntByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroStatusEx(deviceHandle, status);
-		if (result == SUCCESS) return JetiResult.success(status.getValue() != 0);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroStatusEx(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue() != 0);
 		return JetiResult.error(result);
 	}
 
@@ -278,17 +279,15 @@ public class JetiSpectroEx implements AutoCloseable {
 	// Device parameters
 	public JetiResult<Integer> getPixelCount () {
 		ensureOpen();
-		var pixelCount = new IntByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_PixelCountEx(deviceHandle, pixelCount);
-		if (result == SUCCESS) return JetiResult.success(pixelCount.getValue());
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_PixelCountEx(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getSpectroIntegrationTime () {
 		ensureOpen();
-		var tint = new FloatByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroTintEx(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint.getValue());
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroTintEx(deviceHandle, floatRef);
+		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
 		return JetiResult.error(result);
 	}
 

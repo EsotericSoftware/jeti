@@ -1,6 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
+import static com.esotericsoftware.jeti.JetiSDK.*;
+
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiResult<T> {
 	private final T value;
@@ -48,7 +50,7 @@ public class JetiResult<T> {
 
 	public String toString () {
 		if (success) return "JetiResult{success, value=" + value + "}";
-		return "JetiResult{error, errorCode=0x" + Integer.toHexString(errorCode) + "}";
+		return "JetiResult{error, errorCode=0x" + Integer.toHexString(errorCode) + ", message=" + getErrorMessage(errorCode) + "}";
 	}
 
 	static public <T> JetiResult<T> success (T value) {

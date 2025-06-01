@@ -15,6 +15,8 @@ import com.sun.jna.ptr.ShortByReference;
 public class JetiSpectro implements AutoCloseable {
 	private Pointer deviceHandle;
 
+	private final FloatByReference floatRef = new FloatByReference();
+
 	private JetiSpectro (Pointer deviceHandle) {
 		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
@@ -54,9 +56,8 @@ public class JetiSpectro implements AutoCloseable {
 
 	public JetiResult<Float> getSpectroIntegrationTime () {
 		ensureOpen();
-		var tint = new FloatByReference();
-		int result = JetiSpectroLibrary.INSTANCE.JETI_SpectroTint(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint.getValue());
+		int result = JetiSpectroLibrary.INSTANCE.JETI_SpectroTint(deviceHandle, floatRef);
+		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
 		return JetiResult.error(result);
 	}
 
