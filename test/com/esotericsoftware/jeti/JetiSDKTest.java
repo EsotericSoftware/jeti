@@ -94,7 +94,7 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(5)
-	@DisplayName("Should handle license key setting")
+	@DisplayName("License key")
 	void testLicenseKey () {
 		String testLicenseKey = getTestLicenseKey();
 
@@ -123,7 +123,7 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(6)
-	@DisplayName("Should handle straylight matrix operations")
+	@DisplayName("Straylight matrix operations")
 	void testStraylightMatrix () {
 		// Test ignoring straylight matrix
 		JetiResult<Boolean> ignoreResult = JetiSDK.ignoreStraylightMatrix(true);
@@ -138,7 +138,7 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(7)
-	@DisplayName("Should handle TCP device connection")
+	@DisplayName("TCP device connection")
 	void testTcpDeviceConnection () {
 		System.out.println("Testing TCP connection to: " + IP);
 
@@ -157,7 +157,7 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(8)
-	@DisplayName("Should handle invalid device serial")
+	@DisplayName("Invalid device serial")
 	void testOpenDeviceByInvalidSerial () {
 		JetiResult<JetiCore> result = JetiSDK.openCoreDeviceBySerial("INVALID-SERIAL");
 		assertTrue(result.isError());
@@ -166,7 +166,7 @@ public class JetiSDKTest {
 
 	@Test
 	@Order(9)
-	@DisplayName("Should handle device opening gracefully when no devices present")
+	@DisplayName("Device opening when no devices present")
 	void testDeviceOpeningWithoutDevices () {
 		// These should fail gracefully when no devices are connected via discovery
 		JetiResult<JetiCore> coreResult = JetiSDK.openCoreDevice(0);
