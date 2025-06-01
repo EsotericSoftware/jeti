@@ -13,7 +13,7 @@ import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
 
 @DisplayName("JetiRadio Integration Tests")
 public class JetiRadioIntegrationTest {
-	static private JetiRadio radio;
+	private JetiRadio radio;
 
 	@BeforeEach
 	void setUp () {

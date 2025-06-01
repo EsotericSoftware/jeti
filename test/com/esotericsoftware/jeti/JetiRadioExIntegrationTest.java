@@ -16,7 +16,7 @@ import com.esotericsoftware.jeti.JetiRadioEx.TM30Data;
 
 @DisplayName("JetiRadioEx Integration Tests")
 public class JetiRadioExIntegrationTest {
-	static private JetiRadioEx radioEx;
+	private JetiRadioEx radioEx;
 
 	@BeforeEach
 	void setUp () {
@@ -33,9 +33,7 @@ public class JetiRadioExIntegrationTest {
 
 	@AfterEach
 	void tearDown () {
-		if (radioEx != null && !radioEx.isClosed()) {
-			radioEx.close();
-		}
+		if (radioEx != null && !radioEx.isClosed()) radioEx.close();
 	}
 
 	@Test
@@ -105,7 +103,6 @@ public class JetiRadioExIntegrationTest {
 	void testColorRenderingIndexWithCCT () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
-		// Get CCT first
 		JetiResult<Float> cctResult = radioEx.getCorrelatedColorTemperature();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		float cct = cctResult.getValue();
@@ -206,7 +203,7 @@ public class JetiRadioExIntegrationTest {
 	// @Test
 	// @DisplayName("Perform measurement with adaptation")
 	// void testMeasurementWithAdaptation () {
-	// int averageCount = 3;
+	// int averageCount = 1;
 	// int stepWidth = 5;
 	//
 	// JetiResult<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
