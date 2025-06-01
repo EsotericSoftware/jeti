@@ -1,12 +1,12 @@
 
 package com.esotericsoftware.jeti;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import com.esotericsoftware.jeti.JetiCore.DeviceInfo;
@@ -14,34 +14,72 @@ import com.esotericsoftware.jeti.JetiRadio.RadiometricData;
 
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiSDK {
+	static public String[] libraries = {"jeti_core64.dll", "jeti_radio64.dll", "jeti_spectro64.dll", "jeti_radio_ex64.dll",
+		"jeti_spectro_ex64.dll"};
+
 	static final int SUCCESS = 0;
 	static final int STRING_BUFFER_SIZE = 256;
 	static final int SPECTRAL_DATA_SIZE = 2048;
 
 	static private volatile boolean initialized;
-	static private final Object initLock = new Object();
 
 	private JetiSDK () {
 	}
 
-	static public void initialize () throws JetiException {
-		if (!initialized) {
-			synchronized (initLock) {
-				if (!initialized) {
-					try {
-						loadNativeLibraries();
-						initialized = true;
-						Log.debug("JETI SDK initialized.");
-					} catch (Throwable ex) {
-						throw new JetiException(-1, "Unable to initialize JETI SDK.", ex);
-					}
+	static public void initialize () {
+		if (initialized) return;
+		synchronized (JetiSDK.class) {
+			if (initialized) return;
+			Path dir = null;
+			try {
+				dir = Paths.get(System.getProperty("java.io.tmpdir"), "jeti");
+				Files.createDirectory(dir);
+				extractLibraries(dir);
+			} catch (Throwable ignored) {
+				deleteLibraries(dir);
+				try {
+					dir = Files.createTempDirectory("jeti-");
+					extractLibraries(dir);
+				} catch (Throwable ex) {
+					deleteLibraries(dir);
+					throw new RuntimeException("Unable to initialize the JETI SDK.", ex);
 				}
 			}
+			initialized = true;
+			Log.debug("JETI SDK initialized.");
+		}
+	}
+
+	static public void initialize (Path dir) {
+		if (initialized) return;
+		synchronized (JetiSDK.class) {
+			if (initialized) return;
+			try {
+				extractLibraries(dir);
+			} catch (Throwable ex) {
+				deleteLibraries(dir);
+				throw new RuntimeException("Unable to initialize the JETI SDK.", ex);
+			}
+			initialized = true;
+			Log.debug("JETI SDK initialized.");
 		}
 	}
 
 	static public boolean isInitialized () {
 		return initialized;
+	}
+
+	static private void deleteLibraries (Path dir) {
+		for (String library : libraries)
+			delete(dir.resolve(library));
+		delete(dir);
+	}
+
+	static private void delete (Path path) {
+		try {
+			Files.deleteIfExists(path);
+		} catch (IOException ex) {
+		}
 	}
 
 	static public JetiResult<Boolean> setLicenseKey (String licenseKey) {
@@ -242,39 +280,25 @@ public class JetiSDK {
 		}
 	}
 
-	static private void loadNativeLibraries () throws IOException {
-		Path tempDir = Files.createTempDirectory("jeti-");
-		tempDir.toFile().deleteOnExit();
-
-		String[] libraries = {"jeti_core64.dll", "jeti_radio64.dll", "jeti_spectro64.dll", "jeti_radio_ex64.dll",
-			"jeti_spectro_ex64.dll"};
-		for (String library : libraries)
+	static private void extractLibraries (Path dir) throws IOException {
+		for (String library : libraries) {
 			try (InputStream input = JetiSDK.class.getResourceAsStream("/" + library)) {
 				if (input != null) {
-					Path path = tempDir.resolve(library);
+					Path path = dir.resolve(library);
 					Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
 					path.toFile().deleteOnExit();
 					Log.debug("Extracted native library: " + path);
 				} else
 					Log.warn("Native library not found: " + library);
 			}
+		}
 
-		// Set JNA library path to include our temp directory
-		String existingPath = System.getProperty("jna.library.path", "");
-		String newPath = existingPath.isEmpty() ? tempDir.toString() : existingPath + File.pathSeparator + tempDir.toString();
-		System.setProperty("jna.library.path", newPath);
-
-		Log.debug("Native library path: " + newPath);
+		System.setProperty("jna.library.path", dir.toString());
+		Log.debug("Native library path: " + dir);
 	}
 
 	static private void ensureInitialized () {
-		if (!initialized) {
-			try {
-				initialize();
-			} catch (JetiException e) {
-				throw new RuntimeException("JETI SDK not initialized", e);
-			}
-		}
+		if (!initialized) initialize();
 	}
 
 	static String bytesToString (byte[] bytes) {

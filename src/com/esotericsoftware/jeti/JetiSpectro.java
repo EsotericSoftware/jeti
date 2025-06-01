@@ -65,7 +65,6 @@ public class JetiSpectro implements AutoCloseable {
 		case LIGHT -> measureLightSpectrum(integrationTime);
 		case REFERENCE -> measureReferenceSpectrum(integrationTime);
 		case TRANSMISSION_REFLECTION -> measureTransmissionReflectionSpectrum(integrationTime);
-		default -> throw new IllegalArgumentException("Unknown measurement type: " + type);
 		};
 	}
 
@@ -93,7 +92,7 @@ public class JetiSpectro implements AutoCloseable {
 
 	public JetiResult<float[]> calculateTransmittance (float[] lightSpectrum, float[] darkSpectrum, float[] referenceSpectrum) {
 		if (lightSpectrum.length != darkSpectrum.length || lightSpectrum.length != referenceSpectrum.length)
-			throw new IllegalArgumentException("All spectra must have the same length");
+			throw new IllegalArgumentException("All spectra must have the same length.");
 
 		var transmittance = new float[lightSpectrum.length];
 		for (int i = 0; i < lightSpectrum.length; i++) {

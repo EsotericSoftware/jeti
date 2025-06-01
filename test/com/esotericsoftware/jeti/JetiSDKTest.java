@@ -9,12 +9,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import com.esotericsoftware.jeti.JetiCore;
 import com.esotericsoftware.jeti.JetiCore.DeviceInfo;
-import com.esotericsoftware.jeti.JetiRadio;
-import com.esotericsoftware.jeti.JetiResult;
-import com.esotericsoftware.jeti.JetiSDK;
-import com.esotericsoftware.jeti.JetiSpectro;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class JetiSDKTest {
@@ -37,6 +32,7 @@ public class JetiSDKTest {
 	@Order(1)
 	@DisplayName("SDK should initialize successfully")
 	void testInitialization () {
+		Log.TRACE();
 		assertDoesNotThrow( () -> {
 			JetiSDK.initialize();
 			assertTrue(JetiSDK.isInitialized());

@@ -229,7 +229,7 @@ public class JetiRadio implements AutoCloseable {
 	}
 
 	private void ensureOpen () {
-		if (deviceHandle != null) throw new IllegalStateException("Radio device is closed");
+		if (deviceHandle != null) throw new IllegalStateException("Radio device is closed.");
 	}
 
 	public void close () {
