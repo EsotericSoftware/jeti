@@ -21,7 +21,7 @@ public class RadioExSample {
 			JetiSDK.initialize();
 
 			// Connect to TCP device - use simplified approach
-			System.out.printf("Attempting to connect to TCP device at %s...%n", IP);
+			System.out.printf("Connecting: %s%n", IP);
 
 			// For TCP devices, try to open radio device directly after setting up TCP connection
 			// The JETI SDK should handle the TCP connection internally when we try to open devices
@@ -38,7 +38,7 @@ public class RadioExSample {
 				return;
 			}
 
-			System.out.printf("Found %d radio device(s)%n", numRadioDevicesResult.getValue());
+			System.out.printf("Radio devices: %d%n", numRadioDevicesResult.getValue());
 
 			// Open the first found device (zero-based index)
 			JetiResult<JetiRadio> deviceResult = JetiSDK.openRadioDevice(0);
@@ -48,22 +48,19 @@ public class RadioExSample {
 			}
 
 			radioDevice = deviceResult.getValue();
-			System.out.printf("Successfully connected to radio device via TCP at %s%n", IP);
+			System.out.printf("Connected: %s%n", IP);
 
 			char choice;
 			do {
 				System.out.println("""
 
-					Please select:
+					Select:
 					--------------
-
 					1) perform radiometric measurement...
 					2) get device information...
 
-					*********************
-					* Single Operations *
-					*********************
-
+					Single operations:
+					------------------
 					a) start radiometric measurement...
 					b) break measurement...
 					c) get measurement status...
@@ -73,7 +70,6 @@ public class RadioExSample {
 					g) get correlated color temperature CCT...
 					h) get color rendering index CRI...
 					0) exit
-
 					""");
 
 				String input = scanner.nextLine().trim();

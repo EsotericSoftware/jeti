@@ -21,21 +21,24 @@ public class SpectroExSample {
 			JetiSDK.initialize();
 
 			// Connect to TCP device - use simplified approach
-			System.out.printf("Attempting to connect to TCP device at %s...%n", IP);
+			System.out.printf("Connecting: %s%n", IP);
 
 			// For TCP devices, try to open spectro device directly after setting up TCP connection
 			// The JETI SDK should handle the TCP connection internally when we try to open devices
 			JetiResult<Integer> numSpectroDevicesResult = JetiSDK.getNumberOfSpectroDevices();
 			if (numSpectroDevicesResult.isError() || numSpectroDevicesResult.getValue() == 0) {
-				System.out.printf("No spectro devices found!%nThis may mean:%n");
-				System.out.printf("1. No device at IP %s%n", IP);
-				System.out.printf("2. Device not configured for TCP%n");
-				System.out.printf("3. Network connectivity issue%n");
-				System.out.printf("Error code: 0x%08X%n", numSpectroDevicesResult.getErrorCode());
+				System.out.printf("""
+					No spectro devices found!
+					This may mean:
+					1. No device at IP %s
+					2. Device not configured for TCP
+					3. Network connectivity issue
+					Error code: 0x%08X
+					""", IP, numSpectroDevicesResult.getErrorCode());
 				return;
 			}
 
-			System.out.printf("Found %d spectro device(s)%n", numSpectroDevicesResult.getValue());
+			System.out.printf("Spectro devices: %d%n", numSpectroDevicesResult.getValue());
 
 			// Open the first found device (zero-based index)
 			JetiResult<JetiSpectro> deviceResult = JetiSDK.openSpectroDevice(0);
@@ -45,25 +48,28 @@ public class SpectroExSample {
 			}
 
 			spectroDevice = deviceResult.getValue();
-			System.out.printf("Successfully connected to spectro device via TCP at %s%n", IP);
+			System.out.printf("Connected: %s%n", IP);
 
 			char choice;
 			do {
-				System.out.println("\nPlease select:");
-				System.out.println("--------------\n");
-				System.out.println("1) perform light measurement...");
-				System.out.println("2) get device information...");
-				System.out.println("3) perform all spectrum measurements...\n");
-				System.out.println("*********************");
-				System.out.println("* Single Operations *");
-				System.out.println("*********************\n");
-				System.out.println("a) measure dark spectrum...");
-				System.out.println("b) measure light spectrum...");
-				System.out.println("c) measure reference spectrum...");
-				System.out.println("d) measure transmission/reflection spectrum...");
-				System.out.println("e) calculate transmittance...");
-				System.out.println("f) calculate absorbance...");
-				System.out.println("0) exit\n");
+				System.out.println("""
+
+					Select:
+					--------------
+					1) perform light measurement...
+					2) get device information...
+					3) perform all spectrum measurements...
+
+					Single operations:
+					------------------
+					a) measure dark spectrum...
+					b) measure light spectrum...
+					c) measure reference spectrum...
+					d) measure transmission/reflection spectrum...
+					e) calculate transmittance...
+					f) calculate absorbance...
+					0) exit
+					""");
 
 				String input = scanner.nextLine().trim();
 				choice = input.isEmpty() ? '0' : input.charAt(0);
@@ -162,12 +168,15 @@ public class SpectroExSample {
 				System.out.printf("Could not perform spectrum measurements!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
 				JetiSpectro.SpectroscopicData data = result.getValue();
-				System.out.println("All spectrum measurements completed:");
-				System.out.printf("- Dark spectrum: %d points%n", data.getDarkSpectrum().length);
-				System.out.printf("- Light spectrum: %d points%n", data.getLightSpectrum().length);
-				System.out.printf("- Reference spectrum: %d points%n", data.getReferenceSpectrum().length);
-				System.out.printf("- Transmission/Reflection spectrum: %d points%n", data.getTransmissionReflectionSpectrum().length);
-				System.out.printf("- Integration time: %.1f ms%n", data.getIntegrationTime());
+				System.out.printf("""
+					All spectrum measurements completed:
+					- Dark spectrum: %d points
+					- Light spectrum: %d points
+					- Reference spectrum: %d points
+					- Transmission/Reflection spectrum: %d points
+					- Integration time: %.1f ms
+					""", data.getDarkSpectrum().length, data.getLightSpectrum().length, data.getReferenceSpectrum().length,
+					data.getTransmissionReflectionSpectrum().length, data.getIntegrationTime());
 
 				// Calculate and show transmittance
 				JetiResult<float[]> transmittanceResult = device.calculateTransmittance(data.getLightSpectrum(),
@@ -189,19 +198,25 @@ public class SpectroExSample {
 	static private void getDeviceInformation () {
 		try {
 			// Display TCP device information
-			System.out.printf("TCP Device IP: %s%n", IP);
-			System.out.printf("Connection Type: TCP%n");
+			System.out.printf("""
+				TCP Device IP: %s
+				Connection Type: TCP
+				""", IP);
 
 			// Try to get device serials for additional info
 			JetiResult<String[]> serialsResult = JetiSpectro.getSpectroDeviceSerials(0);
 			if (serialsResult.isError())
-				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
-					serialsResult.getErrorCode());
+				System.out.printf("""
+					Could not get device serial information (normal for TCP devices)
+					Error code: 0x%08X
+					""", serialsResult.getErrorCode());
 			else {
 				String[] serials = serialsResult.getValue();
-				System.out.printf("Electronics serial number: %s%n", serials[0]);
-				System.out.printf("Spectrometer serial number: %s%n", serials[1]);
-				System.out.printf("Device serial number: %s%n", serials[2]);
+				System.out.printf("""
+					Electronics serial number: %s
+					Spectrometer serial number: %s
+					Device serial number: %s
+					""", serials[0], serials[1], serials[2]);
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting device info: " + ex.getMessage());

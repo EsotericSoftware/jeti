@@ -257,7 +257,7 @@ public class JetiRadioEx implements AutoCloseable {
 	}
 
 	private void ensureOpen () {
-		if (deviceHandle != null) throw new IllegalStateException("Radio ex device is closed.");
+		if (deviceHandle == null) throw new IllegalStateException("Radio ex device is closed.");
 	}
 
 	public void close () {

@@ -128,7 +128,7 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	private void ensureOpen () {
-		if (deviceHandle != null) throw new IllegalStateException("Spectro device is closed.");
+		if (deviceHandle == null) throw new IllegalStateException("Spectro device is closed.");
 	}
 
 	public void close () {
