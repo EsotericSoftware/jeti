@@ -3,6 +3,9 @@ package com.esotericsoftware.jeti;
 
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiException extends Exception {
+	static public final int invalidArgument = 0x0000000D;
+	static public final int invalidDeviceNumber = 0x00000013;
+
 	private final int errorCode;
 
 	public JetiException (int errorCode) {
@@ -39,11 +42,11 @@ public class JetiException extends Exception {
 		case 0x0000000A -> "Could not receive from device";
 		case 0x0000000B -> "Command not supported or invalid argument";
 		case 0x0000000C -> "Could not convert received data";
-		case 0x0000000D -> "Invalid argument";
+		case invalidArgument -> "Invalid argument";
 		case 0x0000000E -> "Device busy";
 		case 0x00000011 -> "Invalid checksum of received data";
 		case 0x00000012 -> "Invalid stepwidth";
-		case 0x00000013 -> "Invalid device number";
+		case invalidDeviceNumber -> "Invalid device number";
 		case 0x00000014 -> "Device not connected";
 		case 0x00000015 -> "Invalid device handle";
 		case 0x00000016 -> "Invalid calibration file number";

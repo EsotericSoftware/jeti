@@ -38,27 +38,27 @@ public interface JetiRadioLibrary extends Library {
 	// Measurement results
 	int JETI_SpecRad (Pointer dwDevice, float[] fSprad);
 
-	int JETI_Radio (Pointer dwDevice, float[] fRadio);
+	int JETI_Radio (Pointer dwDevice, FloatByReference fRadio);
 
-	int JETI_Photo (Pointer dwDevice, float[] fPhoto);
+	int JETI_Photo (Pointer dwDevice, FloatByReference fPhoto);
 
-	int JETI_Chromxy (Pointer dwDevice, float[] fChromx, float[] fChromy);
+	int JETI_Chromxy (Pointer dwDevice, FloatByReference fChromx, FloatByReference fChromy);
 
-	int JETI_Chromxy10 (Pointer dwDevice, float[] fChromx10, float[] fChromy10);
+	int JETI_Chromxy10 (Pointer dwDevice, FloatByReference fChromx10, FloatByReference fChromy10);
 
-	int JETI_Chromuv (Pointer dwDevice, float[] fChromu, float[] fChromv);
+	int JETI_Chromuv (Pointer dwDevice, FloatByReference fChromu, FloatByReference fChromv);
 
-	int JETI_ChromXYZ (Pointer dwDevice, float[] fX, float[] fY, float[] fZ);
+	int JETI_ChromXYZ (Pointer dwDevice, FloatByReference fX, FloatByReference fY, FloatByReference fZ);
 
-	int JETI_DWLPE (Pointer dwDevice, float[] fDWL, float[] fPE);
+	int JETI_DWLPE (Pointer dwDevice, FloatByReference fDWL, FloatByReference fPE);
 
-	int JETI_CCT (Pointer dwDevice, float[] fCCT);
+	int JETI_CCT (Pointer dwDevice, FloatByReference fCCT);
 
-	int JETI_Duv (Pointer dwDevice, float[] fDuv);
+	int JETI_Duv (Pointer dwDevice, FloatByReference fDuv);
 
-	int JETI_CRI (Pointer dwDevice, float[] fCRI);
+	int JETI_CRI (Pointer dwDevice, FloatByReference fCRI);
 
-	int JETI_RadioTint (Pointer dwDevice, float[] fTint);
+	int JETI_RadioTint (Pointer dwDevice, FloatByReference fTint);
 
 	// Configuration
 	int JETI_SetMeasDist (Pointer dwDevice, int dwDistance);

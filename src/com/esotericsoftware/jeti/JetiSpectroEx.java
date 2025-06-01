@@ -1,11 +1,13 @@
 
 package com.esotericsoftware.jeti;
 
+import static com.esotericsoftware.jeti.JetiException.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import java.util.Objects;
 
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
@@ -15,14 +17,16 @@ public class JetiSpectroEx implements AutoCloseable {
 	private Pointer deviceHandle;
 
 	private JetiSpectroEx (Pointer deviceHandle) {
-		Objects.nonNull(deviceHandle);
+		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
 	}
 
 	// Dark measurement functions
-	public JetiResult<Boolean> startDarkMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startDarkMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartDarkEx(deviceHandle, integrationTime, averageCount);
+		if (integrationTime < 0) return JetiResult.error(invalidArgument);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartDarkEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -45,15 +49,19 @@ public class JetiSpectroEx implements AutoCloseable {
 	}
 
 	// Light measurement functions
-	public JetiResult<Boolean> startLightMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startLightMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartLightEx(deviceHandle, integrationTime, averageCount);
+		if (integrationTime < 0) return JetiResult.error(invalidArgument);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartLightEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
-	public JetiResult<Boolean> prepareLightMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> prepareLightMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareLightEx(deviceHandle, integrationTime, averageCount);
+		if (integrationTime < 0) return JetiResult.error(invalidArgument);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareLightEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -76,15 +84,15 @@ public class JetiSpectroEx implements AutoCloseable {
 	}
 
 	// Reference measurement functions
-	public JetiResult<Boolean> startReferenceMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startReferenceMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartReferEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartReferEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
-	public JetiResult<Boolean> prepareReferenceMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> prepareReferenceMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareReferEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareReferEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -107,15 +115,15 @@ public class JetiSpectroEx implements AutoCloseable {
 	}
 
 	// Transmission/Reflection measurement functions
-	public JetiResult<Boolean> startTransmissionReflectionMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startTransmissionReflectionMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartTransReflEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartTransReflEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
-	public JetiResult<Boolean> prepareTransmissionReflectionMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> prepareTransmissionReflectionMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareTransReflEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_PrepareTransReflEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -167,9 +175,9 @@ public class JetiSpectroEx implements AutoCloseable {
 	}
 
 	// Channel measurement functions
-	public JetiResult<Boolean> startChannelDarkMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startChannelDarkMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartChannelDarkEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartChannelDarkEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -181,9 +189,9 @@ public class JetiSpectroEx implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<Boolean> startChannelLightMeasurement (float integrationTime, short averageCount) {
+	public JetiResult<Boolean> startChannelLightMeasurement (float integrationTime, int averageCount) {
 		ensureOpen();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartChannelLightEx(deviceHandle, integrationTime, averageCount);
+		int result = JetiSpectroExLibrary.INSTANCE.JETI_StartChannelLightEx(deviceHandle, integrationTime, (short)averageCount);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -278,9 +286,9 @@ public class JetiSpectroEx implements AutoCloseable {
 
 	public JetiResult<Float> getSpectroIntegrationTime () {
 		ensureOpen();
-		var tint = new float[1];
+		var tint = new FloatByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroTintEx(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint[0]);
+		if (result == SUCCESS) return JetiResult.success(tint.getValue());
 		return JetiResult.error(result);
 	}
 
@@ -305,7 +313,7 @@ public class JetiSpectroEx implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getNumberOfSpectroExDevices () {
+	static public JetiResult<Integer> getSpectroExDeviceCount () {
 		var numDevices = new IntByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetNumSpectroEx(numDevices);
 		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
@@ -316,10 +324,9 @@ public class JetiSpectroEx implements AutoCloseable {
 		var boardSerial = new byte[STRING_BUFFER_SIZE];
 		var specSerial = new byte[STRING_BUFFER_SIZE];
 		var deviceSerial = new byte[STRING_BUFFER_SIZE];
-
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetSerialSpectroEx(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result == SUCCESS) {
-			String[] serials = {bytesToString(boardSerial), bytesToString(specSerial), bytesToString(deviceSerial)};
+			String[] serials = {string(boardSerial), string(specSerial), string(deviceSerial)};
 			return JetiResult.success(serials);
 		}
 		return JetiResult.error(result);
@@ -328,7 +335,6 @@ public class JetiSpectroEx implements AutoCloseable {
 	static public JetiResult<JetiSpectroEx> openSpectroExDevice (int deviceNumber) {
 		var deviceHandle = new PointerByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_OpenSpectroEx(deviceNumber, deviceHandle);
-
 		if (result == SUCCESS) return JetiResult.success(new JetiSpectroEx(deviceHandle.getValue()));
 		return JetiResult.error(result);
 	}
@@ -337,71 +343,8 @@ public class JetiSpectroEx implements AutoCloseable {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetSpectroExDLLVersion(major, minor, build);
 		if (result == SUCCESS) return JetiResult.success(major.getValue() + "." + minor.getValue() + "." + build.getValue());
 		return JetiResult.error(result);
-	}
-
-	static public class SpectroscopicExData {
-		private final int[] darkPixelData;
-		private final int[] lightPixelData;
-		private final int[] referencePixelData;
-		private final int[] transmissionReflectionPixelData;
-		private final float[] darkWaveData;
-		private final float[] lightWaveData;
-		private final float[] referenceWaveData;
-		private final float[] transmissionReflectionWaveData;
-		private final float integrationTime;
-
-		public SpectroscopicExData (int[] darkPixelData, int[] lightPixelData, int[] referencePixelData,
-			int[] transmissionReflectionPixelData, float[] darkWaveData, float[] lightWaveData, float[] referenceWaveData,
-			float[] transmissionReflectionWaveData, float integrationTime) {
-			this.darkPixelData = darkPixelData;
-			this.lightPixelData = lightPixelData;
-			this.referencePixelData = referencePixelData;
-			this.transmissionReflectionPixelData = transmissionReflectionPixelData;
-			this.darkWaveData = darkWaveData;
-			this.lightWaveData = lightWaveData;
-			this.referenceWaveData = referenceWaveData;
-			this.transmissionReflectionWaveData = transmissionReflectionWaveData;
-			this.integrationTime = integrationTime;
-		}
-
-		public int[] getDarkPixelData () {
-			return darkPixelData;
-		}
-
-		public int[] getLightPixelData () {
-			return lightPixelData;
-		}
-
-		public int[] getReferencePixelData () {
-			return referencePixelData;
-		}
-
-		public int[] getTransmissionReflectionPixelData () {
-			return transmissionReflectionPixelData;
-		}
-
-		public float[] getDarkWaveData () {
-			return darkWaveData;
-		}
-
-		public float[] getLightWaveData () {
-			return lightWaveData;
-		}
-
-		public float[] getReferenceWaveData () {
-			return referenceWaveData;
-		}
-
-		public float[] getTransmissionReflectionWaveData () {
-			return transmissionReflectionWaveData;
-		}
-
-		public float getIntegrationTime () {
-			return integrationTime;
-		}
 	}
 }

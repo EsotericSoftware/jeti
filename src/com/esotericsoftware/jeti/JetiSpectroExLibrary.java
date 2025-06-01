@@ -4,6 +4,7 @@ package com.esotericsoftware.jeti;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
@@ -98,7 +99,7 @@ public interface JetiSpectroExLibrary extends Library {
 	// Device parameters
 	int JETI_PixelCountEx (Pointer dwDevice, IntByReference dwPixel);
 
-	int JETI_SpectroTintEx (Pointer dwDevice, float[] fTint);
+	int JETI_SpectroTintEx (Pointer dwDevice, FloatByReference fTint);
 
 	// Version information
 	int JETI_GetSpectroExDLLVersion (ShortByReference wMajorVersion, ShortByReference wMinorVersion,

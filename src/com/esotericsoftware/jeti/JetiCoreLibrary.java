@@ -83,7 +83,7 @@ public interface JetiCoreLibrary extends Library {
 	int JETI_CheckAdaptionStat (Pointer dwDevice, FloatByReference fTint, ShortByReference wAverage, IntByReference boStatus);
 
 	int JETI_ReadCalib (Pointer dwDevice, int dwCalibNr, byte[] cMode, byte[] cRemark, IntByReference dwBegin,
-		IntByReference dwEnd, IntByReference dwStep, IntByReference dwTint, DoubleByReference dValue);
+		IntByReference dwEnd, IntByReference dwStep, IntByReference dwTint, double[] dValue);
 
 	int JETI_WriteCalib (Pointer dwDevice, int dwCalibNr, String cMode, String cRemark, int dwBegin, int dwEnd, int dwStep,
 		int dwTint, double[] dValue);
@@ -338,27 +338,27 @@ public interface JetiCoreLibrary extends Library {
 
 	int JETI_FetchSpradHiRes (Pointer dwDevice, float[] fSprad);
 
-	int JETI_FetchRadio (Pointer dwDevice, float[] fRadio);
+	int JETI_FetchRadio (Pointer dwDevice, FloatByReference fRadio);
 
-	int JETI_FetchPhoto (Pointer dwDevice, float[] fPhoto);
+	int JETI_FetchPhoto (Pointer dwDevice, FloatByReference fPhoto);
 
-	int JETI_FetchChromxy (Pointer dwDevice, float[] fChromx, float[] Chromy);
+	int JETI_FetchChromxy (Pointer dwDevice, FloatByReference fChromx, FloatByReference fChromy);
 
-	int JETI_FetchChromuv (Pointer dwDevice, float[] fChromu, float[] fChromv);
+	int JETI_FetchChromuv (Pointer dwDevice, FloatByReference fChromu, FloatByReference fChromv);
 
-	int JETI_FetchDWLPE (Pointer dwDevice, float[] fDWL, float[] fPE);
+	int JETI_FetchDWLPE (Pointer dwDevice, FloatByReference fDWL, FloatByReference fPE);
 
-	int JETI_FetchCCT (Pointer dwDevice, float[] fCCT);
+	int JETI_FetchCCT (Pointer dwDevice, FloatByReference fCCT);
 
-	int JETI_FetchDuv (Pointer dwDevice, float[] fDuv);
+	int JETI_FetchDuv (Pointer dwDevice, FloatByReference fDuv);
 
-	int JETI_FetchCRI (Pointer dwDevice, float[] fCRI);
+	int JETI_FetchCRI (Pointer dwDevice, FloatByReference fCRI);
 
-	int JETI_FetchXYZ (Pointer dwDevice, float[] fX, float[] fY, float[] fZ);
+	int JETI_FetchXYZ (Pointer dwDevice, FloatByReference fX, FloatByReference fY, FloatByReference fZ);
 
-	int JETI_FetchTiAdapt (Pointer dwDevice, float[] fTiAdapt);
+	int JETI_FetchTiAdapt (Pointer dwDevice, FloatByReference fTiAdapt);
 
-	int JETI_FetchAverAdapt (Pointer dwDevice, short[] wAverAdapt);
+	int JETI_FetchAverAdapt (Pointer dwDevice, ShortByReference wAverAdapt);
 
 	// Calculation functions
 	int JETI_CalcLintDark (Pointer dwDevice, int dwBeg, int dwEnd, float fStep, float[] fDark);
@@ -377,28 +377,29 @@ public interface JetiCoreLibrary extends Library {
 
 	int JETI_CalcSplinTransRefl (Pointer dwDevice, int dwBeg, int dwEnd, float fStep, float[] fTransRefl);
 
-	int JETI_CalcRadio (Pointer dwDevice, int dwBeg, int dwEnd, float[] fRadio);
+	int JETI_CalcRadio (Pointer dwDevice, int dwBeg, int dwEnd, FloatByReference fRadio);
 
-	int JETI_CalcPhoto (Pointer dwDevice, float[] fPhoto);
+	int JETI_CalcPhoto (Pointer dwDevice, FloatByReference fPhoto);
 
-	int JETI_CalcChromxy (Pointer dwDevice, float[] fChromx, float[] fChromy);
+	int JETI_CalcChromxy (Pointer dwDevice, FloatByReference fChromx, FloatByReference fChromy);
 
-	int JETI_CalcChromxy10 (Pointer dwDevice, float[] fChromx, float[] fChromy);
+	int JETI_CalcChromxy10 (Pointer dwDevice, FloatByReference fChromx, FloatByReference fChromy);
 
-	int JETI_CalcChromuv (Pointer dwDevice, float[] fChromu, float[] fChromv);
+	int JETI_CalcChromuv (Pointer dwDevice, FloatByReference fChromu, FloatByReference fChromv);
 
-	int JETI_CalcDWLPE (Pointer dwDevice, float[] fDWL, float[] fPE);
+	int JETI_CalcDWLPE (Pointer dwDevice, FloatByReference fDWL, FloatByReference fPE);
 
-	int JETI_CalcCCT (Pointer dwDevice, float[] fCCT);
+	int JETI_CalcCCT (Pointer dwDevice, FloatByReference fCCT);
 
-	int JETI_CalcDuv (Pointer dwDevice, float[] fDuv);
+	int JETI_CalcDuv (Pointer dwDevice, FloatByReference fDuv);
 
-	int JETI_CalcCRI (Pointer dwDevice, float fCCT, float[] fCRI);
+	int JETI_CalcCRI (Pointer dwDevice, float fCCT, FloatByReference fCRI);
 
-	int JETI_CalcXYZ (Pointer dwDevice, float[] fX, float[] fY, float[] fZ);
+	int JETI_CalcXYZ (Pointer dwDevice, FloatByReference fX, FloatByReference fY, FloatByReference fZ);
 
-	int JETI_CalcAllValue (Pointer dwDevice, int dwBeg, int dwEnd, float[] fRadio, float[] fPhoto, float[] fChromx,
-		float[] fChromy, float[] fChromu, float[] fChromv, float[] fDWL, float[] fPE);
+	int JETI_CalcAllValue (Pointer dwDevice, int dwBeg, int dwEnd, FloatByReference fRadio, FloatByReference fPhoto,
+		FloatByReference fChromx, FloatByReference fChromy, FloatByReference fChromu, FloatByReference fChromv,
+		FloatByReference fDWL, FloatByReference fPE);
 
 	int JETI_CalcTM30 (Pointer dwDevice, byte bUseTM3015, DoubleByReference dRf, DoubleByReference dRg, DoubleByReference dChroma,
 		DoubleByReference dHue, double[] dRfi, double[] dRfces);

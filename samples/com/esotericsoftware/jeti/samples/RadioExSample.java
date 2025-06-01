@@ -1,11 +1,9 @@
 
 package com.esotericsoftware.jeti.samples;
 
-import static com.esotericsoftware.jeti.JetiSDKTest.*;
-
 import java.util.Scanner;
 
-import com.esotericsoftware.jeti.JetiRadio;
+import com.esotericsoftware.jeti.JetiRadioEx;
 import com.esotericsoftware.jeti.JetiResult;
 import com.esotericsoftware.jeti.JetiSDK;
 
@@ -13,42 +11,28 @@ public class RadioExSample {
 	static private final Scanner scanner = new Scanner(System.in);
 
 	static public void main (String[] args) {
-		JetiRadio radioDevice = null;
+		JetiRadioEx radioDevice = null;
 
 		try {
-			// Initialize the SDK
-			System.out.println("Initializing JETI SDK...");
+			System.out.println("Initializing the JETI SDK...");
 			JetiSDK.initialize();
 
-			// Connect to TCP device - use simplified approach
-			System.out.printf("Connecting: %s%n", IP);
-
-			// For TCP devices, try to open radio device directly after setting up TCP connection
-			// The JETI SDK should handle the TCP connection internally when we try to open devices
-			JetiResult<Integer> numRadioDevicesResult = JetiSDK.getNumberOfRadioDevices();
-			if (numRadioDevicesResult.isError() || numRadioDevicesResult.getValue() == 0) {
-				System.out.printf("""
-					No radio devices found!
-					This may mean:
-					1. No device at IP %s
-					2. Device not configured for TCP
-					3. Network connectivity issue
-					Error code: 0x%08X
-					""", IP, numRadioDevicesResult.getErrorCode());
+			System.out.println("Searching for devices...");
+			JetiResult<Integer> deviceCount = JetiSDK.getNumberOfRadioExDevices();
+			if (deviceCount.isError() || deviceCount.getValue() == 0) {
+				System.out.printf("No radio ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
+			System.out.printf("Radio ex devices: %d%n", deviceCount.getValue());
 
-			System.out.printf("Radio devices: %d%n", numRadioDevicesResult.getValue());
-
-			// Open the first found device (zero-based index)
-			JetiResult<JetiRadio> deviceResult = JetiSDK.openRadioDevice(0);
+			JetiResult<JetiRadioEx> deviceResult = JetiSDK.openRadioExDevice(0);
 			if (deviceResult.isError()) {
-				System.out.printf("Could not open radio device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
+				System.out.printf("Could not open radio ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
 			}
 
 			radioDevice = deviceResult.getValue();
-			System.out.printf("Connected: %s%n", IP);
+			System.out.printf("Connected.");
 
 			char choice;
 			do {
@@ -56,83 +40,77 @@ public class RadioExSample {
 
 					Select:
 					--------------
-					1) perform radiometric measurement...
-					2) get device information...
+					1) Perform radiometric measurement...
+					2) Get device information...
 
 					Single operations:
 					------------------
-					a) start radiometric measurement...
-					b) break measurement...
-					c) get measurement status...
-					d) get the radiometric value...
-					e) get the photometric value...
-					f) get chromaticity coordinates x and y...
-					g) get correlated color temperature CCT...
-					h) get color rendering index CRI...
-					0) exit
+					a) Start radiometric measurement...
+					b) Break measurement...
+					c) Get measurement status...
+					d) Get the radiometric value...
+					e) Get the photometric value...
+					f) Get chromaticity coordinates x and y...
+					g) Get correlated color temperature CCT...
+					h) Get color rendering index CRI...
+					i) Get all measurements...
+					0) Exit
 					""");
 
+				System.out.print("Choose: [0] ");
 				String input = scanner.nextLine().trim();
 				choice = input.isEmpty() ? '0' : input.charAt(0);
+				System.out.println("*** " + choice + " ***\n");
 
 				switch (choice) {
-				case '1':
-					performCompleteMeasurement(radioDevice);
-					break;
-				case '2':
-					getDeviceInformation();
-					break;
-				case 'a':
-					startMeasurement(radioDevice);
-					break;
-				case 'b':
-					breakMeasurement(radioDevice);
-					break;
-				case 'c':
-					getMeasurementStatus(radioDevice);
-					break;
-				case 'd':
+				case '1' -> performRadioMeasurement(radioDevice);
+				case '2' -> getDeviceInfo();
+				case 'a' -> startMeasurement(radioDevice);
+				case 'b' -> breakMeasurement(radioDevice);
+				case 'c' -> getMeasurementStatus(radioDevice);
+				case 'd' -> getRadiometricValue(radioDevice);
+				case 'e' -> getPhotometricValue(radioDevice);
+				case 'f' -> getChromaticityCoordinates(radioDevice);
+				case 'g' -> getCorrelatedColorTemperature(radioDevice);
+				case 'h' -> getColorRenderingIndex(radioDevice);
+				case 'i' -> {
 					getRadiometricValue(radioDevice);
-					break;
-				case 'e':
 					getPhotometricValue(radioDevice);
-					break;
-				case 'f':
 					getChromaticityCoordinates(radioDevice);
-					break;
-				case 'g':
 					getCorrelatedColorTemperature(radioDevice);
-					break;
-				case 'h':
 					getColorRenderingIndex(radioDevice);
-					break;
-				case '0':
-					break;
-				default:
-					break;
+				}
+				case '0' -> {
+					return;
+				}
+				default -> System.out.println("Invalid selection.");
 				}
 			} while (choice != '0');
 		} catch (Throwable ex) {
 			System.err.println("Error: " + ex.getMessage());
 			ex.printStackTrace();
 		} finally {
-			// Close the connection to the device
 			if (radioDevice != null && !radioDevice.isClosed()) radioDevice.close();
 		}
 	}
 
-	static private void performCompleteMeasurement (JetiRadio device) {
+	/** Start a radiometric measurement in the range of 380 to 780 nm. */
+	static private void performRadioMeasurement (JetiRadioEx device) {
 		try {
-			System.out.println("Performing measurement with adaptation. Please wait...\n");
+			float integrationTime = promptIntegrationTime();
+			int averageCount = promptAveragingCount();
+			int stepWidth = promptStepWidth();
 
-			// Start measurement with automatic adaptation
-			JetiResult<Boolean> measureResult = device.measureWithAdaptation();
+			System.out.println("Performing measurement...\n");
+
+			// Start measurement.
+			JetiResult<Boolean> measureResult = device.measure(integrationTime, averageCount, stepWidth);
 			if (measureResult.isError()) {
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", measureResult.getErrorCode());
 				return;
 			}
 
-			// Wait for measurement to complete
+			// Wait for completion.
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
@@ -145,31 +123,21 @@ public class RadioExSample {
 				}
 			}
 
-			// Get all measurement data
-			JetiResult<JetiRadio.RadiometricData> dataResult = device.getAllMeasurementData();
-			if (dataResult.isError())
-				System.out.printf("Could not get measurement data!%nError code: 0x%08X%n", dataResult.getErrorCode());
-			else {
-				JetiRadio.RadiometricData data = dataResult.getValue();
-				System.out.printf("Radiometric measurement completed:%n");
-				System.out.printf("- Chromaticity x: %.4f%n", data.chromaticityX()[0]);
-				System.out.printf("- Chromaticity y: %.4f%n", data.chromaticityY()[0]);
-				System.out.printf("- CCT: %.1f K%n", data.correlatedColorTemperature()[0]);
-				System.out.printf("- CRI: %.1f (may be 0 if skipped for stability)%n", data.colorRenderingIndex()[0]);
-			}
+			// Get radiometric value.
+			JetiResult<Float> radioResult = device.getRadiometricValue(380, 780);
+			if (radioResult.isError())
+				System.out.printf("Could not get radiometric value!%nError code: 0x%08X%n", radioResult.getErrorCode());
+			else
+				System.out.printf("Radiometric value: %.3E%n", radioResult.getValue());
 		} catch (Throwable ex) {
 			System.err.println("Error during measurement: " + ex.getMessage());
 		}
 	}
 
-	static private void getDeviceInformation () {
+	/** Get serial numbers from the first found device */
+	static private void getDeviceInfo () {
 		try {
-			// Display TCP device information
-			System.out.printf("TCP Device IP: %s%n", IP);
-			System.out.printf("Connection Type: TCP%n");
-
-			// Try to get device serials for additional info
-			JetiResult<String[]> serialsResult = JetiRadio.getRadioDeviceSerials(0);
+			JetiResult<String[]> serialsResult = JetiRadioEx.getRadioExDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
@@ -184,9 +152,14 @@ public class RadioExSample {
 		}
 	}
 
-	static private void startMeasurement (JetiRadio device) {
+	/** Start a new measurement. */
+	static private void startMeasurement (JetiRadioEx device) {
 		try {
-			JetiResult<Boolean> result = device.measureWithAdaptation();
+			float integrationTime = promptIntegrationTime();
+			int averageCount = promptAveragingCount();
+			int stepWidth = promptStepWidth();
+
+			JetiResult<Boolean> result = device.measure(integrationTime, averageCount, stepWidth);
 			if (result.isError())
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -196,7 +169,8 @@ public class RadioExSample {
 		}
 	}
 
-	static private void breakMeasurement (JetiRadio device) {
+	/** Cancels an initiated measurement. */
+	static private void breakMeasurement (JetiRadioEx device) {
 		try {
 			JetiResult<Boolean> result = device.breakMeasurement();
 			if (result.isError())
@@ -208,7 +182,8 @@ public class RadioExSample {
 		}
 	}
 
-	static private void getMeasurementStatus (JetiRadio device) {
+	/** Returns the status of any current measurement. */
+	static private void getMeasurementStatus (JetiRadioEx device) {
 		try {
 			JetiResult<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
@@ -216,92 +191,123 @@ public class RadioExSample {
 			else if (result.getValue())
 				System.out.println("Measurement in progress.");
 			else
-				System.out.println("Measurement ready / Device idle.");
+				System.out.println("No measurement in progress.");
 		} catch (Throwable ex) {
 			System.err.println("Error getting measurement status: " + ex.getMessage());
 		}
 	}
 
-	static private void getRadiometricValue (JetiRadio device) {
+	/** Returns the radiometric value determined by the last measurement. */
+	static private void getRadiometricValue (JetiRadioEx device) {
 		try {
-			JetiResult<float[]> result = device.getRadiometricValues();
+			JetiResult<Float> result = device.getRadiometricValue(380, 780);
 			if (result.isError())
 				System.out.printf("Could not get radiometric value!%nError code: 0x%08X%n", result.getErrorCode());
-			else {
-				// Calculate integrated radiometric value (simplified)
-				float[] values = result.getValue();
-				float integratedValue = 0;
-				for (float value : values)
-					integratedValue += value;
-				System.out.printf("Radiometric value: %.3E%n", integratedValue);
-			}
+			else
+				System.out.printf("Radiometric value: %.3E%n", result.getValue());
 		} catch (Throwable ex) {
 			System.err.println("Error getting radiometric value: " + ex.getMessage());
 		}
 	}
 
-	static private void getPhotometricValue (JetiRadio device) {
+	/** Returns the photometric value determined by the last measuement. */
+	static private void getPhotometricValue (JetiRadioEx device) {
 		try {
-			JetiResult<float[]> result = device.getPhotometricValues();
+			JetiResult<Float> result = device.getPhotometricValue();
 			if (result.isError())
 				System.out.printf("Could not get photometric value!%nError code: 0x%08X%n", result.getErrorCode());
-			else {
-				// Calculate integrated photometric value (simplified)
-				float[] values = result.getValue();
-				float integratedValue = 0;
-				for (float value : values)
-					integratedValue += value;
-				System.out.printf("Photometric value: %.3E%n", integratedValue);
-			}
+			else
+				System.out.printf("Photometric value: %.3E%n", result.getValue());
 		} catch (Throwable ex) {
 			System.err.println("Error getting photometric value: " + ex.getMessage());
 		}
 	}
 
-	static private void getChromaticityCoordinates (JetiRadio device) {
+	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
+	static private void getChromaticityCoordinates (JetiRadioEx device) {
 		try {
 			JetiResult<float[]> result = device.getChromaticityXY();
 			if (result.isError())
 				System.out.printf("Could not get chromaticity coordinates x and y!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
 				float[] coordinates = result.getValue();
-				System.out.printf("Chromaticity coordinates:%nx: %.4f%ny: %.4f%n", coordinates[0], coordinates[1]);
+				System.out.printf("Chromaticity coordinates:%nx: %.4f %ny: %.4f%n", coordinates[0], coordinates[1]);
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting chromaticity coordinates: " + ex.getMessage());
 		}
 	}
 
-	static private void getCorrelatedColorTemperature (JetiRadio device) {
+	/** Returns the correlated color temperature determined by the last measurement. */
+	static private void getCorrelatedColorTemperature (JetiRadioEx device) {
 		try {
 			JetiResult<Float> result = device.getCorrelatedColorTemperature();
 			if (result.isError())
 				System.out.printf("Could not get correlated color temperature!%nError code: 0x%08X%n", result.getErrorCode());
 			else
-				System.out.printf("Correlated color temperature CCT: %.1f K%n", result.getValue());
+				System.out.printf("Correlated color temperature CCT: %.1f%n", result.getValue());
 		} catch (Throwable ex) {
 			System.err.println("Error getting CCT: " + ex.getMessage());
 		}
 	}
 
-	static private void getColorRenderingIndex (JetiRadio device) {
+	/** Returns the color rendering indices according to the CIE 13.3-1995 publication. */
+	static private void getColorRenderingIndex (JetiRadioEx device) {
 		try {
-			System.out.print("Please enter the correlated color temperature of the reference source (K): ");
+			System.out.print("Enter the CCT of the reference source (or 0): [0] ");
 			String input = scanner.nextLine();
-
+			if (input.isEmpty()) input = "0";
 			try {
-				Float.parseFloat(input);
-				JetiResult<Float> result = device.getColorRenderingIndex();
+				float cct = Float.parseFloat(input);
+				JetiResult<JetiRadioEx.CRIData> result = device.getColorRenderingIndex(cct);
 				if (result.isError())
-					System.out.printf("Could not get color rendering index!%nError code: 0x%08X%n", result.getErrorCode());
-				else
-					System.out.printf("Color rendering index CRI: %.1f%n", result.getValue());
+					System.out.printf("Could not get colour rendering indizes!%nError code: 0x%08X%n", result.getErrorCode());
+				else {
+					JetiRadioEx.CRIData criData = result.getValue();
+					System.out.printf("DC: %.1E%n", criData.dc());
+					System.out.printf("Ra: %.2f%n", criData.ra());
+					float[] specialIndices = criData.specialIndices();
+					for (int i = 0; i < specialIndices.length; i++)
+						System.out.printf("R%d: %.1f%n", i + 1, specialIndices[i]);
+				}
 			} catch (NumberFormatException e) {
-				System.out.printf("'%s' is an invalid color temperature.%n", input);
+				throw new RuntimeException("Invalid color temperature: " + input);
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting CRI: " + ex.getMessage());
 		}
 	}
 
+	static float promptIntegrationTime () {
+		System.out.print("Enter the integration time (0 for adaptation): [0] ");
+		String input = scanner.nextLine().trim();
+		if (input.isEmpty()) return 0;
+		try {
+			return Float.parseFloat(input);
+		} catch (NumberFormatException e) {
+			throw new RuntimeException("Invalid integration time: " + input);
+		}
+	}
+
+	static int promptAveragingCount () {
+		System.out.print("Enter the measurement count for averaging: [1] ");
+		String input = scanner.nextLine().trim();
+		if (input.isEmpty()) return 1;
+		try {
+			return Integer.parseInt(input);
+		} catch (NumberFormatException e) {
+			throw new RuntimeException("Invalid count of measurement for averaging: " + input);
+		}
+	}
+
+	static int promptStepWidth () {
+		System.out.print("Enter the step width in nm: [5] ");
+		String input = scanner.nextLine().trim();
+		if (input.isEmpty()) return 5;
+		try {
+			return Integer.parseInt(input);
+		} catch (NumberFormatException e) {
+			throw new RuntimeException("Invalid step width: " + input);
+		}
+	}
 }

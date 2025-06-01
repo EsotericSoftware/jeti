@@ -6,6 +6,7 @@ import static com.esotericsoftware.jeti.JetiSDK.*;
 import java.util.Objects;
 
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
@@ -15,7 +16,7 @@ public class JetiSpectro implements AutoCloseable {
 	private Pointer deviceHandle;
 
 	private JetiSpectro (Pointer deviceHandle) {
-		Objects.nonNull(deviceHandle);
+		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
 	}
 
@@ -53,41 +54,10 @@ public class JetiSpectro implements AutoCloseable {
 
 	public JetiResult<Float> getSpectroIntegrationTime () {
 		ensureOpen();
-		var tint = new float[1];
+		var tint = new FloatByReference();
 		int result = JetiSpectroLibrary.INSTANCE.JETI_SpectroTint(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint[0]);
+		if (result == SUCCESS) return JetiResult.success(tint.getValue());
 		return JetiResult.error(result);
-	}
-
-	public JetiResult<float[]> measureSpectrum (MeasurementType type, float integrationTime) {
-		return switch (type) {
-		case DARK -> measureDarkSpectrum(integrationTime);
-		case LIGHT -> measureLightSpectrum(integrationTime);
-		case REFERENCE -> measureReferenceSpectrum(integrationTime);
-		case TRANSMISSION_REFLECTION -> measureTransmissionReflectionSpectrum(integrationTime);
-		};
-	}
-
-	public JetiResult<SpectroscopicData> measureAllSpectra (float integrationTime) {
-		JetiResult<float[]> darkResult = measureDarkSpectrum(integrationTime);
-		if (darkResult.isError()) return JetiResult.error(darkResult.getErrorCode());
-
-		JetiResult<float[]> lightResult = measureLightSpectrum(integrationTime);
-		if (lightResult.isError()) return JetiResult.error(lightResult.getErrorCode());
-
-		JetiResult<float[]> referenceResult = measureReferenceSpectrum(integrationTime);
-		if (referenceResult.isError()) return JetiResult.error(referenceResult.getErrorCode());
-
-		JetiResult<float[]> transReflResult = measureTransmissionReflectionSpectrum(integrationTime);
-		if (transReflResult.isError()) return JetiResult.error(transReflResult.getErrorCode());
-
-		JetiResult<Float> tintResult = getSpectroIntegrationTime();
-		float actualIntegrationTime = tintResult.isSuccess() ? tintResult.getValue() : integrationTime;
-
-		var data = new SpectroscopicData(darkResult.getValue(), lightResult.getValue(), referenceResult.getValue(),
-			transReflResult.getValue(), actualIntegrationTime);
-
-		return JetiResult.success(data);
 	}
 
 	public JetiResult<float[]> calculateTransmittance (float[] lightSpectrum, float[] darkSpectrum, float[] referenceSpectrum) {
@@ -101,9 +71,8 @@ public class JetiSpectro implements AutoCloseable {
 			if (correctedReference > 0)
 				transmittance[i] = correctedLight / correctedReference;
 			else
-				transmittance[i] = 0.0f;
+				transmittance[i] = 0;
 		}
-
 		return JetiResult.success(transmittance);
 	}
 
@@ -117,13 +86,12 @@ public class JetiSpectro implements AutoCloseable {
 
 		float[] transmittance = transmittanceResult.getValue();
 		var absorbance = new float[transmittance.length];
-
-		for (int i = 0; i < transmittance.length; i++)
+		for (int i = 0; i < transmittance.length; i++) {
 			if (transmittance[i] > 0)
 				absorbance[i] = (float)-Math.log10(transmittance[i]);
 			else
 				absorbance[i] = Float.POSITIVE_INFINITY;
-
+		}
 		return JetiResult.success(absorbance);
 	}
 
@@ -148,7 +116,7 @@ public class JetiSpectro implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getNumberOfSpectroDevices () {
+	static public JetiResult<Integer> getSpectroDeviceCount () {
 		var numDevices = new IntByReference();
 		int result = JetiSpectroLibrary.INSTANCE.JETI_GetNumSpectro(numDevices);
 		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
@@ -159,10 +127,9 @@ public class JetiSpectro implements AutoCloseable {
 		var boardSerial = new byte[STRING_BUFFER_SIZE];
 		var specSerial = new byte[STRING_BUFFER_SIZE];
 		var deviceSerial = new byte[STRING_BUFFER_SIZE];
-
 		int result = JetiSpectroLibrary.INSTANCE.JETI_GetSerialSpectro(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result == SUCCESS) {
-			String[] serials = {bytesToString(boardSerial), bytesToString(specSerial), bytesToString(deviceSerial)};
+			String[] serials = {string(boardSerial), string(specSerial), string(deviceSerial)};
 			return JetiResult.success(serials);
 		}
 		return JetiResult.error(result);
@@ -184,46 +151,5 @@ public class JetiSpectro implements AutoCloseable {
 		int result = JetiSpectroLibrary.INSTANCE.JETI_GetSpectroDLLVersion(major, minor, build);
 		if (result == SUCCESS) return JetiResult.success(major.getValue() + "." + minor.getValue() + "." + build.getValue());
 		return JetiResult.error(result);
-	}
-
-	static public enum MeasurementType {
-		DARK, LIGHT, REFERENCE, TRANSMISSION_REFLECTION
-	}
-
-	static public class SpectroscopicData {
-		private final float[] darkSpectrum;
-		private final float[] lightSpectrum;
-		private final float[] referenceSpectrum;
-		private final float[] transmissionReflectionSpectrum;
-		private final float integrationTime;
-
-		public SpectroscopicData (float[] darkSpectrum, float[] lightSpectrum, float[] referenceSpectrum,
-			float[] transmissionReflectionSpectrum, float integrationTime) {
-			this.darkSpectrum = darkSpectrum;
-			this.lightSpectrum = lightSpectrum;
-			this.referenceSpectrum = referenceSpectrum;
-			this.transmissionReflectionSpectrum = transmissionReflectionSpectrum;
-			this.integrationTime = integrationTime;
-		}
-
-		public float[] getDarkSpectrum () {
-			return darkSpectrum;
-		}
-
-		public float[] getLightSpectrum () {
-			return lightSpectrum;
-		}
-
-		public float[] getReferenceSpectrum () {
-			return referenceSpectrum;
-		}
-
-		public float[] getTransmissionReflectionSpectrum () {
-			return transmissionReflectionSpectrum;
-		}
-
-		public float getIntegrationTime () {
-			return integrationTime;
-		}
 	}
 }

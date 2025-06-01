@@ -1,6 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
+import static com.esotericsoftware.jeti.JetiException.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +12,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import com.esotericsoftware.jeti.JetiCore.DeviceInfo;
-import com.esotericsoftware.jeti.JetiRadio.RadiometricData;
 
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiSDK {
@@ -117,7 +118,7 @@ public class JetiSDK {
 			DeviceInfo device = devices[i];
 			if (deviceSerial.equals(device.deviceSerial())) return JetiCore.openDevice(i);
 		}
-		return JetiResult.error(0x00000013); // JETI_INVALID_NUMBER
+		return JetiResult.error(invalidDeviceNumber);
 	}
 
 	static public JetiResult<JetiCore> openComDevice (int comPort, int baudrate) {
@@ -189,95 +190,22 @@ public class JetiSDK {
 
 	static public JetiResult<Integer> getNumberOfRadioDevices () {
 		ensureInitialized();
-		return JetiRadio.getNumberOfRadioDevices();
+		return JetiRadio.getRadioDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfSpectroDevices () {
 		ensureInitialized();
-		return JetiSpectro.getNumberOfSpectroDevices();
+		return JetiSpectro.getSpectroDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfRadioExDevices () {
 		ensureInitialized();
-		return JetiRadioEx.getNumberOfRadioExDevices();
+		return JetiRadioEx.getRadioExDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfSpectroExDevices () {
 		ensureInitialized();
-		return JetiSpectroEx.getNumberOfSpectroExDevices();
-	}
-
-	static public class QuickMeasurement {
-		static public JetiResult<JetiRadio.RadiometricData> measureRadiometric (int deviceNumber) {
-			JetiResult<JetiRadio> deviceResult = openRadioDevice(deviceNumber);
-			if (deviceResult.isError()) return JetiResult.error(deviceResult.getErrorCode());
-
-			try (JetiRadio radio = deviceResult.getValue()) {
-				JetiResult<Boolean> measureResult = radio.measureWithAdaptation();
-				if (measureResult.isError()) return JetiResult.error(measureResult.getErrorCode());
-
-				// Wait for measurement to complete
-				boolean measuring = true;
-				int timeout = 0;
-				while (measuring && timeout < 100) { // 10 second timeout
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return JetiResult.error(-1);
-					}
-
-					JetiResult<Boolean> statusResult = radio.getMeasurementStatus();
-					if (statusResult.isSuccess()) measuring = statusResult.getValue();
-					timeout++;
-				}
-
-				if (measuring) return JetiResult.error(0x00000008); // JETI_TIMEOUT
-
-				return radio.getAllMeasurementData();
-			}
-		}
-
-		static public JetiResult<JetiSpectro.SpectroscopicData> measureSpectroscopic (int deviceNumber, float integrationTime) {
-			JetiResult<JetiSpectro> deviceResult = openSpectroDevice(deviceNumber);
-			if (deviceResult.isError()) return JetiResult.error(deviceResult.getErrorCode());
-
-			try (JetiSpectro spectro = deviceResult.getValue()) {
-				return spectro.measureAllSpectra(integrationTime);
-			}
-		}
-
-		static public JetiResult<RadiometricData> measureRadiometricEx (int deviceNumber, short averageCount, int step) {
-			JetiResult<JetiRadioEx> deviceResult = openRadioExDevice(deviceNumber);
-			if (deviceResult.isError()) return JetiResult.error(deviceResult.getErrorCode());
-
-			try (JetiRadioEx radioEx = deviceResult.getValue()) {
-				JetiResult<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, step);
-				if (measureResult.isError()) return JetiResult.error(measureResult.getErrorCode());
-
-				// Wait for measurement to complete
-				boolean measuring = true;
-				int timeout = 0;
-				while (measuring && timeout < 100) { // 10 second timeout
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return JetiResult.error(-1);
-					}
-
-					JetiResult<Boolean> statusResult = radioEx.getMeasurementStatus();
-					if (statusResult.isSuccess()) measuring = statusResult.getValue();
-					timeout++;
-				}
-
-				if (measuring) return JetiResult.error(0x00000008); // JETI_TIMEOUT
-
-				// For now, return a simple measurement - this would need to be implemented
-				// based on specific requirements for the RadiometricExData structure
-				return JetiResult.error(0x00000080); // Not implemented yet
-			}
-		}
+		return JetiSpectroEx.getSpectroExDeviceCount();
 	}
 
 	static private void extractLibraries (Path dir) throws IOException {
@@ -301,16 +229,12 @@ public class JetiSDK {
 		if (!initialized) initialize();
 	}
 
-	static String bytesToString (byte[] bytes) {
+	static String string (byte[] bytes) {
 		if (bytes == null) return "";
-
-		// Find the null terminator.
 		int length = 0;
 		while (length < bytes.length && bytes[length] != 0)
 			length++;
-
 		if (length == 0) return "";
-
 		return new String(bytes, 0, length, StandardCharsets.UTF_8).trim();
 	}
 

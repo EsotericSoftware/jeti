@@ -1,6 +1,7 @@
 
 package com.esotericsoftware.jeti;
 
+import static com.esotericsoftware.jeti.JetiException.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayName;
@@ -161,7 +162,7 @@ public class JetiSDKTest {
 	void testOpenDeviceByInvalidSerial () {
 		JetiResult<JetiCore> result = JetiSDK.openCoreDeviceBySerial("INVALID-SERIAL");
 		assertTrue(result.isError());
-		assertEquals(0x00000013, result.getErrorCode()); // JETI_INVALID_NUMBER
+		assertEquals(invalidDeviceNumber, result.getErrorCode());
 	}
 
 	@Test

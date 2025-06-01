@@ -1,6 +1,7 @@
 
 package com.esotericsoftware.jeti;
 
+import static com.esotericsoftware.jeti.JetiException.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import java.util.Objects;
@@ -22,26 +23,34 @@ public class JetiRadioEx implements AutoCloseable {
 	private Pointer deviceHandle;
 
 	private JetiRadioEx (Pointer deviceHandle) {
-		Objects.nonNull(deviceHandle);
+		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
 	}
 
 	// Measurement functions
-	public JetiResult<Boolean> measure (float integrationTime, short averageCount, int step) {
+	public JetiResult<Boolean> measure (float integrationTime, int averageCount, int step) {
 		ensureOpen();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureEx(deviceHandle, integrationTime, averageCount, step);
+		if (integrationTime < 0) return JetiResult.error(invalidArgument);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (step <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureEx(deviceHandle, integrationTime, (short)averageCount, step);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
-	public JetiResult<Boolean> measureWithAdaptation (short averageCount, int step) {
+	public JetiResult<Boolean> measureWithAdaptation (int averageCount, int step) {
 		ensureOpen();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureAdaptEx(deviceHandle, averageCount, step);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (step <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureAdaptEx(deviceHandle, (short)averageCount, step);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
-	public JetiResult<Boolean> prepareMeasurement (float integrationTime, short averageCount, int step) {
+	public JetiResult<Boolean> prepareMeasurement (float integrationTime, int averageCount, int step) {
 		ensureOpen();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_PrepareMeasureEx(deviceHandle, integrationTime, averageCount, step);
+		if (integrationTime < 0) return JetiResult.error(invalidArgument);
+		if (averageCount <= 0) return JetiResult.error(invalidArgument);
+		if (step <= 0) return JetiResult.error(invalidArgument);
+		int result = JetiRadioExLibrary.INSTANCE.JETI_PrepareMeasureEx(deviceHandle, integrationTime, (short)averageCount, step);
 		return JetiResult.fromErrorCode(result == SUCCESS, result);
 	}
 
@@ -58,7 +67,6 @@ public class JetiRadioEx implements AutoCloseable {
 		var tint = new FloatByReference();
 		var average = new ShortByReference();
 		var status = new IntByReference(4);
-
 		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureAdaptStatusEx(deviceHandle, tint, average, status);
 		if (result == SUCCESS)
 			return JetiResult.success(new AdaptationStatus(tint.getValue(), average.getValue(), status.getValue() != 0));
@@ -107,90 +115,96 @@ public class JetiRadioEx implements AutoCloseable {
 	}
 
 	// Measurement data functions
-	public JetiResult<float[]> getRadiometricValues (int beginWavelength, int endWavelength) {
+	public JetiResult<Float> getRadiometricValue (int beginWavelength, int endWavelength) {
 		ensureOpen();
-		int dataSize = endWavelength - beginWavelength + 1;
-		var radioData = new float[dataSize];
-		int result = JetiRadioExLibrary.INSTANCE.JETI_RadioEx(deviceHandle, beginWavelength, endWavelength, radioData);
-		if (result == SUCCESS) return JetiResult.success(radioData);
+		if (beginWavelength < 0 || endWavelength < 0) return JetiResult.error(invalidArgument);
+		if (beginWavelength >= endWavelength) return JetiResult.error(invalidArgument);
+		var radioValue = new FloatByReference();
+		int result = JetiRadioExLibrary.INSTANCE.JETI_RadioEx(deviceHandle, beginWavelength, endWavelength, radioValue);
+		if (result == SUCCESS) return JetiResult.success(radioValue.getValue());
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<float[]> getPhotometricValues () {
+	public JetiResult<Float> getPhotometricValue () {
 		ensureOpen();
-		var photoData = new float[SPECTRAL_DATA_SIZE];
-		int result = JetiRadioExLibrary.INSTANCE.JETI_PhotoEx(deviceHandle, photoData);
-		if (result == SUCCESS) return JetiResult.success(photoData);
+		var photoValue = new FloatByReference();
+		int result = JetiRadioExLibrary.INSTANCE.JETI_PhotoEx(deviceHandle, photoValue);
+		if (result == SUCCESS) return JetiResult.success(photoValue.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityXY () {
 		ensureOpen();
-		var chromX = new float[1];
-		var chromY = new float[1];
+		var chromX = new FloatByReference();
+		var chromY = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_ChromxyEx(deviceHandle, chromX, chromY);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromX[0], chromY[0]});
+		if (result == SUCCESS) return JetiResult.success(new float[] {chromX.getValue(), chromY.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityXY10 () {
 		ensureOpen();
-		var chromX10 = new float[1];
-		var chromY10 = new float[1];
+		var chromX10 = new FloatByReference();
+		var chromY10 = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_Chromxy10Ex(deviceHandle, chromX10, chromY10);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromX10[0], chromY10[0]});
+		if (result == SUCCESS) return JetiResult.success(new float[] {chromX10.getValue(), chromY10.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getChromaticityUV () {
 		ensureOpen();
-		var chromU = new float[1];
-		var chromV = new float[1];
+		var chromU = new FloatByReference();
+		var chromV = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_ChromuvEx(deviceHandle, chromU, chromV);
-		if (result == SUCCESS) return JetiResult.success(new float[] {chromU[0], chromV[0]});
+		if (result == SUCCESS) return JetiResult.success(new float[] {chromU.getValue(), chromV.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getXYZValues () {
 		ensureOpen();
-		var X = new float[1];
-		var Y = new float[1];
-		var Z = new float[1];
+		var X = new FloatByReference();
+		var Y = new FloatByReference();
+		var Z = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_ChromXYZEx(deviceHandle, X, Y, Z);
-		if (result == SUCCESS) return JetiResult.success(new float[] {X[0], Y[0], Z[0]});
+		if (result == SUCCESS) return JetiResult.success(new float[] {X.getValue(), Y.getValue(), Z.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<float[]> getDominantWavelengthAndPurity () {
 		ensureOpen();
-		var dwl = new float[1];
-		var pe = new float[1];
+		var dwl = new FloatByReference();
+		var pe = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_DWLPEEx(deviceHandle, dwl, pe);
-		if (result == SUCCESS) return JetiResult.success(new float[] {dwl[0], pe[0]});
+		if (result == SUCCESS) return JetiResult.success(new float[] {dwl.getValue(), pe.getValue()});
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getCorrelatedColorTemperature () {
 		ensureOpen();
-		var cct = new float[1];
+		var cct = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_CCTEx(deviceHandle, cct);
-		if (result == SUCCESS) return JetiResult.success(cct[0]);
+		if (result == SUCCESS) return JetiResult.success(cct.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getDuv () {
 		ensureOpen();
-		var duv = new float[1];
+		var duv = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_DuvEx(deviceHandle, duv);
-		if (result == SUCCESS) return JetiResult.success(duv[0]);
+		if (result == SUCCESS) return JetiResult.success(duv.getValue());
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<Float> getColorRenderingIndex (float cct) {
+	public JetiResult<CRIData> getColorRenderingIndex (float cct) {
 		ensureOpen();
-		var cri = new float[1];
-		int result = JetiRadioExLibrary.INSTANCE.JETI_CRIEx(deviceHandle, cct, cri);
-		if (result == SUCCESS) return JetiResult.success(cri[0]);
+		var criValues = new float[17];
+		int result = JetiRadioExLibrary.INSTANCE.JETI_CRIEx(deviceHandle, cct, criValues);
+		if (result == SUCCESS) {
+			return JetiResult.success(new CRIData(criValues[0], criValues[1],
+				new float[] {criValues[2], criValues[3], criValues[4], criValues[5], criValues[6], criValues[7], criValues[8],
+					criValues[9], criValues[10], criValues[11], criValues[12], criValues[13], criValues[14], criValues[15],
+					criValues[16]}));
+		}
 		return JetiResult.error(result);
 	}
 
@@ -202,7 +216,6 @@ public class JetiRadioEx implements AutoCloseable {
 		var hue = new DoubleByReference();
 		var rfi = new double[TM30_RFI_SIZE];
 		var rfces = new double[TM30_RFCES_SIZE];
-
 		int result = JetiRadioExLibrary.INSTANCE.JETI_TM30Ex(deviceHandle, (byte)(useTM3015 ? 1 : 0), rf, rg, chroma, hue, rfi,
 			rfces);
 		if (result == SUCCESS)
@@ -227,7 +240,6 @@ public class JetiRadioEx implements AutoCloseable {
 		var rbpfs = new FloatByReference();
 		var rlbtb = new FloatByReference();
 		var rnbpbp = new FloatByReference();
-
 		int result = JetiRadioExLibrary.INSTANCE.JETI_BlueMeasurementEx(deviceHandle, lb, kbv, kc, rbpfs, rlbtb, rnbpbp);
 		if (result == SUCCESS) return JetiResult.success(new BlueMeasurementData(lb.getValue(), kbv.getValue(), kc.getValue(),
 			rbpfs.getValue(), rlbtb.getValue(), rnbpbp.getValue()));
@@ -236,9 +248,9 @@ public class JetiRadioEx implements AutoCloseable {
 
 	public JetiResult<Float> getIntegrationTime () {
 		ensureOpen();
-		var tint = new float[1];
+		var tint = new FloatByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_RadioTintEx(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint[0]);
+		if (result == SUCCESS) return JetiResult.success(tint.getValue());
 		return JetiResult.error(result);
 	}
 
@@ -277,7 +289,7 @@ public class JetiRadioEx implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getNumberOfRadioExDevices () {
+	static public JetiResult<Integer> getRadioExDeviceCount () {
 		var numDevices = new IntByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetNumRadioEx(numDevices);
 		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
@@ -291,7 +303,7 @@ public class JetiRadioEx implements AutoCloseable {
 
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result == SUCCESS) {
-			String[] serials = {bytesToString(boardSerial), bytesToString(specSerial), bytesToString(deviceSerial)};
+			String[] serials = {string(boardSerial), string(specSerial), string(deviceSerial)};
 			return JetiResult.success(serials);
 		}
 		return JetiResult.error(result);
@@ -315,105 +327,11 @@ public class JetiRadioEx implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public class TM30Data {
-		private final double rf;
-		private final double rg;
-		private final double chroma;
-		private final double hue;
-		private final double[] rfi;
-		private final double[] rfces;
+	static public record TM30Data (double rf, double rg, double chroma, double hue, double[] rfi, double[] rfces) {}
 
-		public TM30Data (double rf, double rg, double chroma, double hue, double[] rfi, double[] rfces) {
-			this.rf = rf;
-			this.rg = rg;
-			this.chroma = chroma;
-			this.hue = hue;
-			this.rfi = rfi;
-			this.rfces = rfces;
-		}
+	static public record PeakFWHMData (float peak, float fwhm) {}
 
-		public double getRf () {
-			return rf;
-		}
+	static public record BlueMeasurementData (float lb, float kbv, float kc, float rbpfs, float rlbtb, float rnbpbp) {}
 
-		public double getRg () {
-			return rg;
-		}
-
-		public double getChroma () {
-			return chroma;
-		}
-
-		public double getHue () {
-			return hue;
-		}
-
-		public double[] getRfi () {
-			return rfi;
-		}
-
-		public double[] getRfces () {
-			return rfces;
-		}
-	}
-
-	static public class PeakFWHMData {
-		private final float peak;
-		private final float fwhm;
-
-		public PeakFWHMData (float peak, float fwhm) {
-			this.peak = peak;
-			this.fwhm = fwhm;
-		}
-
-		public float getPeak () {
-			return peak;
-		}
-
-		public float getFwhm () {
-			return fwhm;
-		}
-	}
-
-	static public class BlueMeasurementData {
-		private final float lb;
-		private final float kbv;
-		private final float kc;
-		private final float rbpfs;
-		private final float rlbtb;
-		private final float rnbpbp;
-
-		public BlueMeasurementData (float lb, float kbv, float kc, float rbpfs, float rlbtb, float rnbpbp) {
-			this.lb = lb;
-			this.kbv = kbv;
-			this.kc = kc;
-			this.rbpfs = rbpfs;
-			this.rlbtb = rlbtb;
-			this.rnbpbp = rnbpbp;
-		}
-
-		public float getLb () {
-			return lb;
-		}
-
-		public float getKbv () {
-			return kbv;
-		}
-
-		public float getKc () {
-			return kc;
-		}
-
-		public float getRbpfs () {
-			return rbpfs;
-		}
-
-		public float getRlbtb () {
-			return rlbtb;
-		}
-
-		public float getRnbpbp () {
-			return rnbpbp;
-		}
-	}
+	static public record CRIData (float dc, float ra, float[] specialIndices) {}
 }

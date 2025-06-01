@@ -19,7 +19,7 @@ public class JetiCore implements AutoCloseable {
 	private Pointer deviceHandle;
 
 	private JetiCore (Pointer deviceHandle) {
-		Objects.nonNull(deviceHandle);
+		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
 	}
 
@@ -198,8 +198,8 @@ public class JetiCore implements AutoCloseable {
 
 		if (result == SUCCESS) {
 			var info = new DeviceInfo(ConnectionType.values[connType.getValue()], DeviceType.values[deviceType.getValue()],
-				bytesToString(deviceSerial), (int)comPortNr.getValue(), baudrate.getValue(), bytesToString(ipAddress),
-				bytesToString(usbSerial), btAddress.getValue(), new String(btleDevicePath).trim());
+				string(deviceSerial), (int)comPortNr.getValue(), baudrate.getValue(), string(ipAddress),
+				string(usbSerial), btAddress.getValue(), new String(btleDevicePath).trim());
 			return JetiResult.success(info);
 		}
 		return JetiResult.error(result);

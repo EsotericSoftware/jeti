@@ -46,23 +46,23 @@ public interface JetiRadioExLibrary extends Library {
 	int JETI_SaveSpecRadCSVEx (Pointer dwDevice, int dwBeg, int dwEnd, String cPathName, String cOperator, String cMemo);
 
 	// Measurement data functions
-	int JETI_RadioEx (Pointer dwDevice, int dwBeg, int dwEnd, float[] fRadio);
+	int JETI_RadioEx (Pointer dwDevice, int dwBeg, int dwEnd, FloatByReference fRadio);
 
-	int JETI_PhotoEx (Pointer dwDevice, float[] fPhoto);
+	int JETI_PhotoEx (Pointer dwDevice, FloatByReference fPhoto);
 
-	int JETI_ChromxyEx (Pointer dwDevice, float[] fChromx, float[] fChromy);
+	int JETI_ChromxyEx (Pointer dwDevice, FloatByReference fChromx, FloatByReference fChromy);
 
-	int JETI_Chromxy10Ex (Pointer dwDevice, float[] fChromx10, float[] fChromy10);
+	int JETI_Chromxy10Ex (Pointer dwDevice, FloatByReference fChromx10, FloatByReference fChromy10);
 
-	int JETI_ChromuvEx (Pointer dwDevice, float[] fChromu, float[] fChromv);
+	int JETI_ChromuvEx (Pointer dwDevice, FloatByReference fChromu, FloatByReference fChromv);
 
-	int JETI_ChromXYZEx (Pointer dwDevice, float[] fX, float[] fY, float[] fZ);
+	int JETI_ChromXYZEx (Pointer dwDevice, FloatByReference fX, FloatByReference fY, FloatByReference fZ);
 
-	int JETI_DWLPEEx (Pointer dwDevice, float[] fDWL, float[] fPE);
+	int JETI_DWLPEEx (Pointer dwDevice, FloatByReference fDWL, FloatByReference fPE);
 
-	int JETI_CCTEx (Pointer dwDevice, float[] fCCT);
+	int JETI_CCTEx (Pointer dwDevice, FloatByReference fCCT);
 
-	int JETI_DuvEx (Pointer dwDevice, float[] fDuv);
+	int JETI_DuvEx (Pointer dwDevice, FloatByReference fDuv);
 
 	int JETI_CRIEx (Pointer dwDevice, float fCCT, float[] fCRI);
 
@@ -75,7 +75,7 @@ public interface JetiRadioExLibrary extends Library {
 		FloatByReference fRbpfs, FloatByReference fRlbtb, FloatByReference fRnbpbp);
 
 	// Device parameter functions
-	int JETI_RadioTintEx (Pointer dwDevice, float[] fTint);
+	int JETI_RadioTintEx (Pointer dwDevice, FloatByReference fTint);
 
 	int JETI_SetMeasDistEx (Pointer dwDevice, int dwDistance);
 
