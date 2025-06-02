@@ -15,7 +15,7 @@ import com.esotericsoftware.jeti.JetiRadioEx.PeakFWHMData;
 import com.esotericsoftware.jeti.JetiRadioEx.TM30Data;
 
 @DisplayName("JetiRadioEx Integration Tests")
-public class JetiRadioExIntegrationTest {
+public class JetiRadioExTest {
 	private JetiRadioEx radioEx;
 
 	@BeforeEach
@@ -168,6 +168,7 @@ public class JetiRadioExIntegrationTest {
 		if (result.isSuccess()) {
 			BlueMeasurementData data = result.getValue();
 			// Blue measurement values can vary widely, just check they're finite
+			// BOZO - Why are these infinite?
 			assertTrue(Float.isFinite(data.lb()));
 			assertTrue(Float.isFinite(data.kbv()));
 			assertTrue(Float.isFinite(data.kc()));
@@ -190,7 +191,7 @@ public class JetiRadioExIntegrationTest {
 		// Test SPC format
 		String spcPath = "test_measurement.spc";
 		JetiResult<Boolean> spcResult = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
-		// Internal DLL error?!
+		// BOZO - Internal DLL error?
 		assertTrue(spcResult.isSuccess(), spcResult.toString());
 
 		// Test CSV format
@@ -199,7 +200,7 @@ public class JetiRadioExIntegrationTest {
 		assertTrue(csvResult.isSuccess(), csvResult.toString());
 	}
 
-	// Causes subsequent tests to fail!?
+	// BOZO - Causes subsequent tests to fail!
 	// @Test
 	// @DisplayName("Perform measurement with adaptation")
 	// void testMeasurementWithAdaptation () {
@@ -233,7 +234,7 @@ public class JetiRadioExIntegrationTest {
 	// assertTrue(finalStatus.isSuccess(), finalStatus.toString());
 	// JetiRadio.AdaptationStatus status = finalStatus.getValue();
 	// assertTrue(status.isComplete(), status.toString());
-	// // Why do these fail?
+	// // BOZO - Why are these 0?
 	// assertTrue(status.integrationTime() > 0);
 	// assertTrue(status.averageCount() > 0);
 	// }
@@ -248,13 +249,13 @@ public class JetiRadioExIntegrationTest {
 		assertTrue(prepareResult.isSuccess());
 	}
 
-	// Unsupported by specbos 2501?
 	@Test
 	@DisplayName("Get and set measurement distance")
 	void testMeasurementDistance () {
 		int testDistance = 200;
 
 		JetiResult<Boolean> setResult = radioEx.setMeasurementDistance(testDistance);
+		// BOZO - Command not supported or invalid argument?
 		assertTrue(setResult.isSuccess(), setResult.toString());
 
 		JetiResult<Integer> getResult = radioEx.getMeasurementDistance();

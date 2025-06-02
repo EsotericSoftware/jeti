@@ -41,7 +41,7 @@ public class JetiRadioEx implements AutoCloseable {
 		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		if (step <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureEx(deviceHandle, integrationTime, (short)averageCount, step);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> measureWithAdaptation (int averageCount, int step) {
@@ -49,7 +49,7 @@ public class JetiRadioEx implements AutoCloseable {
 		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		if (step <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureAdaptEx(deviceHandle, (short)averageCount, step);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> prepareMeasurement (float integrationTime, int averageCount, int step) {
@@ -58,7 +58,7 @@ public class JetiRadioEx implements AutoCloseable {
 		if (averageCount <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		if (step <= 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiRadioExLibrary.INSTANCE.JETI_PrepareMeasureEx(deviceHandle, integrationTime, (short)averageCount, step);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> getMeasurementStatus () {
@@ -79,7 +79,7 @@ public class JetiRadioEx implements AutoCloseable {
 	public JetiResult<Boolean> breakMeasurement () {
 		ensureOpen();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_MeasureBreakEx(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	// Spectral data functions
@@ -106,7 +106,7 @@ public class JetiRadioEx implements AutoCloseable {
 		ensureOpen();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_SaveSpecRadSPCEx(deviceHandle, beginWavelength, endWavelength, pathName,
 			operator, memo);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> saveSpectralRadianceCSV (int beginWavelength, int endWavelength, String pathName, String operator,
@@ -114,7 +114,7 @@ public class JetiRadioEx implements AutoCloseable {
 		ensureOpen();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_SaveSpecRadCSVEx(deviceHandle, beginWavelength, endWavelength, pathName,
 			operator, memo);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	// Measurement data functions
@@ -262,7 +262,7 @@ public class JetiRadioEx implements AutoCloseable {
 		ensureOpen();
 		if (distance < 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiRadioExLibrary.INSTANCE.JETI_SetMeasDistEx(deviceHandle, distance);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Integer> getMeasurementDistance () {
@@ -270,12 +270,6 @@ public class JetiRadioEx implements AutoCloseable {
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetMeasDistEx(deviceHandle, intRef);
 		if (result == SUCCESS) return JetiResult.success(intRef.getValue());
 		return JetiResult.error(result);
-	}
-
-	public boolean supportsMeasurementDistance () {
-		if (isClosed()) return false;
-		int result = JetiRadioExLibrary.INSTANCE.JETI_GetMeasDistEx(deviceHandle, intRef);
-		return result == SUCCESS;
 	}
 
 	private void ensureOpen () {
@@ -300,9 +294,9 @@ public class JetiRadioEx implements AutoCloseable {
 	}
 
 	static public JetiResult<Integer> getRadioExDeviceCount () {
-		var numDevices = new IntByReference();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_GetNumRadioEx(numDevices);
-		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
+		var count = new IntByReference();
+		int result = JetiRadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count);
+		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 

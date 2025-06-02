@@ -61,7 +61,7 @@ public class JetiResult<T> {
 		return new JetiResult<>(null, errorCode);
 	}
 
-	static public <T> JetiResult<T> fromErrorCode (T value, int errorCode) {
-		return new JetiResult<>(value, errorCode);
+	static public JetiResult<Boolean> result (int result) {
+		return new JetiResult<>(result == SUCCESS, result);
 	}
 }

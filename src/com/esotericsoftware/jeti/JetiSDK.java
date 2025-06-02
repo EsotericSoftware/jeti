@@ -186,7 +186,7 @@ public class JetiSDK {
 
 	static public JetiResult<Integer> getNumberOfCoreDevices () {
 		ensureInitialized();
-		return JetiCore.getNumberOfDevices();
+		return JetiCore.getDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfRadioDevices () {

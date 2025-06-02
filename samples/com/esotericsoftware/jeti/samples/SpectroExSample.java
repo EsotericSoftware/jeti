@@ -66,8 +66,8 @@ public class SpectroExSample {
 				case 'a' -> startMeasurement(spectroDevice);
 				case 'b' -> breakMeasurement(spectroDevice);
 				case 'c' -> getMeasurementStatus(spectroDevice);
-				case 'd' -> getSpectrumWavelength(spectroDevice);
-				case 'e' -> getSpectrumPixel(spectroDevice);
+				case 'd' -> getLightSpectrumWavelength(spectroDevice);
+				case 'e' -> getLightSpectrumPixel(spectroDevice);
 				case '0' -> {
 					return;
 				}
@@ -120,7 +120,7 @@ public class SpectroExSample {
 					System.out.printf("wl[nm]: %d    cts: %.6f%n", i + 380, spectrum[i]);
 			}
 		} catch (Throwable ex) {
-			System.err.println("Error during spectrum measurement: " + ex.getMessage());
+			System.err.println("Error during light spectrum measurement: " + ex.getMessage());
 		}
 	}
 
@@ -187,7 +187,7 @@ public class SpectroExSample {
 	}
 
 	/** Read the light spectrum, 380-780nm. */
-	static private void getSpectrumWavelength (JetiSpectroEx device) {
+	static private void getLightSpectrumWavelength (JetiSpectroEx device) {
 		try {
 			JetiResult<float[]> result = device.getLightWaveData(380, 780, 1.0f);
 			if (result.isError())
@@ -198,12 +198,12 @@ public class SpectroExSample {
 					System.out.printf("wl[nm]: %d    cts: %.6f%n", i + 380, spectrum[i]);
 			}
 		} catch (Throwable ex) {
-			System.err.println("Error reading spectrum wave data: " + ex.getMessage());
+			System.err.println("Error reading light spectrum wave data: " + ex.getMessage());
 		}
 	}
 
 	/** Read the light spectrum, pixel based. */
-	static private void getSpectrumPixel (JetiSpectroEx device) {
+	static private void getLightSpectrumPixel (JetiSpectroEx device) {
 		try {
 			JetiResult<int[]> result = device.getLightPixelData();
 			if (result.isError())
@@ -214,7 +214,7 @@ public class SpectroExSample {
 					System.out.printf("pix: %d    cts: %d%n", i, spectrum[i]);
 			}
 		} catch (Throwable ex) {
-			System.err.println("Error reading spectrum pixel data: " + ex.getMessage());
+			System.err.println("Error reading light spectrum pixel data: " + ex.getMessage());
 		}
 	}
 }

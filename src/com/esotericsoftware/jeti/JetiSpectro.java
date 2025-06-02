@@ -16,6 +16,7 @@ public class JetiSpectro implements AutoCloseable {
 	private Pointer deviceHandle;
 
 	private final FloatByReference floatRef = new FloatByReference();
+	private final IntByReference intRef = new IntByReference();
 
 	private JetiSpectro (Pointer deviceHandle) {
 		Objects.requireNonNull(deviceHandle);
@@ -23,6 +24,7 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> measureDarkSpectrum (float integrationTime) {
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
 		ensureOpen();
 		var darkData = new float[SPECTRAL_DATA_SIZE];
 		int result = JetiSpectroLibrary.INSTANCE.JETI_DarkSpec(deviceHandle, integrationTime, darkData);
@@ -31,6 +33,7 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> measureLightSpectrum (float integrationTime) {
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
 		ensureOpen();
 		var lightData = new float[SPECTRAL_DATA_SIZE];
 		int result = JetiSpectroLibrary.INSTANCE.JETI_LightSpec(deviceHandle, integrationTime, lightData);
@@ -39,6 +42,7 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> measureReferenceSpectrum (float integrationTime) {
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
 		ensureOpen();
 		var referenceData = new float[SPECTRAL_DATA_SIZE];
 		int result = JetiSpectroLibrary.INSTANCE.JETI_ReferSpec(deviceHandle, integrationTime, referenceData);
@@ -47,6 +51,7 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> measureTransmissionReflectionSpectrum (float integrationTime) {
+		if (integrationTime < 0) return JetiResult.error(INVALID_ARGUMENT);
 		ensureOpen();
 		var transReflData = new float[SPECTRAL_DATA_SIZE];
 		int result = JetiSpectroLibrary.INSTANCE.JETI_TransReflSpec(deviceHandle, integrationTime, transReflData);
@@ -62,6 +67,9 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> calculateTransmittance (float[] lightSpectrum, float[] darkSpectrum, float[] referenceSpectrum) {
+		Objects.requireNonNull(lightSpectrum, "lightSpectrum");
+		Objects.requireNonNull(darkSpectrum, "darkSpectrum");
+		Objects.requireNonNull(referenceSpectrum, "referenceSpectrum");
 		if (lightSpectrum.length != darkSpectrum.length || lightSpectrum.length != referenceSpectrum.length)
 			throw new IllegalArgumentException("All spectra must have the same length.");
 
@@ -78,10 +86,16 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	public JetiResult<float[]> calculateReflectance (float[] lightSpectrum, float[] darkSpectrum, float[] referenceSpectrum) {
+		Objects.requireNonNull(lightSpectrum, "lightSpectrum");
+		Objects.requireNonNull(darkSpectrum, "darkSpectrum");
+		Objects.requireNonNull(referenceSpectrum, "referenceSpectrum");
 		return calculateTransmittance(lightSpectrum, darkSpectrum, referenceSpectrum);
 	}
 
 	public JetiResult<float[]> calculateAbsorbance (float[] lightSpectrum, float[] darkSpectrum, float[] referenceSpectrum) {
+		Objects.requireNonNull(lightSpectrum, "lightSpectrum");
+		Objects.requireNonNull(darkSpectrum, "darkSpectrum");
+		Objects.requireNonNull(referenceSpectrum, "referenceSpectrum");
 		JetiResult<float[]> transmittanceResult = calculateTransmittance(lightSpectrum, darkSpectrum, referenceSpectrum);
 		if (transmittanceResult.isError()) return JetiResult.error(transmittanceResult.getErrorCode());
 
@@ -118,9 +132,9 @@ public class JetiSpectro implements AutoCloseable {
 	}
 
 	static public JetiResult<Integer> getSpectroDeviceCount () {
-		var numDevices = new IntByReference();
-		int result = JetiSpectroLibrary.INSTANCE.JETI_GetNumSpectro(numDevices);
-		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
+		var count = new IntByReference();
+		int result = JetiSpectroLibrary.INSTANCE.JETI_GetNumSpectro(count);
+		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
@@ -148,7 +162,6 @@ public class JetiSpectro implements AutoCloseable {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-
 		int result = JetiSpectroLibrary.INSTANCE.JETI_GetSpectroDLLVersion(major, minor, build);
 		if (result == SUCCESS) return JetiResult.success(major.getValue() + "." + minor.getValue() + "." + build.getValue());
 		return JetiResult.error(result);

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
 
 @DisplayName("JetiRadio Integration Tests")
-public class JetiRadioIntegrationTest {
+public class JetiRadioTest {
 	private JetiRadio radio;
 
 	@BeforeEach
@@ -87,6 +87,7 @@ public class JetiRadioIntegrationTest {
 		assertTrue(photoResult.getValue() >= 0);
 	}
 
+	// BOZO - Sometimes terminates process?!
 	@Test
 	@DisplayName("Get chromaticity and color values")
 	void testChromaticityAndColorValues () {
@@ -163,13 +164,13 @@ public class JetiRadioIntegrationTest {
 		assertTrue(tintResult.getValue() > 0);
 	}
 
-	// Unsupported by specbos 2501?
 	@Test
 	@DisplayName("Should get and set measurement distance")
 	void testMeasurementDistance () {
 		int testDistance = 10;
 
 		JetiResult<Boolean> setResult = radio.setMeasurementDistance(testDistance);
+		// BOZO - Command not supported or invalid argument?
 		assertTrue(setResult.isSuccess(), setResult.toString());
 
 		JetiResult<Integer> getResult = radio.getMeasurementDistance();
@@ -207,7 +208,7 @@ public class JetiRadioIntegrationTest {
 		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
 		AdaptationStatus status = finalStatus.getValue();
 		assertTrue(status.isComplete());
-		// Why do these fail?
+		// BOZO - Why are these 0?
 		assertTrue(status.integrationTime() > 0);
 		assertTrue(status.averageCount() > 0);
 	}
@@ -223,10 +224,15 @@ public class JetiRadioIntegrationTest {
 		JetiResult<Boolean> breakResult = radio.breakMeasurement();
 		assertTrue(breakResult.isSuccess(), breakResult.toString());
 
+		try {
+			Thread.sleep(250);
+		} catch (InterruptedException ex) {
+		}
+
 		// Check that measurement is no longer active
 		JetiResult<Boolean> statusResult = radio.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
-		// Note: Status might still be true briefly after break, so we don't assert false
+		assertFalse(statusResult.getValue(), statusResult.toString());
 	}
 
 	@Test

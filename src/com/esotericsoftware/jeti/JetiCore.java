@@ -18,6 +18,10 @@ import com.sun.jna.ptr.ShortByReference;
 public class JetiCore implements AutoCloseable {
 	private Pointer deviceHandle;
 
+	private final FloatByReference floatRef = new FloatByReference();
+	private final IntByReference intRef = new IntByReference();
+	private final ByteByReference byteRef1 = new ByteByReference(), byteRef2 = new ByteByReference();
+
 	private JetiCore (Pointer deviceHandle) {
 		Objects.requireNonNull(deviceHandle);
 		this.deviceHandle = deviceHandle;
@@ -26,38 +30,37 @@ public class JetiCore implements AutoCloseable {
 	public JetiResult<Boolean> reset () {
 		ensureOpen();
 		int result = JetiCoreLibrary.INSTANCE.JETI_Reset(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> hardReset () {
 		ensureOpen();
 		int result = JetiCoreLibrary.INSTANCE.JETI_HardReset(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> sendBreak () {
 		ensureOpen();
 		int result = JetiCoreLibrary.INSTANCE.JETI_Break(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> initMeasurement () {
 		ensureOpen();
 		int result = JetiCoreLibrary.INSTANCE.JETI_InitMeasure(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> preTriggerMeasurement () {
 		ensureOpen();
 		int result = JetiCoreLibrary.INSTANCE.JETI_PreTrigMeasure(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> getMeasurementStatus () {
 		ensureOpen();
-		var status = new IntByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_MeasureStatusCore(deviceHandle, status);
-		if (result == SUCCESS) return JetiResult.success(status.getValue() != 0);
+		int result = JetiCoreLibrary.INSTANCE.JETI_MeasureStatusCore(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue() != 0);
 		return JetiResult.error(result);
 	}
 
@@ -71,63 +74,50 @@ public class JetiCore implements AutoCloseable {
 
 	public JetiResult<DeviceType> getDeviceType () {
 		ensureOpen();
-		var deviceType = new ByteByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetDeviceType(deviceHandle, deviceType);
-		if (result == SUCCESS) return JetiResult.success(DeviceType.values[deviceType.getValue()]);
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetDeviceType(deviceHandle, byteRef1);
+		if (result == SUCCESS) return JetiResult.success(DeviceType.values[byteRef1.getValue()]);
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getBatteryVoltage () {
 		ensureOpen();
-		var voltage = new FloatByReference();
-		var percent = new ByteByReference();
-		var isCharging = new ByteByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, voltage, percent, isCharging);
-		if (result == SUCCESS) return JetiResult.success(voltage.getValue());
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, floatRef, byteRef1, byteRef2);
+		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Integer> getBatteryPercent () {
 		ensureOpen();
-		var voltage = new FloatByReference();
-		var percent = new ByteByReference();
-		var isCharging = new ByteByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, voltage, percent, isCharging);
-		if (result == SUCCESS) return JetiResult.success((int)percent.getValue());
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, floatRef, byteRef1, byteRef2);
+		if (result == SUCCESS) return JetiResult.success((int)byteRef1.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Boolean> isBatteryCharging () {
 		ensureOpen();
-		var voltage = new FloatByReference();
-		var percent = new ByteByReference();
-		var isCharging = new ByteByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, voltage, percent, isCharging);
-		if (result == SUCCESS) return JetiResult.success(isCharging.getValue() != 0);
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetBatteryStat(deviceHandle, floatRef, byteRef1, byteRef2);
+		if (result == SUCCESS) return JetiResult.success(byteRef2.getValue() != 0);
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
 		ensureOpen();
-		var tint = new FloatByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetTint(deviceHandle, tint);
-		if (result == SUCCESS) return JetiResult.success(tint.getValue());
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetTint(deviceHandle, floatRef);
+		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Integer> getPixelCount () {
 		ensureOpen();
-		var pixelCount = new IntByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetPixel(deviceHandle, pixelCount);
-		if (result == SUCCESS) return JetiResult.success(pixelCount.getValue());
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetPixel(deviceHandle, intRef);
+		if (result == SUCCESS) return JetiResult.success(intRef.getValue());
 		return JetiResult.error(result);
 	}
 
 	public JetiResult<Float> getTemperature () {
 		ensureOpen();
-		var temperature = new FloatByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetTemperature(deviceHandle, temperature);
-		if (result == SUCCESS) return JetiResult.success(temperature.getValue());
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetTemperature(deviceHandle, floatRef);
+		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
 		return JetiResult.error(result);
 	}
 
@@ -162,23 +152,23 @@ public class JetiCore implements AutoCloseable {
 
 	static public JetiResult<Boolean> setLicenseKey (String licenseKey) {
 		int result = JetiCoreLibrary.INSTANCE.JETI_SetLicKey(licenseKey);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	static public JetiResult<Boolean> importStraylightMatrix (String matrixFile) {
 		int result = JetiCoreLibrary.INSTANCE.JETI_ImportSLM(matrixFile);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	static public JetiResult<Boolean> ignoreStraylightMatrix (boolean ignore) {
 		int result = JetiCoreLibrary.INSTANCE.JETI_IgnoreSLM((byte)(ignore ? 1 : 0));
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
-	static public JetiResult<Integer> getNumberOfDevices () {
-		var numDevices = new IntByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetNumDevices(numDevices);
-		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
+	static public JetiResult<Integer> getDeviceCount () {
+		var count = new IntByReference();
+		int result = JetiCoreLibrary.INSTANCE.JETI_GetNumDevices(count);
+		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
@@ -198,15 +188,15 @@ public class JetiCore implements AutoCloseable {
 
 		if (result == SUCCESS) {
 			var info = new DeviceInfo(ConnectionType.values[connType.getValue()], DeviceType.values[deviceType.getValue()],
-				string(deviceSerial), (int)comPortNr.getValue(), baudrate.getValue(), string(ipAddress),
-				string(usbSerial), btAddress.getValue(), new String(btleDevicePath).trim());
+				string(deviceSerial), (int)comPortNr.getValue(), baudrate.getValue(), string(ipAddress), string(usbSerial),
+				btAddress.getValue(), new String(btleDevicePath).trim());
 			return JetiResult.success(info);
 		}
 		return JetiResult.error(result);
 	}
 
 	static public JetiResult<DeviceInfo[]> getAllDevices () {
-		JetiResult<Integer> numDevicesResult = getNumberOfDevices();
+		JetiResult<Integer> numDevicesResult = getDeviceCount();
 		if (numDevicesResult.isError()) return JetiResult.error(numDevicesResult.getErrorCode());
 
 		int numDevices = numDevicesResult.getValue();

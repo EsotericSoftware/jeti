@@ -29,19 +29,19 @@ public class JetiRadio implements AutoCloseable {
 	public JetiResult<Boolean> measure () {
 		ensureOpen();
 		int result = JetiRadioLibrary.INSTANCE.JETI_Measure(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> measureWithAdaptation () {
 		ensureOpen();
 		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureAdapt(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> prepareMeasurement () {
 		ensureOpen();
 		int result = JetiRadioLibrary.INSTANCE.JETI_PrepareMeasure(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Boolean> getMeasurementStatus () {
@@ -63,7 +63,7 @@ public class JetiRadio implements AutoCloseable {
 	public JetiResult<Boolean> breakMeasurement () {
 		ensureOpen();
 		int result = JetiRadioLibrary.INSTANCE.JETI_MeasureBreak(deviceHandle);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<float[]> getSpectralRadiance () {
@@ -160,7 +160,7 @@ public class JetiRadio implements AutoCloseable {
 		ensureOpen();
 		if (mm < 0) return JetiResult.error(INVALID_ARGUMENT);
 		int result = JetiRadioLibrary.INSTANCE.JETI_SetMeasDist(deviceHandle, mm);
-		return JetiResult.fromErrorCode(result == SUCCESS, result);
+		return JetiResult.result(result);
 	}
 
 	public JetiResult<Integer> getMeasurementDistance () {
@@ -192,9 +192,9 @@ public class JetiRadio implements AutoCloseable {
 	}
 
 	static public JetiResult<Integer> getRadioDeviceCount () {
-		var numDevices = new IntByReference();
-		int result = JetiRadioLibrary.INSTANCE.JETI_GetNumRadio(numDevices);
-		if (result == SUCCESS) return JetiResult.success(numDevices.getValue());
+		var count = new IntByReference();
+		int result = JetiRadioLibrary.INSTANCE.JETI_GetNumRadio(count);
+		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
