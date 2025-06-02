@@ -282,7 +282,6 @@ public class JetiSpectroExTest {
 		// Verify data integrity
 		short[] darkData = darkChannelResult.getValue();
 		short[] lightData = lightChannelResult.getValue();
-
 		for (int i = 0; i < darkData.length; i++) {
 			assertTrue(darkData[i] >= 0, "Channel dark values should be non-negative");
 			assertTrue(lightData[i] >= 0, "Channel light values should be non-negative");

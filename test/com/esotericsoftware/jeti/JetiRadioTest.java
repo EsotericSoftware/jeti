@@ -263,5 +263,10 @@ public class JetiRadioTest {
 		}
 
 		assertFalse(measuring, "Measurement should complete within timeout");
+
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException ignored) {
+		}
 	}
 }

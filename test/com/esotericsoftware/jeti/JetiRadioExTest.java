@@ -4,6 +4,8 @@ package com.esotericsoftware.jeti;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
+import java.io.File;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -187,17 +189,21 @@ public class JetiRadioExTest {
 		int endWavelength = 780;
 		String operator = "Test Operator";
 		String memo = "Integration test measurement";
+		String tempDir = System.getProperty("java.io.tmpdir");
 
 		// Test SPC format
-		String spcPath = "test_measurement.spc";
+		String spcPath = new File(tempDir, "test_measurement.spc").getAbsolutePath();
 		JetiResult<Boolean> spcResult = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
 		// BOZO - Internal DLL error?
 		assertTrue(spcResult.isSuccess(), spcResult.toString());
 
 		// Test CSV format
-		String csvPath = "test_measurement.csv";
+		String csvPath = new File(tempDir, "test_measurement.csv").getAbsolutePath();
 		JetiResult<Boolean> csvResult = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
 		assertTrue(csvResult.isSuccess(), csvResult.toString());
+
+		new File(spcPath).delete();
+		new File(csvPath).delete();
 	}
 
 	// BOZO - Causes subsequent tests to fail!
