@@ -27,10 +27,10 @@ public class JetiRadioTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiRadio.getDeviceCount();
+		Result<Integer> deviceCount = JetiRadio.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio devices available for testing " + deviceCount);
 
-		JetiResult<JetiRadio> result = JetiRadio.openDevice(0);
+		Result<JetiRadio> result = JetiRadio.openDevice(0);
 		assumeTrue(result.isSuccess(), "Could not open radio device " + result);
 
 		radio = result.getValue();
@@ -44,7 +44,7 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<DeviceSerials> serialsResult = JetiRadio.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = JetiRadio.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -52,7 +52,7 @@ public class JetiRadioTest {
 			assertNotNull(serials.device());
 		}
 
-		JetiResult<DllVersion> versionResult = JetiRadio.getDllVersion();
+		Result<DllVersion> versionResult = JetiRadio.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}
@@ -61,7 +61,7 @@ public class JetiRadioTest {
 	@DisplayName("Perform basic measurement cycle")
 	void testBasicMeasurementCycle () {
 		// Start measurement
-		JetiResult<Boolean> measureResult = radio.measure();
+		Result<Boolean> measureResult = radio.measure();
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Check measurement status
@@ -75,7 +75,7 @@ public class JetiRadioTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = radio.getMeasurementStatus();
+			Result<Boolean> statusResult = radio.getMeasurementStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			measuring = statusResult.getValue();
 			attempts++;
@@ -84,11 +84,11 @@ public class JetiRadioTest {
 		assertFalse(measuring, "Measurement should complete within timeout");
 
 		// Get measurement results
-		JetiResult<Float> radioResult = radio.getRadiometricValue();
+		Result<Float> radioResult = radio.getRadiometricValue();
 		assertTrue(radioResult.isSuccess(), radioResult.toString());
 		assertTrue(radioResult.getValue() >= 0);
 
-		JetiResult<Float> photoResult = radio.getPhotometricValue();
+		Result<Float> photoResult = radio.getPhotometricValue();
 		assertTrue(photoResult.isSuccess(), photoResult.toString());
 		assertTrue(photoResult.getValue() >= 0);
 	}
@@ -99,38 +99,38 @@ public class JetiRadioTest {
 		performMeasurementAndWait();
 
 		// Get chromaticity XY
-		JetiResult<XY> xyResult = radio.getChromaXY();
+		Result<XY> xyResult = radio.getChromaXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
 		assertTrue(xyResult.getValue().x() >= 0 && xyResult.getValue().x() <= 1);
 		assertTrue(xyResult.getValue().y() >= 0 && xyResult.getValue().y() <= 1);
 
 		// Get chromaticity XY10
-		JetiResult<XY10> xy10Result = radio.getChromaXY10();
+		Result<XY10> xy10Result = radio.getChromaXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
 
 		// Get chromaticity UV
-		JetiResult<UV> uvResult = radio.getChromaUV();
+		Result<UV> uvResult = radio.getChromaUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
 
 		// Get XYZ values
-		JetiResult<XYZ> xyzResult = radio.getXYZ();
+		Result<XYZ> xyzResult = radio.getXYZ();
 		assertTrue(xyzResult.isSuccess(), xyzResult.toString());
 
 		// Get dominant wavelength and purity
-		JetiResult<DominantWavelength> dwlResult = radio.getDominantWavelength();
+		Result<DominantWavelength> dwlResult = radio.getDominantWavelength();
 		assertTrue(dwlResult.isSuccess(), dwlResult.toString());
 
 		// Get CCT
-		JetiResult<Float> cctResult = radio.getCCT();
+		Result<Float> cctResult = radio.getCCT();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		assertTrue(cctResult.getValue() > 0);
 
 		// Get Duv
-		JetiResult<Float> duvResult = radio.getDuv();
+		Result<Float> duvResult = radio.getDuv();
 		assertTrue(duvResult.isSuccess(), duvResult.toString());
 
 		// Get CRI
-		JetiResult<CRI> criResult = radio.getCRI();
+		Result<CRI> criResult = radio.getCRI();
 		assertTrue(criResult.isSuccess(), criResult.toString());
 		assertTrue(criResult.getValue().ra() >= 0 && criResult.getValue().ra() <= 100);
 	}
@@ -140,7 +140,7 @@ public class JetiRadioTest {
 	void testSpectralData () {
 		performMeasurementAndWait();
 
-		JetiResult<float[]> spectralResult = radio.getSpectralRadiance();
+		Result<float[]> spectralResult = radio.getSpectralRadiance();
 		assertTrue(spectralResult.isSuccess(), spectralResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, spectralResult.getValue().length);
 
@@ -159,7 +159,7 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Get integration time")
 	void testGetIntegrationTime () {
-		JetiResult<Float> tintResult = radio.getIntegrationTime();
+		Result<Float> tintResult = radio.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0);
 	}
@@ -169,11 +169,11 @@ public class JetiRadioTest {
 	void testMeasurementDistance () {
 		int testDistance = 10;
 
-		JetiResult<Boolean> setResult = radio.setMeasurementDistance(testDistance);
+		Result<Boolean> setResult = radio.setMeasurementDistance(testDistance);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(setResult.isSuccess(), setResult.toString());
 
-		JetiResult<Integer> getResult = radio.getMeasurementDistance();
+		Result<Integer> getResult = radio.getMeasurementDistance();
 		assertTrue(getResult.isSuccess(), getResult.toString());
 		assertEquals(testDistance, getResult.getValue());
 	}
@@ -181,7 +181,7 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Handle measurement with adaptation")
 	void testMeasurementWithAdaptation () {
-		JetiResult<Boolean> measureResult = radio.measureWithAdaptation();
+		Result<Boolean> measureResult = radio.measureWithAdaptation();
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Wait for adaptation to complete
@@ -195,7 +195,7 @@ public class JetiRadioTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<AdaptationStatus> statusResult = radio.getAdaptationStatus();
+			Result<AdaptationStatus> statusResult = radio.getAdaptationStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			adapting = !statusResult.getValue().complete();
 			attempts++;
@@ -204,7 +204,7 @@ public class JetiRadioTest {
 		assertFalse(adapting, "Adaptation should complete within timeout");
 
 		// Get final adaptation status
-		JetiResult<AdaptationStatus> finalStatus = radio.getAdaptationStatus();
+		Result<AdaptationStatus> finalStatus = radio.getAdaptationStatus();
 		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
 		AdaptationStatus status = finalStatus.getValue();
 		assertTrue(status.complete());
@@ -217,11 +217,11 @@ public class JetiRadioTest {
 	@DisplayName("Break measurement")
 	void testBreakMeasurement () {
 		// Start measurement
-		JetiResult<Boolean> measureResult = radio.measure();
+		Result<Boolean> measureResult = radio.measure();
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Immediately break it
-		JetiResult<Boolean> breakResult = radio.breakMeasurement();
+		Result<Boolean> breakResult = radio.breakMeasurement();
 		assertTrue(breakResult.isSuccess(), breakResult.toString());
 
 		try {
@@ -230,7 +230,7 @@ public class JetiRadioTest {
 		}
 
 		// Check that measurement is no longer active
-		JetiResult<Boolean> statusResult = radio.getMeasurementStatus();
+		Result<Boolean> statusResult = radio.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
 		assertFalse(statusResult.getValue(), statusResult.toString());
 	}
@@ -238,12 +238,12 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Prepare measurement")
 	void testPrepareMeasurement () {
-		JetiResult<Boolean> prepareResult = radio.prepareMeasurement();
+		Result<Boolean> prepareResult = radio.prepareMeasurement();
 		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
 
 	private void performMeasurementAndWait () {
-		JetiResult<Boolean> measureResult = radio.measure();
+		Result<Boolean> measureResult = radio.measure();
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		boolean measuring = true;
@@ -256,7 +256,7 @@ public class JetiRadioTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = radio.getMeasurementStatus();
+			Result<Boolean> statusResult = radio.getMeasurementStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			measuring = statusResult.getValue();
 			attempts++;

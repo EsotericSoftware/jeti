@@ -20,11 +20,11 @@ public class JetiSpectroTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiSpectro.getDeviceCount();
+		Result<Integer> deviceCount = JetiSpectro.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro devices available for testing " + deviceCount);
 
-		JetiResult<JetiSpectro> deviceResult = JetiSpectro.openDevice(0);
+		Result<JetiSpectro> deviceResult = JetiSpectro.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open spectro device " + deviceResult);
 
 		spectro = deviceResult.getValue();
@@ -38,7 +38,7 @@ public class JetiSpectroTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<DeviceSerials> serialsResult = JetiSpectro.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = JetiSpectro.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -46,7 +46,7 @@ public class JetiSpectroTest {
 			assertNotNull(serials.device());
 		}
 
-		JetiResult<DllVersion> versionResult = JetiSpectro.getDllVersion();
+		Result<DllVersion> versionResult = JetiSpectro.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}
@@ -56,7 +56,7 @@ public class JetiSpectroTest {
 	void testDarkSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		JetiResult<float[]> darkResult = spectro.measureDarkSpectrum(integrationTime);
+		Result<float[]> darkResult = spectro.measureDarkSpectrum(integrationTime);
 		assertTrue(darkResult.isSuccess(), darkResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, darkResult.getValue().length);
 
@@ -76,7 +76,7 @@ public class JetiSpectroTest {
 	void testLightSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		JetiResult<float[]> lightResult = spectro.measureLightSpectrum(integrationTime);
+		Result<float[]> lightResult = spectro.measureLightSpectrum(integrationTime);
 		assertTrue(lightResult.isSuccess(), lightResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, lightResult.getValue().length);
 
@@ -97,7 +97,7 @@ public class JetiSpectroTest {
 	void testReferenceSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		JetiResult<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
+		Result<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
 		assertTrue(referenceResult.isSuccess(), referenceResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, referenceResult.getValue().length);
 
@@ -118,10 +118,10 @@ public class JetiSpectroTest {
 	void testTransmissionReflectionSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		JetiResult<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
+		Result<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
 		assertTrue(referenceResult.isSuccess(), referenceResult.toString());
 
-		JetiResult<float[]> transReflResult = spectro.measureTransmissionReflectionSpectrum(integrationTime);
+		Result<float[]> transReflResult = spectro.measureTransmissionReflectionSpectrum(integrationTime);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(transReflResult.isSuccess(), transReflResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, transReflResult.getValue().length);
@@ -135,7 +135,7 @@ public class JetiSpectroTest {
 	@Test
 	@DisplayName("Get spectro integration time")
 	void testGetSpectroIntegrationTime () {
-		JetiResult<Float> tintResult = spectro.getIntegrationTime();
+		Result<Float> tintResult = spectro.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0, "Integration time should be positive");
 	}
@@ -144,7 +144,7 @@ public class JetiSpectroTest {
 	@DisplayName("Validate integration time parameters")
 	void testIntegrationTimeValidation () {
 		// Test negative integration time
-		JetiResult<float[]> result = spectro.measureDarkSpectrum(-1.0f);
+		Result<float[]> result = spectro.measureDarkSpectrum(-1.0f);
 		assertFalse(result.isSuccess(), "Negative integration time should be rejected");
 		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
 

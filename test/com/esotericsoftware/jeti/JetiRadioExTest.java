@@ -32,10 +32,10 @@ public class JetiRadioExTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiRadioEx.getDeviceCount();
+		Result<Integer> deviceCount = JetiRadioEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio ex devices available for testing");
 
-		JetiResult<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
+		Result<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open radio ex device");
 
 		radioEx = deviceResult.getValue();
@@ -49,7 +49,7 @@ public class JetiRadioExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -57,7 +57,7 @@ public class JetiRadioExTest {
 			assertNotNull(serials.device());
 		}
 
-		JetiResult<DllVersion> versionResult = JetiRadioEx.getDllVersion();
+		Result<DllVersion> versionResult = JetiRadioEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}
@@ -69,19 +69,19 @@ public class JetiRadioExTest {
 		int averageCount = 3;
 		int stepWidth = 5;
 
-		JetiResult<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
+		Result<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
 		// Get radiometric value with wavelength range
-		JetiResult<Float> radioResult = radioEx.getRadiometricValue(380, 780);
+		Result<Float> radioResult = radioEx.getRadiometricValue(380, 780);
 		assertTrue(radioResult.isSuccess(), radioResult.toString());
 		assertTrue(radioResult.getValue() >= 0);
 
 		// Get photometric value
-		JetiResult<Float> photoResult = radioEx.getPhotometricValue();
+		Result<Float> photoResult = radioEx.getPhotometricValue();
 		assertTrue(photoResult.isSuccess(), photoResult.toString());
 		assertTrue(photoResult.getValue() >= 0);
 	}
@@ -95,13 +95,13 @@ public class JetiRadioExTest {
 		int beginWavelength = 400;
 		int endWavelength = 700;
 		int expectedSize = (endWavelength - beginWavelength) / step + 1;
-		JetiResult<float[]> spectralResult = radioEx.getSpectralRadiance(beginWavelength, endWavelength, step);
+		Result<float[]> spectralResult = radioEx.getSpectralRadiance(beginWavelength, endWavelength, step);
 		assertTrue(spectralResult.isSuccess(), spectralResult.toString());
 		assertEquals(expectedSize, spectralResult.getValue().length);
 
 		// Test high resolution spectral data
 		expectedSize = (int)((endWavelength - beginWavelength) / 0.1f + 1);
-		JetiResult<float[]> hiResResult = radioEx.getSpectralRadianceHiRes(beginWavelength, endWavelength);
+		Result<float[]> hiResResult = radioEx.getSpectralRadianceHiRes(beginWavelength, endWavelength);
 		assertTrue(hiResResult.isSuccess(), hiResResult.toString());
 		assertEquals(expectedSize, hiResResult.getValue().length);
 	}
@@ -111,12 +111,12 @@ public class JetiRadioExTest {
 	void testCRIwithCCT () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
-		JetiResult<Float> cctResult = radioEx.getCCT();
+		Result<Float> cctResult = radioEx.getCCT();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		float cct = cctResult.getValue();
 
 		// Get CRI data using the measured CCT
-		JetiResult<CRI> criResult = radioEx.getCRI(cct);
+		Result<CRI> criResult = radioEx.getCRI(cct);
 		assertTrue(criResult.isSuccess(), criResult.toString());
 
 		CRI criData = criResult.getValue();
@@ -136,7 +136,7 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100.0f, 1, 5);
 
 		// Test both TM30-15 and TM30-18
-		JetiResult<TM30> tm30_15Result = radioEx.getTM30(true);
+		Result<TM30> tm30_15Result = radioEx.getTM30(true);
 		if (tm30_15Result.isSuccess()) {
 			TM30 TM30 = tm30_15Result.getValue();
 			assertTrue(TM30.rf() >= 0 && TM30.rf() <= 200);
@@ -145,7 +145,7 @@ public class JetiRadioExTest {
 			assertEquals(99, TM30.colorSamples().length);
 		}
 
-		JetiResult<TM30> tm30_18Result = radioEx.getTM30(false);
+		Result<TM30> tm30_18Result = radioEx.getTM30(false);
 		if (tm30_18Result.isSuccess()) {
 			TM30 tm30 = tm30_18Result.getValue();
 			assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
@@ -159,7 +159,7 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100.0f, 1, 1);
 
 		float threshold = 0.5f;
-		JetiResult<PeakFWHM> result = radioEx.getPeakFWHM(threshold);
+		Result<PeakFWHM> result = radioEx.getPeakFWHM(threshold);
 		if (result.isSuccess()) {
 			PeakFWHM data = result.getValue();
 			assertTrue(data.peak() >= 380 && data.peak() <= 780, "Peak wavelength should be in visible range: " + data.peak());
@@ -172,7 +172,7 @@ public class JetiRadioExTest {
 	void testBlueMeasurementData () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
-		JetiResult<BlueMeasurement> result = radioEx.getBlueMeasurement();
+		Result<BlueMeasurement> result = radioEx.getBlueMeasurement();
 		assertTrue(result.isSuccess(), result.toString());
 	}
 
@@ -189,13 +189,13 @@ public class JetiRadioExTest {
 
 		// Test SPC format
 		String spcPath = new File(tempDir, "test_measurement.spc").getAbsolutePath();
-		JetiResult<Boolean> spcResult = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
+		Result<Boolean> spcResult = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
 		// BOZO - Internal DLL error?
 		assertTrue(spcResult.isSuccess(), spcResult.toString());
 
 		// Test CSV format
 		String csvPath = new File(tempDir, "test_measurement.csv").getAbsolutePath();
-		JetiResult<Boolean> csvResult = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
+		Result<Boolean> csvResult = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
 		assertTrue(csvResult.isSuccess(), csvResult.toString());
 
 		new File(spcPath).delete();
@@ -209,7 +209,7 @@ public class JetiRadioExTest {
 		int averageCount = 1;
 		int stepWidth = 5;
 
-		JetiResult<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
+		Result<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Wait for adaptation to complete
@@ -223,7 +223,7 @@ public class JetiRadioExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<AdaptationStatus> statusResult = radioEx.getAdaptationStatus();
+			Result<AdaptationStatus> statusResult = radioEx.getAdaptationStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			adapting = !statusResult.getValue().complete();
 			attempts++;
@@ -232,7 +232,7 @@ public class JetiRadioExTest {
 		assertFalse(adapting, "Adaptation should complete within timeout");
 
 		// Get final adaptation status
-		JetiResult<AdaptationStatus> finalStatus = radioEx.getAdaptationStatus();
+		Result<AdaptationStatus> finalStatus = radioEx.getAdaptationStatus();
 		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
 		AdaptationStatus status = finalStatus.getValue();
 		assertTrue(status.complete(), status.toString());
@@ -247,7 +247,7 @@ public class JetiRadioExTest {
 		float integrationTime = 150.0f;
 		int averageCount = 5;
 		int stepWidth = 1;
-		JetiResult<Boolean> prepareResult = radioEx.prepareMeasurement(integrationTime, averageCount, stepWidth);
+		Result<Boolean> prepareResult = radioEx.prepareMeasurement(integrationTime, averageCount, stepWidth);
 		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
 
@@ -256,11 +256,11 @@ public class JetiRadioExTest {
 	void testMeasurementDistance () {
 		int testDistance = 200;
 
-		JetiResult<Boolean> setResult = radioEx.setMeasurementDistance(testDistance);
+		Result<Boolean> setResult = radioEx.setMeasurementDistance(testDistance);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(setResult.isSuccess(), setResult.toString());
 
-		JetiResult<Integer> getResult = radioEx.getMeasurementDistance();
+		Result<Integer> getResult = radioEx.getMeasurementDistance();
 		assertTrue(getResult.isSuccess(), getResult.toString());
 		assertEquals(testDistance, getResult.getValue());
 	}
@@ -268,7 +268,7 @@ public class JetiRadioExTest {
 	@Test
 	@DisplayName("Get integration time")
 	void testGetIntegrationTime () {
-		JetiResult<Float> tintResult = radioEx.getIntegrationTime();
+		Result<Float> tintResult = radioEx.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0);
 	}
@@ -279,23 +279,23 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100, 1, 5);
 
 		// Get chromaticity XY
-		JetiResult<XY> xyResult = radioEx.getChromaXY();
+		Result<XY> xyResult = radioEx.getChromaXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
 
 		// Get chromaticity XY10
-		JetiResult<XY10> xy10Result = radioEx.getChromaXY10();
+		Result<XY10> xy10Result = radioEx.getChromaXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
 
 		// Get chromaticity UV
-		JetiResult<UV> uvResult = radioEx.getChromaUV();
+		Result<UV> uvResult = radioEx.getChromaUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
 
 		// Get XYZ values
-		JetiResult<XYZ> xyzResult = radioEx.getXYZ();
+		Result<XYZ> xyzResult = radioEx.getXYZ();
 		assertTrue(xyzResult.isSuccess(), xyzResult.toString());
 
 		// Get dominant wavelength and purity
-		JetiResult<DominantWavelength> dwlpeResult = radioEx.getDominantWavelength();
+		Result<DominantWavelength> dwlpeResult = radioEx.getDominantWavelength();
 		assertTrue(dwlpeResult.isSuccess(), dwlpeResult.toString());
 	}
 
@@ -303,15 +303,15 @@ public class JetiRadioExTest {
 	@DisplayName("Break measurement")
 	void testBreakMeasurement () {
 		// Start measurement
-		JetiResult<Boolean> measureResult = radioEx.measure(100.0f, 3, 5);
+		Result<Boolean> measureResult = radioEx.measure(100.0f, 3, 5);
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 
 		// Immediately break it
-		JetiResult<Boolean> breakResult = radioEx.breakMeasurement();
+		Result<Boolean> breakResult = radioEx.breakMeasurement();
 		assertTrue(breakResult.isSuccess(), breakResult.toString());
 
 		// Check that measurement is no longer active
-		JetiResult<Boolean> statusResult = radioEx.getMeasurementStatus();
+		Result<Boolean> statusResult = radioEx.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
 	}
 
@@ -348,7 +348,7 @@ public class JetiRadioExTest {
 	}
 
 	private void performMeasurementAndWait (float integrationTime, int averageCount, int stepWidth) {
-		JetiResult<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
+		Result<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
 		assertTrue(measureResult.isSuccess(), measureResult.toString());
 		waitForMeasurementCompletion();
 	}
@@ -364,7 +364,7 @@ public class JetiRadioExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = radioEx.getMeasurementStatus();
+			Result<Boolean> statusResult = radioEx.getMeasurementStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			measuring = statusResult.getValue();
 			attempts++;

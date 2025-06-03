@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 import com.esotericsoftware.jeti.JetiRadio;
 import com.esotericsoftware.jeti.JetiRadioEx;
-import com.esotericsoftware.jeti.JetiResult;
+import com.esotericsoftware.jeti.Result;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
@@ -22,14 +22,14 @@ public class RadioExSample {
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			JetiResult<Integer> deviceCount = JetiRadio.getDeviceCount();
+			Result<Integer> deviceCount = JetiRadio.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No radio ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Radio ex devices: %d%n", deviceCount.getValue());
 
-			JetiResult<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
+			Result<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open radio ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -108,7 +108,7 @@ public class RadioExSample {
 			System.out.println("Performing measurement...\n");
 
 			// Start measurement.
-			JetiResult<Boolean> measureResult = device.measure(integrationTime, averageCount, stepWidth);
+			Result<Boolean> measureResult = device.measure(integrationTime, averageCount, stepWidth);
 			if (measureResult.isError()) {
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", measureResult.getErrorCode());
 				return;
@@ -118,7 +118,7 @@ public class RadioExSample {
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
-				JetiResult<Boolean> statusResult = device.getMeasurementStatus();
+				Result<Boolean> statusResult = device.getMeasurementStatus();
 				if (statusResult.isSuccess())
 					measuring = statusResult.getValue();
 				else {
@@ -128,7 +128,7 @@ public class RadioExSample {
 			}
 
 			// Get radiometric value.
-			JetiResult<Float> radioResult = device.getRadiometricValue(380, 780);
+			Result<Float> radioResult = device.getRadiometricValue(380, 780);
 			if (radioResult.isError())
 				System.out.printf("Could not get radiometric value!%nError code: 0x%08X%n", radioResult.getErrorCode());
 			else
@@ -141,7 +141,7 @@ public class RadioExSample {
 	/** Get serial numbers from the first found device */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
+			Result<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
@@ -163,7 +163,7 @@ public class RadioExSample {
 			int averageCount = promptAveragingCount();
 			int stepWidth = promptStepWidth();
 
-			JetiResult<Boolean> result = device.measure(integrationTime, averageCount, stepWidth);
+			Result<Boolean> result = device.measure(integrationTime, averageCount, stepWidth);
 			if (result.isError())
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -176,7 +176,7 @@ public class RadioExSample {
 	/** Cancels an initiated measurement. */
 	static private void breakMeasurement (JetiRadioEx device) {
 		try {
-			JetiResult<Boolean> result = device.breakMeasurement();
+			Result<Boolean> result = device.breakMeasurement();
 			if (result.isError())
 				System.out.printf("Could not break measurement!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -189,7 +189,7 @@ public class RadioExSample {
 	/** Returns the status of any current measurement. */
 	static private void getMeasurementStatus (JetiRadioEx device) {
 		try {
-			JetiResult<Boolean> result = device.getMeasurementStatus();
+			Result<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
 				System.out.printf("Could not determine measurement status!%nError code: 0x%08X%n", result.getErrorCode());
 			else if (result.getValue())
@@ -204,7 +204,7 @@ public class RadioExSample {
 	/** Returns the radiometric value determined by the last measurement. */
 	static private void getRadiometricValue (JetiRadioEx device) {
 		try {
-			JetiResult<Float> result = device.getRadiometricValue(380, 780);
+			Result<Float> result = device.getRadiometricValue(380, 780);
 			if (result.isError())
 				System.out.printf("Could not get radiometric value!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -217,7 +217,7 @@ public class RadioExSample {
 	/** Returns the photometric value determined by the last measuement. */
 	static private void getPhotometricValue (JetiRadioEx device) {
 		try {
-			JetiResult<Float> result = device.getPhotometricValue();
+			Result<Float> result = device.getPhotometricValue();
 			if (result.isError())
 				System.out.printf("Could not get photometric value!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -230,7 +230,7 @@ public class RadioExSample {
 	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
 	static private void getChromaticityCoordinates (JetiRadioEx device) {
 		try {
-			JetiResult<XY> result = device.getChromaXY();
+			Result<XY> result = device.getChromaXY();
 			if (result.isError())
 				System.out.printf("Could not get chromaticity coordinates x and y!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
@@ -245,7 +245,7 @@ public class RadioExSample {
 	/** Returns the correlated color temperature determined by the last measurement. */
 	static private void getCCT (JetiRadioEx device) {
 		try {
-			JetiResult<Float> result = device.getCCT();
+			Result<Float> result = device.getCCT();
 			if (result.isError())
 				System.out.printf("Could not get correlated color temperature!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -263,7 +263,7 @@ public class RadioExSample {
 			if (input.isEmpty()) input = "0";
 			try {
 				float cct = Float.parseFloat(input);
-				JetiResult<CRI> result = device.getCRI(cct);
+				Result<CRI> result = device.getCRI(cct);
 				if (result.isError())
 					System.out.printf("Could not get colour rendering indizes!%nError code: 0x%08X%n", result.getErrorCode());
 				else {

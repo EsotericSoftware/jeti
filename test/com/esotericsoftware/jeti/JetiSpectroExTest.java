@@ -20,11 +20,11 @@ public class JetiSpectroExTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
+		Result<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro ex devices available for testing " + deviceCount);
 
-		JetiResult<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
+		Result<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open spectro ex device " + deviceResult);
 
 		spectroEx = deviceResult.getValue();
@@ -38,7 +38,7 @@ public class JetiSpectroExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -46,7 +46,7 @@ public class JetiSpectroExTest {
 			assertNotNull(serials.device());
 		}
 
-		JetiResult<DllVersion> versionResult = JetiSpectroEx.getDllVersion();
+		Result<DllVersion> versionResult = JetiSpectroEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}
@@ -58,14 +58,14 @@ public class JetiSpectroExTest {
 		int averageCount = 3;
 
 		// Start dark measurement
-		JetiResult<Boolean> startResult = spectroEx.startDarkMeasurement(integrationTime, averageCount);
+		Result<Boolean> startResult = spectroEx.startDarkMeasurement(integrationTime, averageCount);
 		assertTrue(startResult.isSuccess(), startResult.toString());
 
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
 		// Get dark pixel data
-		JetiResult<int[]> pixelResult = spectroEx.getDarkPixelData();
+		Result<int[]> pixelResult = spectroEx.getDarkPixelData();
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
 
@@ -75,7 +75,7 @@ public class JetiSpectroExTest {
 		float stepSize = 5.0f;
 		int expectedSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 
-		JetiResult<float[]> waveResult = spectroEx.getDarkWaveData(beginWavelength, endWavelength, stepSize);
+		Result<float[]> waveResult = spectroEx.getDarkWaveData(beginWavelength, endWavelength, stepSize);
 		assertTrue(waveResult.isSuccess(), waveResult.toString());
 		assertEquals(expectedSize, waveResult.getValue().length);
 
@@ -93,14 +93,14 @@ public class JetiSpectroExTest {
 		int averageCount = 1;
 
 		// Start light measurement
-		JetiResult<Boolean> startResult = spectroEx.startLightMeasurement(integrationTime, averageCount);
+		Result<Boolean> startResult = spectroEx.startLightMeasurement(integrationTime, averageCount);
 		assertTrue(startResult.isSuccess(), startResult.toString());
 
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
 		// Get light pixel data
-		JetiResult<int[]> pixelResult = spectroEx.getLightPixelData();
+		Result<int[]> pixelResult = spectroEx.getLightPixelData();
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
 
@@ -110,7 +110,7 @@ public class JetiSpectroExTest {
 		float stepSize = 1.0f;
 		int expectedSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 
-		JetiResult<float[]> waveResult = spectroEx.getLightWaveData(beginWavelength, endWavelength, stepSize);
+		Result<float[]> waveResult = spectroEx.getLightWaveData(beginWavelength, endWavelength, stepSize);
 		assertTrue(waveResult.isSuccess(), waveResult.toString());
 		assertEquals(expectedSize, waveResult.getValue().length);
 
@@ -132,7 +132,7 @@ public class JetiSpectroExTest {
 		float integrationTime = 50.0f;
 		int averageCount = 2;
 
-		JetiResult<Boolean> prepareResult = spectroEx.prepareLightMeasurement(integrationTime, averageCount);
+		Result<Boolean> prepareResult = spectroEx.prepareLightMeasurement(integrationTime, averageCount);
 		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
 
@@ -143,14 +143,14 @@ public class JetiSpectroExTest {
 		int averageCount = 1;
 
 		// Start reference measurement
-		JetiResult<Boolean> startResult = spectroEx.startReferenceMeasurement(integrationTime, averageCount);
+		Result<Boolean> startResult = spectroEx.startReferenceMeasurement(integrationTime, averageCount);
 		assertTrue(startResult.isSuccess(), startResult.toString());
 
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
 		// Get reference pixel data
-		JetiResult<int[]> pixelResult = spectroEx.getReferencePixelData();
+		Result<int[]> pixelResult = spectroEx.getReferencePixelData();
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
 
@@ -160,7 +160,7 @@ public class JetiSpectroExTest {
 		float stepSize = 2.0f;
 		int expectedSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 
-		JetiResult<float[]> waveResult = spectroEx.getReferenceWaveData(beginWavelength, endWavelength, stepSize);
+		Result<float[]> waveResult = spectroEx.getReferenceWaveData(beginWavelength, endWavelength, stepSize);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(waveResult.isSuccess(), waveResult.toString());
 		assertEquals(expectedSize, waveResult.getValue().length);
@@ -172,7 +172,7 @@ public class JetiSpectroExTest {
 		float integrationTime = 75.0f;
 		int averageCount = 5;
 
-		JetiResult<Boolean> prepareResult = spectroEx.prepareReferenceMeasurement(integrationTime, averageCount);
+		Result<Boolean> prepareResult = spectroEx.prepareReferenceMeasurement(integrationTime, averageCount);
 		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
 
@@ -183,7 +183,7 @@ public class JetiSpectroExTest {
 		int averageCount = 1;
 
 		// Start transmission/reflection measurement
-		JetiResult<Boolean> startResult = spectroEx.startSampleMeasurement(integrationTime, averageCount);
+		Result<Boolean> startResult = spectroEx.startSampleMeasurement(integrationTime, averageCount);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(startResult.isSuccess(), startResult.toString());
 
@@ -191,7 +191,7 @@ public class JetiSpectroExTest {
 		waitForMeasurementCompletion();
 
 		// Get transmission/reflection pixel data
-		JetiResult<int[]> pixelResult = spectroEx.getSamplePixelData();
+		Result<int[]> pixelResult = spectroEx.getSamplePixelData();
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
 
@@ -201,7 +201,7 @@ public class JetiSpectroExTest {
 		float stepSize = 5.0f;
 		int expectedSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 
-		JetiResult<float[]> waveResult = spectroEx.getSampleWaveData(beginWavelength, endWavelength, stepSize);
+		Result<float[]> waveResult = spectroEx.getSampleWaveData(beginWavelength, endWavelength, stepSize);
 		assertTrue(waveResult.isSuccess(), waveResult.toString());
 		assertEquals(expectedSize, waveResult.getValue().length);
 	}
@@ -212,7 +212,7 @@ public class JetiSpectroExTest {
 		float integrationTime = 150.0f;
 		int averageCount = 3;
 
-		JetiResult<Boolean> prepareResult = spectroEx.prepareSampleMeasurement(integrationTime, averageCount);
+		Result<Boolean> prepareResult = spectroEx.prepareSampleMeasurement(integrationTime, averageCount);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
@@ -223,23 +223,23 @@ public class JetiSpectroExTest {
 		float integrationTime = 100.0f;
 
 		// Test dark image measurement
-		JetiResult<Boolean> startDarkResult = spectroEx.startDarkImageMeasurement(integrationTime);
+		Result<Boolean> startDarkResult = spectroEx.startDarkImageMeasurement(integrationTime);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(startDarkResult.isSuccess(), startDarkResult.toString());
 
 		waitForMeasurementCompletion();
 
-		JetiResult<short[]> darkImageResult = spectroEx.getDarkImageData();
+		Result<short[]> darkImageResult = spectroEx.getDarkImageData();
 		assertTrue(darkImageResult.isSuccess(), darkImageResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, darkImageResult.getValue().length);
 
 		// Test light image measurement
-		JetiResult<Boolean> startLightResult = spectroEx.startLightImageMeasurement(integrationTime);
+		Result<Boolean> startLightResult = spectroEx.startLightImageMeasurement(integrationTime);
 		assertTrue(startLightResult.isSuccess(), startLightResult.toString());
 
 		waitForMeasurementCompletion();
 
-		JetiResult<short[]> lightImageResult = spectroEx.getLightImageData();
+		Result<short[]> lightImageResult = spectroEx.getLightImageData();
 		assertTrue(lightImageResult.isSuccess(), lightImageResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, lightImageResult.getValue().length);
 
@@ -260,23 +260,23 @@ public class JetiSpectroExTest {
 		int averageCount = 2;
 
 		// Test channel dark measurement
-		JetiResult<Boolean> startDarkResult = spectroEx.startChannelDarkMeasurement(integrationTime, averageCount);
+		Result<Boolean> startDarkResult = spectroEx.startChannelDarkMeasurement(integrationTime, averageCount);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(startDarkResult.isSuccess(), startDarkResult.toString());
 
 		waitForMeasurementCompletion();
 
-		JetiResult<short[]> darkChannelResult = spectroEx.getChannelDarkData();
+		Result<short[]> darkChannelResult = spectroEx.getChannelDarkData();
 		assertTrue(darkChannelResult.isSuccess(), darkChannelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, darkChannelResult.getValue().length);
 
 		// Test channel light measurement
-		JetiResult<Boolean> startLightResult = spectroEx.startChannelLightMeasurement(integrationTime, averageCount);
+		Result<Boolean> startLightResult = spectroEx.startChannelLightMeasurement(integrationTime, averageCount);
 		assertTrue(startLightResult.isSuccess(), startLightResult.toString());
 
 		waitForMeasurementCompletion();
 
-		JetiResult<short[]> lightChannelResult = spectroEx.getChannelLightData();
+		Result<short[]> lightChannelResult = spectroEx.getChannelLightData();
 		assertTrue(lightChannelResult.isSuccess(), lightChannelResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, lightChannelResult.getValue().length);
 
@@ -296,24 +296,24 @@ public class JetiSpectroExTest {
 		int count = 2;
 
 		// Test continuous dark measurement
-		JetiResult<Boolean> startDarkResult = spectroEx.startContinuousDarkMeasurement(interval, count);
+		Result<Boolean> startDarkResult = spectroEx.startContinuousDarkMeasurement(interval, count);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(startDarkResult.isSuccess(), startDarkResult.toString());
 
 		// Wait longer for continuous measurement
 		waitForMeasurementCompletionLong();
 
-		JetiResult<short[]> darkResult = spectroEx.getContinuousDarkData();
+		Result<short[]> darkResult = spectroEx.getContinuousDarkData();
 		assertTrue(darkResult.isSuccess(), darkResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, darkResult.getValue().length);
 
 		// Test continuous light measurement
-		JetiResult<Boolean> startLightResult = spectroEx.startContinuousLightMeasurement(interval, count);
+		Result<Boolean> startLightResult = spectroEx.startContinuousLightMeasurement(interval, count);
 		assertTrue(startLightResult.isSuccess(), startLightResult.toString());
 
 		waitForMeasurementCompletionLong();
 
-		JetiResult<short[]> lightResult = spectroEx.getContinuousLightData();
+		Result<short[]> lightResult = spectroEx.getContinuousLightData();
 		assertTrue(lightResult.isSuccess(), lightResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, lightResult.getValue().length);
 	}
@@ -325,23 +325,23 @@ public class JetiSpectroExTest {
 		int count = 1;
 
 		// Test continuous channel dark measurement
-		JetiResult<Boolean> startDarkResult = spectroEx.startContinuousChannelDarkMeasurement(interval, count);
+		Result<Boolean> startDarkResult = spectroEx.startContinuousChannelDarkMeasurement(interval, count);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(startDarkResult.isSuccess(), startDarkResult.toString());
 
 		waitForMeasurementCompletionLong();
 
-		JetiResult<short[]> darkResult = spectroEx.getContinuousChannelDarkData();
+		Result<short[]> darkResult = spectroEx.getContinuousChannelDarkData();
 		assertTrue(darkResult.isSuccess(), darkResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, darkResult.getValue().length);
 
 		// Test continuous channel light measurement
-		JetiResult<Boolean> startLightResult = spectroEx.startContinuousChannelLightMeasurement(interval, count);
+		Result<Boolean> startLightResult = spectroEx.startContinuousChannelLightMeasurement(interval, count);
 		assertTrue(startLightResult.isSuccess(), startLightResult.toString());
 
 		waitForMeasurementCompletionLong();
 
-		JetiResult<short[]> lightResult = spectroEx.getContinuousChannelLightData();
+		Result<short[]> lightResult = spectroEx.getContinuousChannelLightData();
 		assertTrue(lightResult.isSuccess(), lightResult.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, lightResult.getValue().length);
 	}
@@ -350,19 +350,19 @@ public class JetiSpectroExTest {
 	@DisplayName("Test device status and control")
 	void testDeviceStatusAndControl () {
 		// Test getting spectro status
-		JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
+		Result<Boolean> statusResult = spectroEx.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
 
 		// Start a measurement and then break it
-		JetiResult<Boolean> startResult = spectroEx.startDarkMeasurement(100.0f, 1);
+		Result<Boolean> startResult = spectroEx.startDarkMeasurement(100.0f, 1);
 		assertTrue(startResult.isSuccess(), startResult.toString());
 
 		// Break the measurement
-		JetiResult<Boolean> breakResult = spectroEx.breakMeasurement();
+		Result<Boolean> breakResult = spectroEx.breakMeasurement();
 		assertTrue(breakResult.isSuccess(), breakResult.toString());
 
 		// Check status after break
-		JetiResult<Boolean> statusAfterBreak = spectroEx.getMeasurementStatus();
+		Result<Boolean> statusAfterBreak = spectroEx.getMeasurementStatus();
 		assertTrue(statusAfterBreak.isSuccess(), statusAfterBreak.toString());
 	}
 
@@ -370,12 +370,12 @@ public class JetiSpectroExTest {
 	@DisplayName("Test device parameters")
 	void testDeviceParameters () {
 		// Test getting pixel count
-		JetiResult<Integer> pixelCountResult = spectroEx.getPixelCount();
+		Result<Integer> pixelCountResult = spectroEx.getPixelCount();
 		assertTrue(pixelCountResult.isSuccess(), pixelCountResult.toString());
 		assertTrue(pixelCountResult.getValue() > 0, "Pixel count should be positive");
 
 		// Test getting spectro integration time
-		JetiResult<Float> tintResult = spectroEx.getIntegrationTime();
+		Result<Float> tintResult = spectroEx.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0, "Integration time should be positive");
 	}
@@ -384,7 +384,7 @@ public class JetiSpectroExTest {
 	@DisplayName("Test wave data with different wavelength ranges and step sizes")
 	void testWaveDataVariations () {
 		// Start a light measurement first
-		JetiResult<Boolean> startResult = spectroEx.startLightMeasurement(100.0f, 1);
+		Result<Boolean> startResult = spectroEx.startLightMeasurement(100.0f, 1);
 		assertTrue(startResult.isSuccess(), startResult.toString());
 		waitForMeasurementCompletion();
 
@@ -399,7 +399,7 @@ public class JetiSpectroExTest {
 			float step = stepSizes[i];
 			int expectedSize = (int)((end - begin) / step + 1);
 
-			JetiResult<float[]> waveResult = spectroEx.getLightWaveData(begin, end, step);
+			Result<float[]> waveResult = spectroEx.getLightWaveData(begin, end, step);
 			assertTrue(waveResult.isSuccess(),
 				"Failed for range " + begin + "-" + end + " step " + step + ": " + waveResult.toString());
 			assertEquals(expectedSize, waveResult.getValue().length,
@@ -411,7 +411,7 @@ public class JetiSpectroExTest {
 	@DisplayName("Test parameter validation for measurement methods")
 	void testParameterValidation () {
 		// Test negative integration time
-		JetiResult<Boolean> result = spectroEx.startDarkMeasurement(-1.0f, 1);
+		Result<Boolean> result = spectroEx.startDarkMeasurement(-1.0f, 1);
 		assertFalse(result.isSuccess(), "Negative integration time should be rejected");
 		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
 
@@ -434,7 +434,7 @@ public class JetiSpectroExTest {
 		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
 
 		// Test invalid wavelength parameters
-		JetiResult<float[]> waveResult = spectroEx.getDarkWaveData(-1, 700, 5.0f);
+		Result<float[]> waveResult = spectroEx.getDarkWaveData(-1, 700, 5.0f);
 		assertFalse(waveResult.isSuccess(), "Negative begin wavelength should be rejected");
 		assertEquals(JetiSDK.INVALID_ARGUMENT, waveResult.getErrorCode());
 
@@ -458,7 +458,7 @@ public class JetiSpectroExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
+			Result<Boolean> statusResult = spectroEx.getMeasurementStatus();
 			if (statusResult.isSuccess()) {
 				measuring = statusResult.getValue();
 			} else {
@@ -486,7 +486,7 @@ public class JetiSpectroExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
+			Result<Boolean> statusResult = spectroEx.getMeasurementStatus();
 			if (statusResult.isSuccess()) {
 				measuring = statusResult.getValue();
 			} else {

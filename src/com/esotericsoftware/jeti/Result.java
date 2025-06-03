@@ -4,12 +4,12 @@ package com.esotericsoftware.jeti;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiResult<T> {
+public class Result<T> {
 	private final T value;
 	private final int errorCode;
 	private final boolean success;
 
-	private JetiResult (T value, int errorCode) {
+	private Result (T value, int errorCode) {
 		this.value = value;
 		this.errorCode = errorCode;
 		success = errorCode == 0;
@@ -53,15 +53,15 @@ public class JetiResult<T> {
 		return "JetiResult{error, errorCode=0x" + Integer.toHexString(errorCode) + ", message=" + getErrorMessage(errorCode) + "}";
 	}
 
-	static public <T> JetiResult<T> success (T value) {
-		return new JetiResult<>(value, 0);
+	static public <T> Result<T> success (T value) {
+		return new Result<>(value, 0);
 	}
 
-	static public <T> JetiResult<T> error (int errorCode) {
-		return new JetiResult<>(null, errorCode);
+	static public <T> Result<T> error (int errorCode) {
+		return new Result<>(null, errorCode);
 	}
 
-	static public JetiResult<Boolean> result (int result) {
-		return new JetiResult<>(result == SUCCESS, result);
+	static public Result<Boolean> result (int result) {
+		return new Result<>(result == SUCCESS, result);
 	}
 }

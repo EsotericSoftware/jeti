@@ -1,7 +1,7 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.JetiResult.*;
+import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
@@ -27,96 +27,96 @@ public class JetiRadio extends Device<JetiRadioLibrary> {
 		super(JetiRadioLibrary.INSTANCE, handle, JetiRadioLibrary.INSTANCE::JETI_CloseRadio, 0, 1, 1, 3, 0, 0);
 	}
 
-	public JetiResult<Boolean> measure () {
+	public Result<Boolean> measure () {
 		return result(lib().JETI_Measure(handle));
 	}
 
-	public JetiResult<Boolean> measureWithAdaptation () {
+	public Result<Boolean> measureWithAdaptation () {
 		return result(lib().JETI_MeasureAdapt(handle));
 	}
 
-	public JetiResult<Boolean> prepareMeasurement () {
+	public Result<Boolean> prepareMeasurement () {
 		return result(lib().JETI_PrepareMeasure(handle));
 	}
 
-	public JetiResult<Boolean> getMeasurementStatus () {
+	public Result<Boolean> getMeasurementStatus () {
 		int result = lib().JETI_MeasureStatus(handle, i[0]);
 		if (result != SUCCESS) return error(result);
 		return success(i[0].getValue() != 0);
 	}
 
-	public JetiResult<AdaptationStatus> getAdaptationStatus () {
+	public Result<AdaptationStatus> getAdaptationStatus () {
 		int result = lib().JETI_MeasureAdaptStatus(handle, f[0], s[0], i[0]);
 		if (result != SUCCESS) return error(result);
 		return success(new AdaptationStatus(f[0].getValue(), s[0].getValue(), i[0].getValue() != 0));
 	}
 
-	public JetiResult<Boolean> breakMeasurement () {
+	public Result<Boolean> breakMeasurement () {
 		return result(lib().JETI_MeasureBreak(handle));
 	}
 
-	public JetiResult<float[]> getSpectralRadiance () {
+	public Result<float[]> getSpectralRadiance () {
 		var spectralData = new float[SPECTRUM_SIZE];
 		int result = lib().JETI_SpecRad(handle, spectralData);
 		if (result != SUCCESS) return error(result);
 		return success(spectralData);
 	}
 
-	public JetiResult<Float> getRadiometricValue () {
+	public Result<Float> getRadiometricValue () {
 		int result = lib().JETI_Radio(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	public JetiResult<Float> getPhotometricValue () {
+	public Result<Float> getPhotometricValue () {
 		int result = lib().JETI_Photo(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	public JetiResult<XY> getChromaXY () {
+	public Result<XY> getChromaXY () {
 		int result = lib().JETI_Chromxy(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
 		return success(new XY(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<XY10> getChromaXY10 () {
+	public Result<XY10> getChromaXY10 () {
 		int result = lib().JETI_Chromxy10(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
 		return success(new XY10(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<UV> getChromaUV () {
+	public Result<UV> getChromaUV () {
 		int result = lib().JETI_Chromuv(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
 		return success(new UV(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<XYZ> getXYZ () {
+	public Result<XYZ> getXYZ () {
 		int result = lib().JETI_ChromXYZ(handle, f[0], f[1], f[2]);
 		if (result != SUCCESS) return error(result);
 		return success(new XYZ(f[0].getValue(), f[1].getValue(), f[2].getValue()));
 	}
 
-	public JetiResult<DominantWavelength> getDominantWavelength () {
+	public Result<DominantWavelength> getDominantWavelength () {
 		int result = lib().JETI_DWLPE(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
 		return success(new DominantWavelength(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<Float> getCCT () {
+	public Result<Float> getCCT () {
 		int result = lib().JETI_CCT(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	public JetiResult<Float> getDuv () {
+	public Result<Float> getDuv () {
 		int result = lib().JETI_Duv(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	public JetiResult<CRI> getCRI () {
+	public Result<CRI> getCRI () {
 		int result = lib().JETI_CRI(handle, cri);
 		if (result != SUCCESS) return error(result);
 		float[] samples = new float[15];
@@ -124,30 +124,30 @@ public class JetiRadio extends Device<JetiRadioLibrary> {
 		return success(new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples));
 	}
 
-	public JetiResult<Float> getIntegrationTime () {
+	public Result<Float> getIntegrationTime () {
 		int result = lib().JETI_RadioTint(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	public JetiResult<Boolean> setMeasurementDistance (int mm) {
+	public Result<Boolean> setMeasurementDistance (int mm) {
 		return result(lib().JETI_SetMeasDist(handle, mm));
 	}
 
-	public JetiResult<Integer> getMeasurementDistance () {
+	public Result<Integer> getMeasurementDistance () {
 		int result = lib().JETI_GetMeasDist(handle, i[0]);
 		if (result != SUCCESS) return error(result);
 		return success(i[0].getValue());
 	}
 
-	static public JetiResult<Integer> getDeviceCount () {
+	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiRadioLibrary.INSTANCE.JETI_GetNumRadio(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
 
-	static public JetiResult<DeviceSerials> getDeviceSerials (int deviceNumber) {
+	static public Result<DeviceSerials> getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
@@ -156,14 +156,14 @@ public class JetiRadio extends Device<JetiRadioLibrary> {
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
-	static public JetiResult<JetiRadio> openDevice (int deviceNumber) {
+	static public Result<JetiRadio> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
 		int result = JetiRadioLibrary.INSTANCE.JETI_OpenRadio(deviceNumber, handle);
 		if (result != SUCCESS) return error(result);
 		return success(new JetiRadio(handle.getValue()));
 	}
 
-	static public JetiResult<DllVersion> getDllVersion () {
+	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();

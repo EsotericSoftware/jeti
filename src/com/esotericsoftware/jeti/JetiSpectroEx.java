@@ -1,7 +1,7 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.JetiResult.*;
+import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
@@ -19,18 +19,18 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Dark measurement functions
-	public JetiResult<Boolean> startDarkMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startDarkMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartDarkEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<int[]> getDarkPixelData () {
+	public Result<int[]> getDarkPixelData () {
 		var darkData = new int[SPECTRUM_SIZE];
 		int result = lib().JETI_DarkPixEx(handle, darkData);
 		if (result != SUCCESS) return error(result);
 		return success(darkData);
 	}
 
-	public JetiResult<float[]> getDarkWaveData (int beginWavelength, int endWavelength, float stepSize) {
+	public Result<float[]> getDarkWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var darkData = new float[dataSize];
 		int result = lib().JETI_DarkWaveEx(handle, beginWavelength, endWavelength, stepSize, darkData);
@@ -39,22 +39,22 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Light measurement functions
-	public JetiResult<Boolean> startLightMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startLightMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartLightEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<Boolean> prepareLightMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> prepareLightMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_PrepareLightEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<int[]> getLightPixelData () {
+	public Result<int[]> getLightPixelData () {
 		var lightData = new int[SPECTRUM_SIZE];
 		int result = lib().JETI_LightPixEx(handle, lightData);
 		if (result != SUCCESS) return error(result);
 		return success(lightData);
 	}
 
-	public JetiResult<float[]> getLightWaveData (int beginWavelength, int endWavelength, float stepSize) {
+	public Result<float[]> getLightWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var lightData = new float[dataSize];
 		int result = lib().JETI_LightWaveEx(handle, beginWavelength, endWavelength, stepSize, lightData);
@@ -63,22 +63,22 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Reference measurement functions
-	public JetiResult<Boolean> startReferenceMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startReferenceMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartReferEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<Boolean> prepareReferenceMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> prepareReferenceMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_PrepareReferEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<int[]> getReferencePixelData () {
+	public Result<int[]> getReferencePixelData () {
 		var referenceData = new int[SPECTRUM_SIZE];
 		int result = lib().JETI_ReferPixEx(handle, referenceData);
 		if (result != SUCCESS) return error(result);
 		return success(referenceData);
 	}
 
-	public JetiResult<float[]> getReferenceWaveData (int beginWavelength, int endWavelength, float stepSize) {
+	public Result<float[]> getReferenceWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var referenceData = new float[dataSize];
 		int result = lib().JETI_ReferWaveEx(handle, beginWavelength, endWavelength, stepSize, referenceData);
@@ -87,22 +87,22 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Transmission/Reflection measurement functions
-	public JetiResult<Boolean> startSampleMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startSampleMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartTransReflEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<Boolean> prepareSampleMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> prepareSampleMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_PrepareTransReflEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<int[]> getSamplePixelData () {
+	public Result<int[]> getSamplePixelData () {
 		var transReflData = new int[SPECTRUM_SIZE];
 		int result = lib().JETI_TransReflPixEx(handle, transReflData);
 		if (result != SUCCESS) return error(result);
 		return success(transReflData);
 	}
 
-	public JetiResult<float[]> getSampleWaveData (int beginWavelength, int endWavelength, float stepSize) {
+	public Result<float[]> getSampleWaveData (int beginWavelength, int endWavelength, float stepSize) {
 		int dataSize = (int)((endWavelength - beginWavelength) / stepSize + 1);
 		var transReflData = new float[dataSize];
 		int result = lib().JETI_TransReflWaveEx(handle, beginWavelength, endWavelength, stepSize, transReflData);
@@ -111,22 +111,22 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Image measurement functions
-	public JetiResult<Boolean> startDarkImageMeasurement (float integrationTime) {
+	public Result<Boolean> startDarkImageMeasurement (float integrationTime) {
 		return result(lib().JETI_StartDarkImageEx(handle, integrationTime));
 	}
 
-	public JetiResult<short[]> getDarkImageData () {
+	public Result<short[]> getDarkImageData () {
 		var darkImageData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_DarkImageEx(handle, darkImageData);
 		if (result != SUCCESS) return error(result);
 		return success(darkImageData);
 	}
 
-	public JetiResult<Boolean> startLightImageMeasurement (float integrationTime) {
+	public Result<Boolean> startLightImageMeasurement (float integrationTime) {
 		return result(lib().JETI_StartLightImageEx(handle, integrationTime));
 	}
 
-	public JetiResult<short[]> getLightImageData () {
+	public Result<short[]> getLightImageData () {
 		var lightImageData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_LightImageEx(handle, lightImageData);
 		if (result != SUCCESS) return error(result);
@@ -134,22 +134,22 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Channel measurement functions
-	public JetiResult<Boolean> startChannelDarkMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startChannelDarkMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartChannelDarkEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<short[]> getChannelDarkData () {
+	public Result<short[]> getChannelDarkData () {
 		var darkData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ChannelDarkEx(handle, darkData);
 		if (result != SUCCESS) return error(result);
 		return success(darkData);
 	}
 
-	public JetiResult<Boolean> startChannelLightMeasurement (float integrationTime, int averageCount) {
+	public Result<Boolean> startChannelLightMeasurement (float integrationTime, int averageCount) {
 		return result(lib().JETI_StartChannelLightEx(handle, integrationTime, (short)averageCount));
 	}
 
-	public JetiResult<short[]> getChannelLightData () {
+	public Result<short[]> getChannelLightData () {
 		var lightData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ChannelLightEx(handle, lightData);
 		if (result != SUCCESS) return error(result);
@@ -157,44 +157,44 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Continuous measurement functions
-	public JetiResult<Boolean> startContinuousDarkMeasurement (float interval, int count) {
+	public Result<Boolean> startContinuousDarkMeasurement (float interval, int count) {
 		return result(lib().JETI_StartContDarkEx(handle, interval, count));
 	}
 
-	public JetiResult<short[]> getContinuousDarkData () {
+	public Result<short[]> getContinuousDarkData () {
 		var darkData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ContDarkEx(handle, darkData);
 		if (result != SUCCESS) return error(result);
 		return success(darkData);
 	}
 
-	public JetiResult<Boolean> startContinuousLightMeasurement (float interval, int count) {
+	public Result<Boolean> startContinuousLightMeasurement (float interval, int count) {
 		return result(lib().JETI_StartContLightEx(handle, interval, count));
 	}
 
-	public JetiResult<short[]> getContinuousLightData () {
+	public Result<short[]> getContinuousLightData () {
 		var lightData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ContLightEx(handle, lightData);
 		if (result != SUCCESS) return error(result);
 		return success(lightData);
 	}
 
-	public JetiResult<Boolean> startContinuousChannelDarkMeasurement (float interval, int count) {
+	public Result<Boolean> startContinuousChannelDarkMeasurement (float interval, int count) {
 		return result(lib().JETI_StartContChannelDarkEx(handle, interval, count));
 	}
 
-	public JetiResult<short[]> getContinuousChannelDarkData () {
+	public Result<short[]> getContinuousChannelDarkData () {
 		var darkData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ContChannelDarkEx(handle, darkData);
 		if (result != SUCCESS) return error(result);
 		return success(darkData);
 	}
 
-	public JetiResult<Boolean> startContinuousChannelLightMeasurement (float interval, int count) {
+	public Result<Boolean> startContinuousChannelLightMeasurement (float interval, int count) {
 		return result(lib().JETI_StartContChannelLightEx(handle, interval, count));
 	}
 
-	public JetiResult<short[]> getContinuousChannelLightData () {
+	public Result<short[]> getContinuousChannelLightData () {
 		var lightData = new short[SPECTRUM_SIZE];
 		int result = lib().JETI_ContChannelLightEx(handle, lightData);
 		if (result != SUCCESS) return error(result);
@@ -202,37 +202,37 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	}
 
 	// Device status and control
-	public JetiResult<Boolean> getMeasurementStatus () {
+	public Result<Boolean> getMeasurementStatus () {
 		int result = lib().JETI_SpectroStatusEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
 		return success(i[0].getValue() != 0);
 	}
 
-	public JetiResult<Boolean> breakMeasurement () {
+	public Result<Boolean> breakMeasurement () {
 		return result(lib().JETI_SpectroBreakEx(handle));
 	}
 
 	// Device parameters
-	public JetiResult<Integer> getPixelCount () {
+	public Result<Integer> getPixelCount () {
 		int result = lib().JETI_PixelCountEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
 		return success(i[0].getValue());
 	}
 
-	public JetiResult<Float> getIntegrationTime () {
+	public Result<Float> getIntegrationTime () {
 		int result = lib().JETI_SpectroTintEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
 		return success(f[0].getValue());
 	}
 
-	static public JetiResult<Integer> getDeviceCount () {
+	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetNumSpectroEx(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
 
-	static public JetiResult<DeviceSerials> getDeviceSerials (int deviceNumber) {
+	static public Result<DeviceSerials> getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
@@ -241,14 +241,14 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
-	static public JetiResult<JetiSpectroEx> openDevice (int deviceNumber) {
+	static public Result<JetiSpectroEx> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_OpenSpectroEx(deviceNumber, handle);
 		if (result != SUCCESS) return error(result);
 		return success(new JetiSpectroEx(handle.getValue()));
 	}
 
-	static public JetiResult<DllVersion> getDllVersion () {
+	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();

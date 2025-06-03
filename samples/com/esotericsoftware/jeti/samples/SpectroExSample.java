@@ -5,7 +5,7 @@ import static com.esotericsoftware.jeti.samples.RadioExSample.*;
 
 import java.util.Scanner;
 
-import com.esotericsoftware.jeti.JetiResult;
+import com.esotericsoftware.jeti.Result;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSpectroEx;
@@ -21,14 +21,14 @@ public class SpectroExSample {
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			JetiResult<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
+			Result<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No spectro ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Spectro ex devices: %d%n", deviceCount.getValue());
 
-			JetiResult<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
+			Result<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open spectro ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -92,7 +92,7 @@ public class SpectroExSample {
 			System.out.println("Performing measurement...\n");
 
 			// Start measurement.
-			JetiResult<Boolean> startResult = device.startLightMeasurement(integrationTime, averageCount);
+			Result<Boolean> startResult = device.startLightMeasurement(integrationTime, averageCount);
 			if (startResult.isError()) {
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", startResult.getErrorCode());
 				return;
@@ -102,7 +102,7 @@ public class SpectroExSample {
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
-				JetiResult<Boolean> statusResult = device.getMeasurementStatus();
+				Result<Boolean> statusResult = device.getMeasurementStatus();
 				if (statusResult.isSuccess())
 					measuring = statusResult.getValue();
 				else {
@@ -112,7 +112,7 @@ public class SpectroExSample {
 			}
 
 			// Read the light spectrum (380-780nm, 1nm step size).
-			JetiResult<float[]> spectrumResult = device.getLightWaveData(380, 780, stepWidth);
+			Result<float[]> spectrumResult = device.getLightWaveData(380, 780, stepWidth);
 			if (spectrumResult.isError())
 				System.out.printf("Could not read light spectrum!%nError code: 0x%08X%n", spectrumResult.getErrorCode());
 			else {
@@ -128,7 +128,7 @@ public class SpectroExSample {
 	/** Get serial numbers from the first device found. */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
+			Result<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
@@ -149,7 +149,7 @@ public class SpectroExSample {
 			float integrationTime = promptIntegrationTime();
 			int averageCount = promptAveragingCount();
 
-			JetiResult<Boolean> result = device.startLightMeasurement(integrationTime, averageCount);
+			Result<Boolean> result = device.startLightMeasurement(integrationTime, averageCount);
 			if (result.isError())
 				System.out.printf("Could not start measurement!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -162,7 +162,7 @@ public class SpectroExSample {
 	/** Cancels an initiated measurement. */
 	static private void breakMeasurement (JetiSpectroEx device) {
 		try {
-			JetiResult<Boolean> result = device.breakMeasurement();
+			Result<Boolean> result = device.breakMeasurement();
 			if (result.isError())
 				System.out.printf("Could not break measurement!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -175,7 +175,7 @@ public class SpectroExSample {
 	/** Returns the status of any current measurement. */
 	static private void getMeasurementStatus (JetiSpectroEx device) {
 		try {
-			JetiResult<Boolean> result = device.getMeasurementStatus();
+			Result<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
 				System.out.printf("Could not determine measurement status!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
@@ -192,7 +192,7 @@ public class SpectroExSample {
 	/** Read the light spectrum, 380-780nm. */
 	static private void getLightSpectrumWavelength (JetiSpectroEx device) {
 		try {
-			JetiResult<float[]> result = device.getLightWaveData(380, 780, 1.0f);
+			Result<float[]> result = device.getLightWaveData(380, 780, 1.0f);
 			if (result.isError())
 				System.out.printf("Could not read light spectrum!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
@@ -208,7 +208,7 @@ public class SpectroExSample {
 	/** Read the light spectrum, pixel based. */
 	static private void getLightSpectrumPixel (JetiSpectroEx device) {
 		try {
-			JetiResult<int[]> result = device.getLightPixelData();
+			Result<int[]> result = device.getLightPixelData();
 			if (result.isError())
 				System.out.printf("Could not read light spectrum!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
