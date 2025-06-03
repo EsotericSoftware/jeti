@@ -30,6 +30,7 @@ abstract public class Device<L extends Library> implements AutoCloseable {
 
 	Device (L library, Pointer handle, Function<Pointer, Integer> close, int byteCount, int shortCount, int intCount,
 		int floatCount, int doubleCount, int pointerCount) {
+
 		Objects.requireNonNull(library);
 		Objects.requireNonNull(handle);
 		Objects.requireNonNull(close);

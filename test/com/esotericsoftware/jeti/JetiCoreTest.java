@@ -40,7 +40,7 @@ public class JetiCoreTest {
 		String licenseKey = getTestLicenseKey();
 		assumeFalse(licenseKey == null, "JETI license key not configured");
 		var result = JetiCore.setLicenseKey(licenseKey);
-		assertTrue(result.isSuccess());
+		assertTrue(result.isSuccess(), result.toString());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class JetiCoreTest {
 	@DisplayName("Get DLL version")
 	void testGetDllVersion () {
 		var result = JetiCore.getDllVersion();
-		assertTrue(result.isSuccess());
+		assertTrue(result.isSuccess(), result.toString());
 		assertNotNull(result.getValue());
 		System.out.println(
 			"Core DLL version: " + result.getValue().major() + "." + result.getValue().minor() + "." + result.getValue().build());
@@ -59,7 +59,7 @@ public class JetiCoreTest {
 	@DisplayName("Get device count")
 	void testGetDeviceCount () {
 		var result = JetiCore.getDeviceCount();
-		assertTrue(result.isSuccess());
+		assertTrue(result.isSuccess(), result.toString());
 		assertTrue(result.getValue() >= 0);
 		System.out.println("Found " + result.getValue() + " Core devices");
 	}
@@ -69,7 +69,7 @@ public class JetiCoreTest {
 	@DisplayName("Get device info")
 	void testGetDeviceInfo () {
 		var result = JetiCore.getAllDeviceInfo();
-		assertTrue(result.isSuccess());
+		assertTrue(result.isSuccess(), result.toString());
 		assertNotNull(result.getValue());
 		for (var device : result.getValue()) {
 			System.out.println("Device: " + device.deviceType() + " - " + device.deviceSerial());
@@ -81,7 +81,7 @@ public class JetiCoreTest {
 	@DisplayName("Open TCP device")
 	void testOpenTcpDevice () {
 		var result = JetiCore.openTcpDevice(IP);
-		assertTrue(result.isSuccess());
+		assertTrue(result.isSuccess(), result.toString());
 		var device = result.getValue();
 		assertNotNull(device);
 		try (device) {
@@ -92,11 +92,11 @@ public class JetiCoreTest {
 	private void testDeviceOperations (JetiCore device) {
 		// Test basic device info
 		var firmwareResult = device.getFirmwareVersion();
-		assertTrue(firmwareResult.isSuccess());
+		assertTrue(firmwareResult.isSuccess(), firmwareResult.toString());
 		System.out.println("Firmware version: " + firmwareResult.getValue());
 
 		var deviceTypeResult = device.getDeviceType();
-		assertTrue(deviceTypeResult.isSuccess());
+		assertTrue(deviceTypeResult.isSuccess(), deviceTypeResult.toString());
 		System.out.println("Device type: " + deviceTypeResult.getValue());
 
 		// Test battery info
@@ -224,11 +224,11 @@ public class JetiCoreTest {
 	void testStrayLightMatrix () {
 		// Test ignore straylight matrix
 		var ignoreResult = JetiCore.ignoreStraylightMatrix(true);
-		assertTrue(ignoreResult.isSuccess());
+		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
 
 		// Reset to not ignore
 		ignoreResult = JetiCore.ignoreStraylightMatrix(false);
-		assertTrue(ignoreResult.isSuccess());
+		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
 	}
 
 	@Test

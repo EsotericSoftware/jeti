@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
 import com.esotericsoftware.jeti.JetiSDK.BlueMeasurement;
 import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
@@ -107,7 +108,7 @@ public class JetiRadioExTest {
 
 	@Test
 	@DisplayName("Get color rendering index with CCT")
-	void testColorRenderingIndexWithCCT () {
+	void testCRIwithCCT () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
 		JetiResult<Float> cctResult = radioEx.getCCT();
@@ -202,43 +203,43 @@ public class JetiRadioExTest {
 	}
 
 	// BOZO - Causes subsequent tests to fail!
-	// @Test
-	// @DisplayName("Perform measurement with adaptation")
-	// void testMeasurementWithAdaptation () {
-	// int averageCount = 1;
-	// int stepWidth = 5;
-	//
-	// JetiResult<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
-	// assertTrue(measureResult.isSuccess(), measureResult.toString());
-	//
-	// // Wait for adaptation to complete
-	// boolean adapting = true;
-	// int attempts = 0;
-	// while (adapting && attempts < 200) { // Longer timeout for adaptation
-	// try {
-	// Thread.sleep(100);
-	// } catch (InterruptedException e) {
-	// Thread.currentThread().interrupt();
-	// fail("Test interrupted");
-	// }
-	//
-	// JetiResult<JetiRadio.AdaptationStatus> statusResult = radioEx.getAdaptationStatus();
-	// assertTrue(statusResult.isSuccess(), statusResult.toString());
-	// adapting = !statusResult.getValue().isComplete();
-	// attempts++;
-	// }
-	//
-	// assertFalse(adapting, "Adaptation should complete within timeout");
-	//
-	// // Get final adaptation status
-	// JetiResult<JetiRadio.AdaptationStatus> finalStatus = radioEx.getAdaptationStatus();
-	// assertTrue(finalStatus.isSuccess(), finalStatus.toString());
-	// JetiRadio.AdaptationStatus status = finalStatus.getValue();
-	// assertTrue(status.isComplete(), status.toString());
-	// // BOZO - Why are these 0?
-	// assertTrue(status.integrationTime() > 0);
-	// assertTrue(status.averageCount() > 0);
-	// }
+	@Test
+	@DisplayName("Perform measurement with adaptation")
+	void testMeasurementWithAdaptation () {
+		int averageCount = 1;
+		int stepWidth = 5;
+
+		JetiResult<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
+		assertTrue(measureResult.isSuccess(), measureResult.toString());
+
+		// Wait for adaptation to complete
+		boolean adapting = true;
+		int attempts = 0;
+		while (adapting && attempts < 200) { // Longer timeout for adaptation
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				fail("Test interrupted");
+			}
+
+			JetiResult<AdaptationStatus> statusResult = radioEx.getAdaptationStatus();
+			assertTrue(statusResult.isSuccess(), statusResult.toString());
+			adapting = !statusResult.getValue().complete();
+			attempts++;
+		}
+
+		assertFalse(adapting, "Adaptation should complete within timeout");
+
+		// Get final adaptation status
+		JetiResult<AdaptationStatus> finalStatus = radioEx.getAdaptationStatus();
+		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
+		AdaptationStatus status = finalStatus.getValue();
+		assertTrue(status.complete(), status.toString());
+		// BOZO - Why are these 0?
+		assertTrue(status.integrationTime() > 0);
+		assertTrue(status.averageCount() > 0);
+	}
 
 	@Test
 	@DisplayName("Prepare measurement with parameters")
@@ -247,7 +248,7 @@ public class JetiRadioExTest {
 		int averageCount = 5;
 		int stepWidth = 1;
 		JetiResult<Boolean> prepareResult = radioEx.prepareMeasurement(integrationTime, averageCount, stepWidth);
-		assertTrue(prepareResult.isSuccess());
+		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
 	}
 
 	@Test
@@ -312,7 +313,6 @@ public class JetiRadioExTest {
 		// Check that measurement is no longer active
 		JetiResult<Boolean> statusResult = radioEx.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
-		// Note: Status might still be true briefly after break
 	}
 
 	@Test
@@ -323,7 +323,7 @@ public class JetiRadioExTest {
 		if (adaptResult.isSuccess()) {
 			// Break it immediately to avoid issues
 			radioEx.breakMeasurement();
-			
+
 			// Still test getAdaptationStatus
 			var adaptStatus = radioEx.getAdaptationStatus();
 			if (adaptStatus.isSuccess()) {
@@ -340,7 +340,7 @@ public class JetiRadioExTest {
 			assertNotNull(duvResult.getValue());
 		}
 
-		// Test getCCT separately (already tested in testColorRenderingIndexWithCCT but let's ensure it's called)
+		// Test getCCT separately (already tested in testCRIwithCCT but let's ensure it's called)
 		var cctResult = radioEx.getCCT();
 		if (cctResult.isSuccess()) {
 			assertTrue(cctResult.getValue() >= 0);

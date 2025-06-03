@@ -30,10 +30,10 @@ public class JetiRadioTest {
 		JetiResult<Integer> deviceCount = JetiRadio.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio devices available for testing " + deviceCount);
 
-		JetiResult<JetiRadio> deviceResult = JetiRadio.openDevice(0);
-		assumeTrue(deviceResult.isSuccess(), "Could not open radio device " + deviceResult);
+		JetiResult<JetiRadio> result = JetiRadio.openDevice(0);
+		assumeTrue(result.isSuccess(), "Could not open radio device " + result);
 
-		radio = deviceResult.getValue();
+		radio = result.getValue();
 	}
 
 	@AfterEach

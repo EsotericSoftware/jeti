@@ -75,14 +75,14 @@ public class RadioExSample {
 				case 'd' -> getRadiometricValue(radioDevice);
 				case 'e' -> getPhotometricValue(radioDevice);
 				case 'f' -> getChromaticityCoordinates(radioDevice);
-				case 'g' -> getCorrelatedColorTemperature(radioDevice);
-				case 'h' -> getColorRenderingIndex(radioDevice);
+				case 'g' -> getCCT(radioDevice);
+				case 'h' -> getCRI(radioDevice);
 				case 'i' -> {
 					getRadiometricValue(radioDevice);
 					getPhotometricValue(radioDevice);
 					getChromaticityCoordinates(radioDevice);
-					getCorrelatedColorTemperature(radioDevice);
-					getColorRenderingIndex(radioDevice);
+					getCCT(radioDevice);
+					getCRI(radioDevice);
 				}
 				case '0' -> {
 					return;
@@ -243,7 +243,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the correlated color temperature determined by the last measurement. */
-	static private void getCorrelatedColorTemperature (JetiRadioEx device) {
+	static private void getCCT (JetiRadioEx device) {
 		try {
 			JetiResult<Float> result = device.getCCT();
 			if (result.isError())
@@ -256,7 +256,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the color rendering indices according to the CIE 13.3-1995 publication. */
-	static private void getColorRenderingIndex (JetiRadioEx device) {
+	static private void getCRI (JetiRadioEx device) {
 		try {
 			System.out.print("Enter the CCT of the reference source (or 0): [0] ");
 			String input = scanner.nextLine();
