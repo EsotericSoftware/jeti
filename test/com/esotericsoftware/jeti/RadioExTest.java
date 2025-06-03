@@ -35,10 +35,10 @@ public class RadioExTest {
 		Result<Integer> deviceCount = RadioEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio ex devices available for testing");
 
-		Result<RadioEx> deviceResult = RadioEx.openDevice(0);
-		assumeTrue(deviceResult.isSuccess(), "Could not open radio ex device");
+		Result<RadioEx> result = RadioEx.openDevice(0);
+		assumeTrue(result.isSuccess(), "Could not open radio ex device");
 
-		radioEx = deviceResult.getValue();
+		radioEx = result.getValue();
 	}
 
 	@AfterEach
@@ -49,9 +49,9 @@ public class RadioExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = RadioEx.getDeviceSerials(0);
-		if (serialsResult.isSuccess()) {
-			DeviceSerials serials = serialsResult.getValue();
+		Result<DeviceSerials> result = RadioEx.getDeviceSerials(0);
+		if (result.isSuccess()) {
+			DeviceSerials serials = result.getValue();
 			assertNotNull(serials.electronics());
 			assertNotNull(serials.spectrometer());
 			assertNotNull(serials.device());
@@ -69,21 +69,21 @@ public class RadioExTest {
 		int averageCount = 3;
 		int stepWidth = 5;
 
-		Result<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radioEx.measure(integrationTime, averageCount, stepWidth);
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
 		// Get radiometric value with wavelength range
-		Result<Float> radioResult = radioEx.getRadiometricValue(380, 780);
-		assertTrue(radioResult.isSuccess(), radioResult.toString());
-		assertTrue(radioResult.getValue() >= 0);
+		Result<Float> floatResult = radioEx.getRadiometricValue(380, 780);
+		assertTrue(floatResult.isSuccess(), floatResult.toString());
+		assertTrue(floatResult.getValue() >= 0);
 
 		// Get photometric value
-		Result<Float> photoResult = radioEx.getPhotometricValue();
-		assertTrue(photoResult.isSuccess(), photoResult.toString());
-		assertTrue(photoResult.getValue() >= 0);
+		floatResult = radioEx.getPhotometricValue();
+		assertTrue(floatResult.isSuccess(), floatResult.toString());
+		assertTrue(floatResult.getValue() >= 0);
 	}
 
 	@Test
@@ -95,15 +95,15 @@ public class RadioExTest {
 		int beginWavelength = 400;
 		int endWavelength = 700;
 		int expectedSize = (endWavelength - beginWavelength) / step + 1;
-		Result<float[]> spectralResult = radioEx.getSpectralRadiance(beginWavelength, endWavelength, step);
-		assertTrue(spectralResult.isSuccess(), spectralResult.toString());
-		assertEquals(expectedSize, spectralResult.getValue().length);
+		Result<float[]> result = radioEx.getSpectralRadiance(beginWavelength, endWavelength, step);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(expectedSize, result.getValue().length);
 
 		// Test high resolution spectral data
 		expectedSize = (int)((endWavelength - beginWavelength) / 0.1f + 1);
-		Result<float[]> hiResResult = radioEx.getSpectralRadianceHiRes(beginWavelength, endWavelength);
-		assertTrue(hiResResult.isSuccess(), hiResResult.toString());
-		assertEquals(expectedSize, hiResResult.getValue().length);
+		result = radioEx.getSpectralRadianceHiRes(beginWavelength, endWavelength);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(expectedSize, result.getValue().length);
 	}
 
 	@Test
@@ -189,14 +189,14 @@ public class RadioExTest {
 
 		// Test SPC format
 		String spcPath = new File(tempDir, "test_measurement.spc").getAbsolutePath();
-		Result<Boolean> spcResult = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
+		Result<Boolean> result = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
 		// BOZO - Internal DLL error?
-		assertTrue(spcResult.isSuccess(), spcResult.toString());
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Test CSV format
 		String csvPath = new File(tempDir, "test_measurement.csv").getAbsolutePath();
-		Result<Boolean> csvResult = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
-		assertTrue(csvResult.isSuccess(), csvResult.toString());
+		result = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
+		assertTrue(result.isSuccess(), result.toString());
 
 		new File(spcPath).delete();
 		new File(csvPath).delete();
@@ -209,8 +209,8 @@ public class RadioExTest {
 		int averageCount = 1;
 		int stepWidth = 5;
 
-		Result<Boolean> measureResult = radioEx.measureWithAdaptation(averageCount, stepWidth);
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radioEx.measureWithAdaptation(averageCount, stepWidth);
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Wait for adaptation to complete
 		boolean adapting = true;
@@ -223,18 +223,18 @@ public class RadioExTest {
 				fail("Test interrupted");
 			}
 
-			Result<AdaptationStatus> statusResult = radioEx.getAdaptationStatus();
-			assertTrue(statusResult.isSuccess(), statusResult.toString());
-			adapting = !statusResult.getValue().complete();
+			Result<AdaptationStatus> adaptResult = radioEx.getAdaptationStatus();
+			assertTrue(adaptResult.isSuccess(), adaptResult.toString());
+			adapting = !adaptResult.getValue().complete();
 			attempts++;
 		}
 
 		assertFalse(adapting, "Adaptation should complete within timeout");
 
 		// Get final adaptation status
-		Result<AdaptationStatus> finalStatus = radioEx.getAdaptationStatus();
-		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
-		AdaptationStatus status = finalStatus.getValue();
+		Result<AdaptationStatus> adaptResult = radioEx.getAdaptationStatus();
+		assertTrue(adaptResult.isSuccess(), adaptResult.toString());
+		AdaptationStatus status = adaptResult.getValue();
 		assertTrue(status.complete(), status.toString());
 		// BOZO - Why are these 0?
 		assertTrue(status.integrationTime() > 0);
@@ -247,8 +247,8 @@ public class RadioExTest {
 		float integrationTime = 150.0f;
 		int averageCount = 5;
 		int stepWidth = 1;
-		Result<Boolean> prepareResult = radioEx.prepareMeasurement(integrationTime, averageCount, stepWidth);
-		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
+		Result<Boolean> result = radioEx.prepareMeasurement(integrationTime, averageCount, stepWidth);
+		assertTrue(result.isSuccess(), result.toString());
 	}
 
 	@Test
@@ -256,21 +256,21 @@ public class RadioExTest {
 	void testMeasurementDistance () {
 		int testDistance = 200;
 
-		Result<Boolean> setResult = radioEx.setMeasurementDistance(testDistance);
+		Result<Boolean> result = radioEx.setMeasurementDistance(testDistance);
 		// BOZO - Command not supported or invalid argument?
-		assertTrue(setResult.isSuccess(), setResult.toString());
+		assertTrue(result.isSuccess(), result.toString());
 
-		Result<Integer> getResult = radioEx.getMeasurementDistance();
-		assertTrue(getResult.isSuccess(), getResult.toString());
-		assertEquals(testDistance, getResult.getValue());
+		Result<Integer> intResult = radioEx.getMeasurementDistance();
+		assertTrue(intResult.isSuccess(), intResult.toString());
+		assertEquals(testDistance, intResult.getValue());
 	}
 
 	@Test
 	@DisplayName("Get integration time")
 	void testGetIntegrationTime () {
-		Result<Float> tintResult = radioEx.getIntegrationTime();
-		assertTrue(tintResult.isSuccess(), tintResult.toString());
-		assertTrue(tintResult.getValue() > 0);
+		Result<Float> result = radioEx.getIntegrationTime();
+		assertTrue(result.isSuccess(), result.toString());
+		assertTrue(result.getValue() > 0);
 	}
 
 	@Test
@@ -303,16 +303,16 @@ public class RadioExTest {
 	@DisplayName("Break measurement")
 	void testBreakMeasurement () {
 		// Start measurement
-		Result<Boolean> measureResult = radioEx.measure(100.0f, 3, 5);
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radioEx.measure(100.0f, 3, 5);
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Immediately break it
-		Result<Boolean> breakResult = radioEx.breakMeasurement();
-		assertTrue(breakResult.isSuccess(), breakResult.toString());
+		result = radioEx.breakMeasurement();
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Check that measurement is no longer active
-		Result<Boolean> statusResult = radioEx.getMeasurementStatus();
-		assertTrue(statusResult.isSuccess(), statusResult.toString());
+		result = radioEx.getMeasurementStatus();
+		assertTrue(result.isSuccess(), result.toString());
 	}
 
 	@Test

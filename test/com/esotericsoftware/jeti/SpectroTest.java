@@ -24,10 +24,10 @@ public class SpectroTest {
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro devices available for testing " + deviceCount);
 
-		Result<Spectro> deviceResult = Spectro.openDevice(0);
-		assumeTrue(deviceResult.isSuccess(), "Could not open spectro device " + deviceResult);
+		Result<Spectro> result = Spectro.openDevice(0);
+		assumeTrue(result.isSuccess(), "Could not open spectro device " + result);
 
-		spectro = deviceResult.getValue();
+		spectro = result.getValue();
 	}
 
 	@AfterEach
@@ -38,9 +38,9 @@ public class SpectroTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = Spectro.getDeviceSerials(0);
-		if (serialsResult.isSuccess()) {
-			DeviceSerials serials = serialsResult.getValue();
+		Result<DeviceSerials> result = Spectro.getDeviceSerials(0);
+		if (result.isSuccess()) {
+			DeviceSerials serials = result.getValue();
 			assertNotNull(serials.electronics());
 			assertNotNull(serials.spectrometer());
 			assertNotNull(serials.device());
@@ -56,12 +56,12 @@ public class SpectroTest {
 	void testDarkSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		Result<float[]> darkResult = spectro.measureDarkSpectrum(integrationTime);
-		assertTrue(darkResult.isSuccess(), darkResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, darkResult.getValue().length);
+		Result<float[]> result = spectro.measureDarkSpectrum(integrationTime);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
 		// Dark spectrum should contain mostly low values
-		float[] darkSpectrum = darkResult.getValue();
+		float[] darkSpectrum = result.getValue();
 		double averageValue = 0;
 		for (float value : darkSpectrum) {
 			averageValue += value;
@@ -76,12 +76,12 @@ public class SpectroTest {
 	void testLightSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		Result<float[]> lightResult = spectro.measureLightSpectrum(integrationTime);
-		assertTrue(lightResult.isSuccess(), lightResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, lightResult.getValue().length);
+		Result<float[]> result = spectro.measureLightSpectrum(integrationTime);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
 		// Light spectrum should contain some positive values
-		float[] lightSpectrum = lightResult.getValue();
+		float[] lightSpectrum = result.getValue();
 		boolean hasPositiveValues = false;
 		for (float value : lightSpectrum) {
 			if (value > 0) {
@@ -97,12 +97,12 @@ public class SpectroTest {
 	void testReferenceSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		Result<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
-		assertTrue(referenceResult.isSuccess(), referenceResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, referenceResult.getValue().length);
+		Result<float[]> result = spectro.measureReferenceSpectrum(integrationTime);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
 		// Reference spectrum should contain positive values
-		float[] referenceSpectrum = referenceResult.getValue();
+		float[] referenceSpectrum = result.getValue();
 		boolean hasPositiveValues = false;
 		for (float value : referenceSpectrum) {
 			if (value > 0) {
@@ -118,16 +118,16 @@ public class SpectroTest {
 	void testTransmissionReflectionSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
-		Result<float[]> referenceResult = spectro.measureReferenceSpectrum(integrationTime);
-		assertTrue(referenceResult.isSuccess(), referenceResult.toString());
+		Result<float[]> result = spectro.measureReferenceSpectrum(integrationTime);
+		assertTrue(result.isSuccess(), result.toString());
 
-		Result<float[]> transReflResult = spectro.measureTransmissionReflectionSpectrum(integrationTime);
+		result = spectro.measureTransmissionReflectionSpectrum(integrationTime);
 		// BOZO - Command not supported or invalid argument?
-		assertTrue(transReflResult.isSuccess(), transReflResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, transReflResult.getValue().length);
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
 		// Transmission/reflection spectrum should contain non-negative values
-		float[] transReflSpectrum = transReflResult.getValue();
+		float[] transReflSpectrum = result.getValue();
 		for (float value : transReflSpectrum)
 			assertTrue(value >= 0, "Transmission/reflection spectrum values should be non-negative");
 	}
@@ -135,9 +135,9 @@ public class SpectroTest {
 	@Test
 	@DisplayName("Get spectro integration time")
 	void testGetSpectroIntegrationTime () {
-		Result<Float> tintResult = spectro.getIntegrationTime();
-		assertTrue(tintResult.isSuccess(), tintResult.toString());
-		assertTrue(tintResult.getValue() > 0, "Integration time should be positive");
+		Result<Float> result = spectro.getIntegrationTime();
+		assertTrue(result.isSuccess(), result.toString());
+		assertTrue(result.getValue() > 0, "Integration time should be positive");
 	}
 
 	@Test

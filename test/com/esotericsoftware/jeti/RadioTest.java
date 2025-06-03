@@ -44,9 +44,9 @@ public class RadioTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = Radio.getDeviceSerials(0);
-		if (serialsResult.isSuccess()) {
-			DeviceSerials serials = serialsResult.getValue();
+		Result<DeviceSerials> result = Radio.getDeviceSerials(0);
+		if (result.isSuccess()) {
+			DeviceSerials serials = result.getValue();
 			assertNotNull(serials.electronics());
 			assertNotNull(serials.spectrometer());
 			assertNotNull(serials.device());
@@ -61,8 +61,8 @@ public class RadioTest {
 	@DisplayName("Perform basic measurement cycle")
 	void testBasicMeasurementCycle () {
 		// Start measurement
-		Result<Boolean> measureResult = radio.measure();
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radio.measure();
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Check measurement status
 		boolean measuring = true;
@@ -75,22 +75,22 @@ public class RadioTest {
 				fail("Test interrupted");
 			}
 
-			Result<Boolean> statusResult = radio.getMeasurementStatus();
-			assertTrue(statusResult.isSuccess(), statusResult.toString());
-			measuring = statusResult.getValue();
+			result = radio.getMeasurementStatus();
+			assertTrue(result.isSuccess(), result.toString());
+			measuring = result.getValue();
 			attempts++;
 		}
 
 		assertFalse(measuring, "Measurement should complete within timeout");
 
 		// Get measurement results
-		Result<Float> radioResult = radio.getRadiometricValue();
-		assertTrue(radioResult.isSuccess(), radioResult.toString());
-		assertTrue(radioResult.getValue() >= 0);
+		Result<Float> floatResult = radio.getRadiometricValue();
+		assertTrue(floatResult.isSuccess(), floatResult.toString());
+		assertTrue(floatResult.getValue() >= 0);
 
-		Result<Float> photoResult = radio.getPhotometricValue();
-		assertTrue(photoResult.isSuccess(), photoResult.toString());
-		assertTrue(photoResult.getValue() >= 0);
+		floatResult = radio.getPhotometricValue();
+		assertTrue(floatResult.isSuccess(), floatResult.toString());
+		assertTrue(floatResult.getValue() >= 0);
 	}
 
 	@Test
@@ -140,12 +140,12 @@ public class RadioTest {
 	void testSpectralData () {
 		performMeasurementAndWait();
 
-		Result<float[]> spectralResult = radio.getSpectralRadiance();
-		assertTrue(spectralResult.isSuccess(), spectralResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, spectralResult.getValue().length);
+		Result<float[]> result = radio.getSpectralRadiance();
+		assertTrue(result.isSuccess(), result.toString());
+		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
 		// Check that spectral data contains reasonable values
-		float[] spectralData = spectralResult.getValue();
+		float[] spectralData = result.getValue();
 		boolean hasPositiveValues = false;
 		for (float value : spectralData) {
 			if (value > 0) {
@@ -159,9 +159,9 @@ public class RadioTest {
 	@Test
 	@DisplayName("Get integration time")
 	void testGetIntegrationTime () {
-		Result<Float> tintResult = radio.getIntegrationTime();
-		assertTrue(tintResult.isSuccess(), tintResult.toString());
-		assertTrue(tintResult.getValue() > 0);
+		Result<Float> result = radio.getIntegrationTime();
+		assertTrue(result.isSuccess(), result.toString());
+		assertTrue(result.getValue() > 0);
 	}
 
 	@Test
@@ -181,8 +181,8 @@ public class RadioTest {
 	@Test
 	@DisplayName("Handle measurement with adaptation")
 	void testMeasurementWithAdaptation () {
-		Result<Boolean> measureResult = radio.measureWithAdaptation();
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radio.measureWithAdaptation();
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Wait for adaptation to complete
 		boolean adapting = true;
@@ -195,18 +195,18 @@ public class RadioTest {
 				fail("Test interrupted");
 			}
 
-			Result<AdaptationStatus> statusResult = radio.getAdaptationStatus();
-			assertTrue(statusResult.isSuccess(), statusResult.toString());
-			adapting = !statusResult.getValue().complete();
+			Result<AdaptationStatus> adaptResult = radio.getAdaptationStatus();
+			assertTrue(adaptResult.isSuccess(), adaptResult.toString());
+			adapting = !adaptResult.getValue().complete();
 			attempts++;
 		}
 
 		assertFalse(adapting, "Adaptation should complete within timeout");
 
 		// Get final adaptation status
-		Result<AdaptationStatus> finalStatus = radio.getAdaptationStatus();
-		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
-		AdaptationStatus status = finalStatus.getValue();
+		Result<AdaptationStatus> adaptResult = radio.getAdaptationStatus();
+		assertTrue(adaptResult.isSuccess(), adaptResult.toString());
+		AdaptationStatus status = adaptResult.getValue();
 		assertTrue(status.complete());
 		// BOZO - Why are these 0?
 		assertTrue(status.integrationTime() > 0);
@@ -217,12 +217,12 @@ public class RadioTest {
 	@DisplayName("Break measurement")
 	void testBreakMeasurement () {
 		// Start measurement
-		Result<Boolean> measureResult = radio.measure();
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radio.measure();
+		assertTrue(result.isSuccess(), result.toString());
 
 		// Immediately break it
-		Result<Boolean> breakResult = radio.breakMeasurement();
-		assertTrue(breakResult.isSuccess(), breakResult.toString());
+		result = radio.breakMeasurement();
+		assertTrue(result.isSuccess(), result.toString());
 
 		try {
 			Thread.sleep(250);
@@ -230,21 +230,21 @@ public class RadioTest {
 		}
 
 		// Check that measurement is no longer active
-		Result<Boolean> statusResult = radio.getMeasurementStatus();
-		assertTrue(statusResult.isSuccess(), statusResult.toString());
-		assertFalse(statusResult.getValue(), statusResult.toString());
+		result = radio.getMeasurementStatus();
+		assertTrue(result.isSuccess(), result.toString());
+		assertFalse(result.getValue(), result.toString());
 	}
 
 	@Test
 	@DisplayName("Prepare measurement")
 	void testPrepareMeasurement () {
-		Result<Boolean> prepareResult = radio.prepareMeasurement();
-		assertTrue(prepareResult.isSuccess(), prepareResult.toString());
+		Result<Boolean> result = radio.prepareMeasurement();
+		assertTrue(result.isSuccess(), result.toString());
 	}
 
 	private void performMeasurementAndWait () {
-		Result<Boolean> measureResult = radio.measure();
-		assertTrue(measureResult.isSuccess(), measureResult.toString());
+		Result<Boolean> result = radio.measure();
+		assertTrue(result.isSuccess(), result.toString());
 
 		boolean measuring = true;
 		int attempts = 0;
@@ -256,9 +256,9 @@ public class RadioTest {
 				fail("Test interrupted");
 			}
 
-			Result<Boolean> statusResult = radio.getMeasurementStatus();
-			assertTrue(statusResult.isSuccess(), statusResult.toString());
-			measuring = statusResult.getValue();
+			result = radio.getMeasurementStatus();
+			assertTrue(result.isSuccess(), result.toString());
+			measuring = result.getValue();
 			attempts++;
 		}
 
