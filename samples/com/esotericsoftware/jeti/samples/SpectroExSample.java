@@ -208,14 +208,15 @@ public class SpectroExSample {
 	/** Read the light spectrum, pixel based. */
 	static private void getLightSpectrumPixel (SpectroEx device) {
 		try {
-			Result<int[]> result = device.getLightPixelData();
-			if (result.isError())
-				System.out.printf("Could not read light spectrum!%nError code: 0x%08X%n", result.getErrorCode());
-			else {
-				int[] spectrum = result.getValue();
-				for (int i = 0; i < spectrum.length; i++)
-					System.out.printf("pix: %d    cts: %d%n", i, spectrum[i]);
-			}
+			Result<Integer> pixelCountResult = device.getPixelCount();
+			if (pixelCountResult.isError()) throw new RuntimeException("Could not get pixel count! Error: " + pixelCountResult);
+			int pixelCount = pixelCountResult.getValue();
+
+			Result<int[]> result = device.getLightPixelData(pixelCount);
+			if (result.isError()) throw new RuntimeException("Could not read light spectrum! Error: " + result);
+			int[] spectrum = result.getValue();
+			for (int i = 0; i < spectrum.length; i++)
+				System.out.printf("pix: %d    cts: %d%n", i, spectrum[i]);
 		} catch (Throwable ex) {
 			System.err.println("Error reading light spectrum pixel data: " + ex.getMessage());
 		}

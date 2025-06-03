@@ -14,6 +14,7 @@ public interface RadioLibrary extends Library {
 	final RadioLibrary INSTANCE = Native.load("jeti_radio64", RadioLibrary.class);
 
 	// Device discovery and connection
+
 	int JETI_GetNumRadio (IntByReference dwNumDevices);
 
 	int JETI_GetSerialRadio (int dwDeviceNum, byte[] cBoardSerialNr, byte[] cSpecSerialNr, byte[] cDeviceSerialNr);
@@ -23,6 +24,7 @@ public interface RadioLibrary extends Library {
 	int JETI_CloseRadio (Pointer dwDevice);
 
 	// Measurement functions
+
 	int JETI_Measure (Pointer dwDevice);
 
 	int JETI_MeasureAdapt (Pointer dwDevice);
@@ -36,6 +38,7 @@ public interface RadioLibrary extends Library {
 	int JETI_MeasureBreak (Pointer dwDevice);
 
 	// Measurement results
+
 	int JETI_SpecRad (Pointer dwDevice, float[] fSprad);
 
 	int JETI_Radio (Pointer dwDevice, FloatByReference fRadio);
@@ -61,10 +64,12 @@ public interface RadioLibrary extends Library {
 	int JETI_RadioTint (Pointer dwDevice, FloatByReference fTint);
 
 	// Configuration
+
 	int JETI_SetMeasDist (Pointer dwDevice, int dwDistance);
 
 	int JETI_GetMeasDist (Pointer dwDevice, IntByReference dwDistance);
 
 	// Version information
+
 	int JETI_GetRadioDLLVersion (ShortByReference wMajorVersion, ShortByReference wMinorVersion, ShortByReference wBuildNumber);
 }

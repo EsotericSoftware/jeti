@@ -15,6 +15,7 @@ public interface RadioExLibrary extends Library {
 	final RadioExLibrary INSTANCE = Native.load("jeti_radio_ex64", RadioExLibrary.class);
 
 	// Device discovery and connection
+
 	int JETI_GetNumRadioEx (IntByReference dwNumDevices);
 
 	int JETI_GetSerialRadioEx (int dwDeviceNum, byte[] cBoardSerialNr, byte[] cSpecSerialNr, byte[] cDeviceSerialNr);
@@ -24,6 +25,7 @@ public interface RadioExLibrary extends Library {
 	int JETI_CloseRadioEx (Pointer dwDevice);
 
 	// Measurement functions
+
 	int JETI_MeasureEx (Pointer dwDevice, float fTint, short wAver, int dwStep);
 
 	int JETI_MeasureAdaptEx (Pointer dwDevice, short wAver, int dwStep);
@@ -37,6 +39,7 @@ public interface RadioExLibrary extends Library {
 	int JETI_MeasureBreakEx (Pointer dwDevice);
 
 	// Spectral data functions
+
 	int JETI_SpecRadEx (Pointer dwDevice, int dwBeg, int dwEnd, float[] fSprad);
 
 	int JETI_SpecRadHiResEx (Pointer dwDevice, int dwBeg, int dwEnd, float[] fSprad);
@@ -46,6 +49,7 @@ public interface RadioExLibrary extends Library {
 	int JETI_SaveSpecRadCSVEx (Pointer dwDevice, int dwBeg, int dwEnd, String cPathName, String cOperator, String cMemo);
 
 	// Measurement data functions
+
 	int JETI_RadioEx (Pointer dwDevice, int dwBeg, int dwEnd, FloatByReference fRadio);
 
 	int JETI_PhotoEx (Pointer dwDevice, FloatByReference fPhoto);
@@ -75,6 +79,7 @@ public interface RadioExLibrary extends Library {
 		FloatByReference fRbpfs, FloatByReference fRlbtb, FloatByReference fRnbpbp);
 
 	// Device parameter functions
+
 	int JETI_RadioTintEx (Pointer dwDevice, FloatByReference fTint);
 
 	int JETI_SetMeasDistEx (Pointer dwDevice, int dwDistance);
@@ -82,5 +87,6 @@ public interface RadioExLibrary extends Library {
 	int JETI_GetMeasDistEx (Pointer dwDevice, IntByReference dwDistance);
 
 	// Version information
+
 	int JETI_GetRadioExDLLVersion (ShortByReference wMajorVersion, ShortByReference wMinorVersion, ShortByReference wBuildNumber);
 }

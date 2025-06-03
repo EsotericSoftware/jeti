@@ -5,6 +5,8 @@ import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import com.sun.jna.Library;
 import com.sun.jna.Pointer;
@@ -38,12 +40,19 @@ abstract public class Device<L extends Library> implements AutoCloseable {
 		this.handle = handle;
 		this.close = close;
 
-		b = new ByteByReference[shortCount];
-		s = new ShortByReference[shortCount];
-		i = new IntByReference[intCount];
-		f = new FloatByReference[floatCount];
-		d = new DoubleByReference[shortCount];
-		p = new PointerByReference[shortCount];
+		b = array(ByteByReference[]::new, ByteByReference::new, byteCount);
+		s = array(ShortByReference[]::new, ShortByReference::new, shortCount);
+		i = array(IntByReference[]::new, IntByReference::new, intCount);
+		f = array(FloatByReference[]::new, FloatByReference::new, floatCount);
+		d = array(DoubleByReference[]::new, DoubleByReference::new, doubleCount);
+		p = array(PointerByReference[]::new, PointerByReference::new, pointerCount);
+	}
+
+	private <T> T[] array (IntFunction<T[]> arraySupplier, Supplier<T> entrySupplier, int count) {
+		T[] array = arraySupplier.apply(count);
+		for (int i = 0; i < count; i++)
+			array[i] = entrySupplier.get();
+		return array;
 	}
 
 	L lib () {

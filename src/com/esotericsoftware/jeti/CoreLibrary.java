@@ -18,6 +18,7 @@ public interface CoreLibrary extends Library {
 	final CoreLibrary INSTANCE = Native.load("jeti_core64", CoreLibrary.class);
 
 	// License and setup
+
 	int JETI_SetLicKey (String cLicKey);
 
 	int JETI_ImportSLM (String cMatrixFile);
@@ -25,6 +26,7 @@ public interface CoreLibrary extends Library {
 	int JETI_IgnoreSLM (byte bIgnore);
 
 	// Device discovery and connection
+
 	int JETI_GetNumDevices (IntByReference dwNumDevices);
 
 	int JETI_GetSerialDevice (int dwDeviceNum, byte[] cBoardSerialNr, byte[] cSpecSerialNr, byte[] cDeviceSerialNr);
@@ -37,6 +39,7 @@ public interface CoreLibrary extends Library {
 		char[] wcBTLEDevicePath);
 
 	// Device connection methods
+
 	int JETI_OpenDevice (int dwDeviceNum, PointerByReference dwDevice);
 
 	int JETI_OpenCOMDevice (int dwComPort, int dwBaudrate, PointerByReference dwDevice);
@@ -52,6 +55,7 @@ public interface CoreLibrary extends Library {
 	int JETI_CloseDevice (Pointer dwDevice);
 
 	// Device communication
+
 	int JETI_ArbitraryCommand (Pointer dwDevice, String cCommand, byte[] cAnswer);
 
 	int JETI_DeviceWrite (Pointer dwDevice, String cCommand, int dwBytesToWrite, int dwTimeout);
@@ -63,6 +67,7 @@ public interface CoreLibrary extends Library {
 	int JETI_DataReceived (Pointer dwDevice, int iMaxLength);
 
 	// Device control
+
 	int JETI_Reset (Pointer dwDevice);
 
 	int JETI_HardReset (Pointer dwDevice);
@@ -78,6 +83,7 @@ public interface CoreLibrary extends Library {
 	int JETI_WaitReadTrigger (Pointer dwDevice, IntByReference iSpec, int dwTimeout);
 
 	// Calibration
+
 	int JETI_StartAdaption (Pointer dwDevice, int boReference);
 
 	int JETI_CheckAdaptionStat (Pointer dwDevice, FloatByReference fTint, ShortByReference wAverage, IntByReference boStatus);
@@ -99,6 +105,7 @@ public interface CoreLibrary extends Library {
 	int JETI_MeasCompDark (Pointer dwDevice);
 
 	// Device information
+
 	int JETI_GetComPortHandle (Pointer dwDevice, PointerByReference hComPortHandle);
 
 	int JETI_MeasureADC1 (Pointer dwDevice, ShortByReference wADC1);
@@ -125,6 +132,7 @@ public interface CoreLibrary extends Library {
 	int JETI_SetCallbackFunction (Pointer dwDevice, byte bEventChar, WinDef.HWND hMainWnd);
 
 	// Parameter functions
+
 	int JETI_GetPixel (Pointer dwDevice, IntByReference dwPixel);
 
 	int JETI_GetPixelBinning (Pointer dwDevice, ByteByReference bPixBin);
@@ -204,6 +212,7 @@ public interface CoreLibrary extends Library {
 	int JETI_GetFlash (Pointer dwDevice, FloatByReference fInterval, FloatByReference fPulselen);
 
 	// Control functions
+
 	int JETI_GetLaserStat (Pointer dwDevice, IntByReference boLaserStat);
 
 	int JETI_SetLaserStat (Pointer dwDevice, int boLaserStat);
@@ -267,6 +276,7 @@ public interface CoreLibrary extends Library {
 	int JETI_GetTemperature (Pointer dwDevice, FloatByReference fTemperature);
 
 	// Configuration functions
+
 	int JETI_GetDarkmodeConf (Pointer dwDevice, ByteByReference bDarkmode);
 
 	int JETI_SetDarkmodeConf (Pointer dwDevice, byte bDarkmode);
@@ -326,6 +336,7 @@ public interface CoreLibrary extends Library {
 	int JETI_GetLevel (Pointer dwDevice, IntByReference dwLevelCounts, IntByReference dwLevelPercent);
 
 	// Fetch functions
+
 	int JETI_FetchDark (Pointer dwDevice, int[] iDark);
 
 	int JETI_FetchLight (Pointer dwDevice, int[] iLight);
@@ -361,6 +372,7 @@ public interface CoreLibrary extends Library {
 	int JETI_FetchAverAdapt (Pointer dwDevice, ShortByReference wAverAdapt);
 
 	// Calculation functions
+
 	int JETI_CalcLintDark (Pointer dwDevice, int dwBeg, int dwEnd, float fStep, float[] fDark);
 
 	int JETI_CalcSplinDark (Pointer dwDevice, int dwBeg, int dwEnd, float fStep, float[] fDark);

@@ -14,6 +14,7 @@ public interface SpectroLibrary extends Library {
 	final SpectroLibrary INSTANCE = Native.load("jeti_spectro64", SpectroLibrary.class);
 
 	// Device discovery and connection
+
 	int JETI_GetNumSpectro (IntByReference dwNumDevices);
 
 	int JETI_GetSerialSpectro (int dwDeviceNum, byte[] cBoardSerialNr, byte[] cSpecSerialNr, byte[] cDeviceSerialNr);
@@ -23,6 +24,7 @@ public interface SpectroLibrary extends Library {
 	int JETI_CloseSpectro (Pointer dwDevice);
 
 	// Spectroscopic measurements
+
 	int JETI_DarkSpec (Pointer dwDevice, float fTint, float[] fDark);
 
 	int JETI_LightSpec (Pointer dwDevice, float fTint, float[] fLight);
@@ -32,8 +34,10 @@ public interface SpectroLibrary extends Library {
 	int JETI_TransReflSpec (Pointer dwDevice, float fTint, float[] fTransRefl);
 
 	// Configuration
+
 	int JETI_SpectroTint (Pointer dwDevice, FloatByReference fTint);
 
 	// Version information
+
 	int JETI_GetSpectroDLLVersion (ShortByReference wMajorVersion, ShortByReference wMinorVersion, ShortByReference wBuildNumber);
 }

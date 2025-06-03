@@ -31,6 +31,7 @@ public class RadioEx extends Device<RadioExLibrary> {
 	}
 
 	// Measurement functions
+
 	public Result<Boolean> measure (float integrationTime, int averageCount, int step) {
 		return result(lib().JETI_MeasureEx(handle, integrationTime, (short)averageCount, step));
 	}
@@ -60,6 +61,7 @@ public class RadioEx extends Device<RadioExLibrary> {
 	}
 
 	// Spectral data functions
+
 	public Result<float[]> getSpectralRadiance (int beginWavelength, int endWavelength, float step) {
 		int dataSize = (int)((endWavelength - beginWavelength) / step + 1);
 		var spectralData = new float[dataSize];
@@ -87,6 +89,7 @@ public class RadioEx extends Device<RadioExLibrary> {
 	}
 
 	// Measurement data functions
+
 	public Result<Float> getRadiometricValue (int beginWavelength, int endWavelength) {
 		int result = lib().JETI_RadioEx(handle, beginWavelength, endWavelength, f[0]);
 		if (result != SUCCESS) return error(result);

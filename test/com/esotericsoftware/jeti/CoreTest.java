@@ -144,8 +144,7 @@ public class CoreTest {
 				// Wait for measurement to complete
 				try {
 					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// Ignore
+				} catch (InterruptedException ignored) {
 				}
 
 				// Check status
@@ -964,8 +963,8 @@ public class CoreTest {
 			assertEquals(pixelCount, fetchReferenceResult.getValue().length);
 		}
 
-		// Test fetch transmission/reflection
-		var fetchTransReflResult = device.fetchTransmissionReflection(pixelCount);
+		// Test fetch sample
+		var fetchTransReflResult = device.fetchSample(pixelCount);
 		if (fetchTransReflResult.isSuccess()) {
 			assertNotNull(fetchTransReflResult.getValue());
 			assertEquals(pixelCount, fetchTransReflResult.getValue().length);
@@ -1089,13 +1088,13 @@ public class CoreTest {
 		}
 
 		// Test calculate linear trans/refl
-		var calcLintTransReflResult = device.calculateLinearTransmissionReflection(380, 780, 5.0f);
+		var calcLintTransReflResult = device.calculateLinearSample(380, 780, 5.0f);
 		if (calcLintTransReflResult.isSuccess()) {
 			assertNotNull(calcLintTransReflResult.getValue());
 		}
 
 		// Test calculate spline trans/refl
-		var calcSplinTransReflResult = device.calculateSplineTransmissionReflection(380, 780, 5.0f);
+		var calcSplinTransReflResult = device.calculateSplineSample(380, 780, 5.0f);
 		if (calcSplinTransReflResult.isSuccess()) {
 			assertNotNull(calcSplinTransReflResult.getValue());
 		}

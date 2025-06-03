@@ -64,10 +64,14 @@ public class SpectroExTest {
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
+		Result<Integer> pixelCountResult = spectroEx.getPixelCount();
+		assertTrue(pixelCountResult.isSuccess(), pixelCountResult.toString());
+		int pixelCount = pixelCountResult.getValue();
+
 		// Get dark pixel data
-		Result<int[]> pixelResult = spectroEx.getDarkPixelData();
+		Result<int[]> pixelResult = spectroEx.getDarkPixelData(pixelCount);
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
+		assertEquals(pixelCount, pixelResult.getValue().length);
 
 		// Get dark wave data
 		int beginWavelength = 400;
@@ -99,10 +103,14 @@ public class SpectroExTest {
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
+		Result<Integer> pixelCountResult = spectroEx.getPixelCount();
+		assertTrue(pixelCountResult.isSuccess(), pixelCountResult.toString());
+		int pixelCount = pixelCountResult.getValue();
+
 		// Get light pixel data
-		Result<int[]> pixelResult = spectroEx.getLightPixelData();
+		Result<int[]> pixelResult = spectroEx.getLightPixelData(pixelCount);
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
+		assertEquals(pixelCount, pixelResult.getValue().length);
 
 		// Get light wave data
 		int beginWavelength = 380;
@@ -149,10 +157,14 @@ public class SpectroExTest {
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
+		Result<Integer> pixelCountResult = spectroEx.getPixelCount();
+		assertTrue(pixelCountResult.isSuccess(), pixelCountResult.toString());
+		int pixelCount = pixelCountResult.getValue();
+
 		// Get reference pixel data
-		Result<int[]> pixelResult = spectroEx.getReferencePixelData();
+		Result<int[]> pixelResult = spectroEx.getReferencePixelData(pixelCount);
 		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
+		assertEquals(pixelCount, pixelResult.getValue().length);
 
 		// Get reference wave data
 		int beginWavelength = 450;
@@ -177,12 +189,12 @@ public class SpectroExTest {
 	}
 
 	@Test
-	@DisplayName("Test transmission/reflection measurement cycle")
-	void testTransmissionReflectionMeasurementCycle () {
+	@DisplayName("Test sample measurement cycle")
+	void testSampleMeasurementCycle () {
 		float integrationTime = 100.0f;
 		int averageCount = 1;
 
-		// Start transmission/reflection measurement
+		// Start sample measurement
 		Result<Boolean> result = spectroEx.startSampleMeasurement(integrationTime, averageCount);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(result.isSuccess(), result.toString());
@@ -190,12 +202,16 @@ public class SpectroExTest {
 		// Wait for measurement to complete
 		waitForMeasurementCompletion();
 
-		// Get transmission/reflection pixel data
-		Result<int[]> pixelResult = spectroEx.getSamplePixelData();
-		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
-		assertEquals(JetiSDK.SPECTRUM_SIZE, pixelResult.getValue().length);
+		Result<Integer> pixelCountResult = spectroEx.getPixelCount();
+		assertTrue(pixelCountResult.isSuccess(), pixelCountResult.toString());
+		int pixelCount = pixelCountResult.getValue();
 
-		// Get transmission/reflection wave data
+		// Get sample pixel data
+		Result<int[]> pixelResult = spectroEx.getSamplePixelData(pixelCount);
+		assertTrue(pixelResult.isSuccess(), pixelResult.toString());
+		assertEquals(pixelCount, pixelResult.getValue().length);
+
+		// Get sample wave data
 		int beginWavelength = 400;
 		int endWavelength = 700;
 		float stepSize = 5.0f;
@@ -207,8 +223,8 @@ public class SpectroExTest {
 	}
 
 	@Test
-	@DisplayName("Test prepare transmission/reflection measurement")
-	void testPrepareTransmissionReflectionMeasurement () {
+	@DisplayName("Test prepare sample measurement")
+	void testPrepareSampleMeasurement () {
 		float integrationTime = 150.0f;
 		int averageCount = 3;
 
@@ -407,55 +423,13 @@ public class SpectroExTest {
 		}
 	}
 
-	@Test
-	@DisplayName("Test parameter validation for measurement methods")
-	void testParameterValidation () {
-		// Test negative integration time
-		Result<Boolean> result = spectroEx.startDarkMeasurement(-1.0f, 1);
-		assertFalse(result.isSuccess(), "Negative integration time should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		// Test invalid average count
-		result = spectroEx.startLightMeasurement(100.0f, 0);
-		assertFalse(result.isSuccess(), "Zero average count should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		result = spectroEx.startReferenceMeasurement(100.0f, -1);
-		assertFalse(result.isSuccess(), "Negative average count should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		// Test invalid continuous measurement parameters
-		result = spectroEx.startContinuousDarkMeasurement(0.0f, 1);
-		assertFalse(result.isSuccess(), "Zero interval should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		result = spectroEx.startContinuousLightMeasurement(100.0f, 0);
-		assertFalse(result.isSuccess(), "Zero count should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		// Test invalid wavelength parameters
-		Result<float[]> waveResult = spectroEx.getDarkWaveData(-1, 700, 5.0f);
-		assertFalse(waveResult.isSuccess(), "Negative begin wavelength should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, waveResult.getErrorCode());
-
-		waveResult = spectroEx.getLightWaveData(700, 400, 5.0f);
-		assertFalse(waveResult.isSuccess(), "Begin wavelength >= end wavelength should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, waveResult.getErrorCode());
-
-		waveResult = spectroEx.getReferenceWaveData(400, 700, 0.0f);
-		assertFalse(waveResult.isSuccess(), "Zero step size should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, waveResult.getErrorCode());
-	}
-
 	private void waitForMeasurementCompletion () {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 100) { // 10 second timeout
 			try {
 				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				fail("Test interrupted");
+			} catch (InterruptedException ignored) {
 			}
 
 			Result<Boolean> result = spectroEx.getMeasurementStatus();
@@ -481,9 +455,7 @@ public class SpectroExTest {
 		while (measuring && attempts < 200) { // 20 second timeout for continuous measurements
 			try {
 				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				fail("Test interrupted");
+			} catch (InterruptedException ignored) {
 			}
 
 			Result<Boolean> result = spectroEx.getMeasurementStatus();

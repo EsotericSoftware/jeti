@@ -758,7 +758,7 @@ public class Core extends Device<CoreLibrary> {
 		return success(reference);
 	}
 
-	public Result<int[]> fetchTransmissionReflection (int pixelCount) {
+	public Result<int[]> fetchSample (int pixelCount) {
 		var transRefl = new int[pixelCount];
 		int result = lib().JETI_FetchTransRefl(handle, transRefl);
 		if (result != SUCCESS) return error(result);
@@ -889,14 +889,14 @@ public class Core extends Device<CoreLibrary> {
 		return success(reference);
 	}
 
-	public Result<float[]> calculateLinearTransmissionReflection (int begin, int end, float step) {
+	public Result<float[]> calculateLinearSample (int begin, int end, float step) {
 		var transRefl = new float[(int)((end - begin) / step) + 1];
 		int result = lib().JETI_CalcLintTransRefl(handle, begin, end, step, transRefl);
 		if (result != SUCCESS) return error(result);
 		return success(transRefl);
 	}
 
-	public Result<float[]> calculateSplineTransmissionReflection (int begin, int end, float step) {
+	public Result<float[]> calculateSplineSample (int begin, int end, float step) {
 		var transRefl = new float[(int)((end - begin) / step) + 1];
 		int result = lib().JETI_CalcSplinTransRefl(handle, begin, end, step, transRefl);
 		if (result != SUCCESS) return error(result);

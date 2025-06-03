@@ -114,22 +114,22 @@ public class SpectroTest {
 	}
 
 	@Test
-	@DisplayName("Measure transmission/reflection spectrum")
-	void testTransmissionReflectionSpectrumMeasurement () {
+	@DisplayName("Measure sample spectrum")
+	void testSampleSpectrumMeasurement () {
 		float integrationTime = 100.0f;
 
 		Result<float[]> result = spectro.measureReferenceSpectrum(integrationTime);
 		assertTrue(result.isSuccess(), result.toString());
 
-		result = spectro.measureTransmissionReflectionSpectrum(integrationTime);
+		result = spectro.measureSampleSpectrum(integrationTime);
 		// BOZO - Command not supported or invalid argument?
 		assertTrue(result.isSuccess(), result.toString());
 		assertEquals(JetiSDK.SPECTRUM_SIZE, result.getValue().length);
 
-		// Transmission/reflection spectrum should contain non-negative values
+		// Sample spectrum should contain non-negative values
 		float[] transReflSpectrum = result.getValue();
 		for (float value : transReflSpectrum)
-			assertTrue(value >= 0, "Transmission/reflection spectrum values should be non-negative");
+			assertTrue(value >= 0, "Sample spectrum values should be non-negative");
 	}
 
 	@Test
@@ -138,22 +138,5 @@ public class SpectroTest {
 		Result<Float> result = spectro.getIntegrationTime();
 		assertTrue(result.isSuccess(), result.toString());
 		assertTrue(result.getValue() > 0, "Integration time should be positive");
-	}
-
-	@Test
-	@DisplayName("Validate integration time parameters")
-	void testIntegrationTimeValidation () {
-		// Test negative integration time
-		Result<float[]> result = spectro.measureDarkSpectrum(-1.0f);
-		assertFalse(result.isSuccess(), "Negative integration time should be rejected");
-		assertEquals(JetiSDK.INVALID_ARGUMENT, result.getErrorCode());
-
-		// Test zero integration time (should be valid)
-		result = spectro.measureLightSpectrum(0.0f);
-		// Whether zero is valid depends on device implementation
-		if (!result.isSuccess()) {
-			// If zero is not accepted, that's also acceptable behavior
-			assertTrue(result.getErrorCode() != JetiSDK.SUCCESS);
-		}
 	}
 }

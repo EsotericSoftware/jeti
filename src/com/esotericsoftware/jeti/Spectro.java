@@ -39,7 +39,7 @@ public class Spectro extends Device<SpectroLibrary> {
 		return success(referenceData);
 	}
 
-	public Result<float[]> measureTransmissionReflectionSpectrum (float integrationTime) {
+	public Result<float[]> measureSampleSpectrum (float integrationTime) {
 		var transReflData = new float[SPECTRUM_SIZE];
 		int result = lib().JETI_TransReflSpec(handle, integrationTime, transReflData);
 		if (result != SUCCESS) return error(result);
