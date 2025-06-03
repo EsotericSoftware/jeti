@@ -29,6 +29,10 @@ import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
 public class Core extends Device<CoreLibrary> {
+	public Core (Device device) {
+		this(device.handle);
+	}
+
 	private Core (Pointer handle) {
 		super(CoreLibrary.INSTANCE, handle, CoreLibrary.INSTANCE::JETI_CloseDevice, 3, 2, 4, 8, 4, 1);
 	}
@@ -540,7 +544,12 @@ public class Core extends Device<CoreLibrary> {
 	public Result<FlickerFrequency> getFlickerFrequency () {
 		int result = lib().JETI_GetFlickerFreq(handle, f[0], i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(new FlickerFrequency(f[0].getValue(), i[0].getValue()));
+		FlickerWarning warning = switch (i[0].getValue()) {
+		case 11 -> FlickerWarning.noModulation;
+		case 12 -> FlickerWarning.fuzzyModulation;
+		default -> FlickerWarning.none;
+		};
+		return success(new FlickerFrequency(f[0].getValue(), warning));
 	}
 
 	public Result<Boolean> setSyncFrequency (float frequency) {
@@ -1162,7 +1171,11 @@ public class Core extends Device<CoreLibrary> {
 
 	public record FlashSettings (float interval, float pulseLength) {}
 
-	public record FlickerFrequency (float frequency, int warning) {}
+	public enum FlickerWarning {
+		none, noModulation, fuzzyModulation
+	}
+
+	public record FlickerFrequency (float frequency, FlickerWarning warning) {}
 
 	public record FunctionConfig (byte previous, byte configured) {}
 
