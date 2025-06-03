@@ -15,7 +15,7 @@ import com.sun.jna.ptr.ShortByReference;
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 	private JetiSpectroEx (Pointer handle) {
-		super(JetiSpectroExLibrary.INSTANCE, handle);
+		super(JetiSpectroExLibrary.INSTANCE, handle, JetiSpectroExLibrary.INSTANCE::JETI_CloseSpectroEx, 0, 0, 1, 1, 0, 0);
 	}
 
 	// Dark measurement functions
@@ -203,9 +203,9 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 
 	// Device status and control
 	public JetiResult<Boolean> getMeasurementStatus () {
-		int result = lib().JETI_SpectroStatusEx(handle, intRef);
+		int result = lib().JETI_SpectroStatusEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(intRef.getValue() != 0);
+		return success(i[0].getValue() != 0);
 	}
 
 	public JetiResult<Boolean> breakMeasurement () {
@@ -214,15 +214,15 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 
 	// Device parameters
 	public JetiResult<Integer> getPixelCount () {
-		int result = lib().JETI_PixelCountEx(handle, intRef);
+		int result = lib().JETI_PixelCountEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(intRef.getValue());
+		return success(i[0].getValue());
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
-		int result = lib().JETI_SpectroTintEx(handle, floatRef);
+		int result = lib().JETI_SpectroTintEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	static public JetiResult<Integer> getDeviceCount () {

@@ -4,12 +4,12 @@ package com.esotericsoftware.jeti.samples;
 import java.util.Scanner;
 
 import com.esotericsoftware.jeti.JetiRadio;
-import com.esotericsoftware.jeti.JetiRadio.CRI;
-import com.esotericsoftware.jeti.JetiRadio.XY;
 import com.esotericsoftware.jeti.JetiRadioEx;
 import com.esotericsoftware.jeti.JetiResult;
 import com.esotericsoftware.jeti.JetiSDK;
+import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
+import com.esotericsoftware.jeti.JetiSDK.XY;
 
 public class RadioExSample {
 	static private final Scanner scanner = new Scanner(System.in);
@@ -230,7 +230,7 @@ public class RadioExSample {
 	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
 	static private void getChromaticityCoordinates (JetiRadioEx device) {
 		try {
-			JetiResult<XY> result = device.getChromaticityXY();
+			JetiResult<XY> result = device.getChromaXY();
 			if (result.isError())
 				System.out.printf("Could not get chromaticity coordinates x and y!%nError code: 0x%08X%n", result.getErrorCode());
 			else {

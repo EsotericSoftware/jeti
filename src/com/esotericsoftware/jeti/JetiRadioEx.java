@@ -4,34 +4,30 @@ package com.esotericsoftware.jeti;
 import static com.esotericsoftware.jeti.JetiResult.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
-import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
-import com.esotericsoftware.jeti.JetiRadio.CRI;
-import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
-import com.esotericsoftware.jeti.JetiRadio.UV;
-import com.esotericsoftware.jeti.JetiRadio.XY;
-import com.esotericsoftware.jeti.JetiRadio.XY10;
-import com.esotericsoftware.jeti.JetiRadio.XYZ;
+import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
+import com.esotericsoftware.jeti.JetiSDK.BlueMeasurement;
+import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
+import com.esotericsoftware.jeti.JetiSDK.DominantWavelength;
+import com.esotericsoftware.jeti.JetiSDK.PeakFWHM;
+import com.esotericsoftware.jeti.JetiSDK.TM30;
+import com.esotericsoftware.jeti.JetiSDK.UV;
+import com.esotericsoftware.jeti.JetiSDK.XY;
+import com.esotericsoftware.jeti.JetiSDK.XY10;
+import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
 import com.sun.jna.Pointer;
-import com.sun.jna.ptr.DoubleByReference;
-import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiRadioEx extends Device<JetiRadioExLibrary> {
-	private final FloatByReference floatRef2 = new FloatByReference(), floatRef3 = new FloatByReference(),
-		floatRef4 = new FloatByReference(), floatRef5 = new FloatByReference(), floatRef6 = new FloatByReference();
-	private final DoubleByReference doubleRef = new DoubleByReference(), doubleRef2 = new DoubleByReference(),
-		doubleRef3 = new DoubleByReference(), doubleRef4 = new DoubleByReference();
-	private final ShortByReference shortRef = new ShortByReference();
 	private final float[] cri = new float[17];
 
 	private JetiRadioEx (Pointer handle) {
-		super(JetiRadioExLibrary.INSTANCE, handle);
+		super(JetiRadioExLibrary.INSTANCE, handle, JetiRadioExLibrary.INSTANCE::JETI_CloseRadioEx, 0, 1, 1, 6, 4, 0);
 	}
 
 	// Measurement functions
@@ -48,15 +44,15 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 	}
 
 	public JetiResult<Boolean> getMeasurementStatus () {
-		int result = lib().JETI_MeasureStatusEx(handle, intRef);
+		int result = lib().JETI_MeasureStatusEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(intRef.getValue() != 0);
+		return success(i[0].getValue() != 0);
 	}
 
 	public JetiResult<AdaptationStatus> getAdaptationStatus () {
-		int result = lib().JETI_MeasureAdaptStatusEx(handle, floatRef, shortRef, intRef);
+		int result = lib().JETI_MeasureAdaptStatusEx(handle, f[0], s[0], i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(new AdaptationStatus(floatRef.getValue(), shortRef.getValue(), intRef.getValue() != 0));
+		return success(new AdaptationStatus(f[0].getValue(), s[0].getValue(), i[0].getValue() != 0));
 	}
 
 	public JetiResult<Boolean> breakMeasurement () {
@@ -92,57 +88,57 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 
 	// Measurement data functions
 	public JetiResult<Float> getRadiometricValue (int beginWavelength, int endWavelength) {
-		int result = lib().JETI_RadioEx(handle, beginWavelength, endWavelength, floatRef);
+		int result = lib().JETI_RadioEx(handle, beginWavelength, endWavelength, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	public JetiResult<Float> getPhotometricValue () {
-		int result = lib().JETI_PhotoEx(handle, floatRef);
+		int result = lib().JETI_PhotoEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
-	public JetiResult<XY> getChromaticityXY () {
-		int result = lib().JETI_ChromxyEx(handle, floatRef, floatRef2);
+	public JetiResult<XY> getChromaXY () {
+		int result = lib().JETI_ChromxyEx(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
-		return success(new XY(floatRef.getValue(), floatRef2.getValue()));
+		return success(new XY(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<XY10> getChromaticityXY10 () {
-		int result = lib().JETI_Chromxy10Ex(handle, floatRef, floatRef2);
+	public JetiResult<XY10> getChromaXY10 () {
+		int result = lib().JETI_Chromxy10Ex(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
-		return success(new XY10(floatRef.getValue(), floatRef2.getValue()));
+		return success(new XY10(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<UV> getChromaticityUV () {
-		int result = lib().JETI_ChromuvEx(handle, floatRef, floatRef2);
+	public JetiResult<UV> getChromaUV () {
+		int result = lib().JETI_ChromuvEx(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
-		return success(new UV(floatRef.getValue(), floatRef2.getValue()));
+		return success(new UV(f[0].getValue(), f[1].getValue()));
 	}
 
 	public JetiResult<XYZ> getXYZ () {
-		int result = lib().JETI_ChromXYZEx(handle, floatRef, floatRef2, floatRef3);
+		int result = lib().JETI_ChromXYZEx(handle, f[0], f[1], f[2]);
 		if (result != SUCCESS) return error(result);
-		return success(new XYZ(floatRef.getValue(), floatRef2.getValue(), floatRef3.getValue()));
+		return success(new XYZ(f[0].getValue(), f[1].getValue(), f[2].getValue()));
 	}
 
 	public JetiResult<DominantWavelength> getDominantWavelength () {
-		int result = lib().JETI_DWLPEEx(handle, floatRef, floatRef2);
+		int result = lib().JETI_DWLPEEx(handle, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
-		return success(new DominantWavelength(floatRef.getValue(), floatRef2.getValue()));
+		return success(new DominantWavelength(f[0].getValue(), f[1].getValue()));
 	}
 
 	public JetiResult<Float> getCCT () {
-		int result = lib().JETI_CCTEx(handle, floatRef);
+		int result = lib().JETI_CCTEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	public JetiResult<Float> getDuv () {
-		int result = lib().JETI_DuvEx(handle, floatRef);
+		int result = lib().JETI_DuvEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	public JetiResult<CRI> getCRI (float cct) {
@@ -153,33 +149,31 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		return success(new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples));
 	}
 
-	public JetiResult<TM30Data> getTM30 (boolean useTM3015) {
+	public JetiResult<TM30> getTM30 (boolean useTM3015) {
 		var rfi = new double[16];
 		var rfces = new double[99];
-		int result = lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), doubleRef, doubleRef2, doubleRef3, doubleRef4, rfi,
-			rfces);
+		int result = lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces);
 		if (result != SUCCESS) return error(result);
-		return success(
-			new TM30Data(doubleRef.getValue(), doubleRef2.getValue(), doubleRef3.getValue(), doubleRef4.getValue(), rfi, rfces));
+		return success(new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces));
 	}
 
-	public JetiResult<PeakFWHMData> getPeakFWHM (float threshold) {
-		int result = lib().JETI_PeakFWHMEx(handle, threshold, floatRef, floatRef2);
+	public JetiResult<PeakFWHM> getPeakFWHM (float threshold) {
+		int result = lib().JETI_PeakFWHMEx(handle, threshold, f[0], f[1]);
 		if (result != SUCCESS) return error(result);
-		return success(new PeakFWHMData(floatRef.getValue(), floatRef2.getValue()));
+		return success(new PeakFWHM(f[0].getValue(), f[1].getValue()));
 	}
 
-	public JetiResult<BlueMeasurementData> getBlueMeasurement () {
-		int result = lib().JETI_BlueMeasurementEx(handle, floatRef, floatRef2, floatRef3, floatRef4, floatRef5, floatRef6);
+	public JetiResult<BlueMeasurement> getBlueMeasurement () {
+		int result = lib().JETI_BlueMeasurementEx(handle, f[0], f[1], f[2], f[3], f[4], f[5]);
 		if (result != SUCCESS) return error(result);
-		return success(new BlueMeasurementData(floatRef.getValue(), floatRef2.getValue(), floatRef3.getValue(),
-			floatRef4.getValue(), floatRef5.getValue(), floatRef6.getValue()));
+		return success(new BlueMeasurement(f[0].getValue(), f[1].getValue(), f[2].getValue(), f[3].getValue(), f[4].getValue(),
+			f[5].getValue()));
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
-		int result = lib().JETI_RadioTintEx(handle, floatRef);
+		int result = lib().JETI_RadioTintEx(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	public JetiResult<Boolean> setMeasurementDistance (int distance) {
@@ -187,9 +181,9 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 	}
 
 	public JetiResult<Integer> getMeasurementDistance () {
-		int result = lib().JETI_GetMeasDistEx(handle, intRef);
+		int result = lib().JETI_GetMeasDistEx(handle, i[0]);
 		if (result != SUCCESS) return error(result);
-		return success(intRef.getValue());
+		return success(i[0].getValue());
 	}
 
 	static public JetiResult<Integer> getDeviceCount () {
@@ -223,27 +217,4 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		if (result != SUCCESS) return error(result);
 		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}
-
-	static public record TM30Data (
-		/** Fidelity index (0-100, like CRI but better). */
-		double rf,
-		/** Gamut index (color saturation, <100 = less saturated, >100 = more). */
-		double rg,
-		double avgChromaShift,
-		double avgHueShift,
-		/** Fidelity indices for 99 color samples (Rf,CES1 through Rf,CES99). */
-		double[] colorSamples,
-		/** Color fidelity by hue angle bins (15 or 16 bins). */
-		double[] hueAngleBins) {}
-
-	static public record PeakFWHMData (float peak, float fwhm) {}
-
-	static public record BlueMeasurementData (
-		float hazardRadiance,
-		float hazardEfficacy,
-		float circadianEfficacy,
-		float bluePeakRatio,
-		/** 415-455nm vs 400-500nm */
-		float blueContentRatio,
-		float nonBluePeakRatio) {}
 }

@@ -148,7 +148,44 @@ public class JetiSDK {
 		};
 	}
 
-	static public record DeviceSerials (String electronics, String spectrometer, String device) {}
+	public record DeviceSerials (String electronics, String spectrometer, String device) {}
 
-	static public record DllVersion (short major, short minor, short build) {}
+	public record DllVersion (short major, short minor, short build) {}
+
+	public record AdaptationStatus (float integrationTime, int averageCount, boolean complete) {}
+
+	public record XY (float x, float y) {}
+
+	public record XY10 (float x, float y) {}
+
+	public record UV (float u, float v) {}
+
+	public record XYZ (float x, float y, float z) {}
+
+	public record CRI (float dcError, float inaccuracyPercent, float ra, float[] samples) {}
+
+	public record DominantWavelength (float wavelength, float purity) {}
+
+	public record TM30 (
+		/** Fidelity index (0-100, like CRI but better). */
+		double rf,
+		/** Gamut index (color saturation, <100 = less saturated, >100 = more). */
+		double rg,
+		double avgChromaShift,
+		double avgHueShift,
+		/** Fidelity indices for 99 color samples (Rf,CES1 through Rf,CES99). */
+		double[] colorSamples,
+		/** Color fidelity by hue angle bins (15 or 16 bins). */
+		double[] hueAngleBins) {}
+
+	public record PeakFWHM (float peak, float fwhm) {}
+
+	public record BlueMeasurement (
+		float hazardRadiance,
+		float hazardEfficacy,
+		float circadianEfficacy,
+		float bluePeakRatio,
+		/** 415-455nm vs 400-500nm */
+		float blueContentRatio,
+		float nonBluePeakRatio) {}
 }

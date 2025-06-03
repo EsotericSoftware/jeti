@@ -9,15 +9,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
-import com.esotericsoftware.jeti.JetiRadio.CRI;
-import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
-import com.esotericsoftware.jeti.JetiRadio.UV;
-import com.esotericsoftware.jeti.JetiRadio.XY;
-import com.esotericsoftware.jeti.JetiRadio.XY10;
-import com.esotericsoftware.jeti.JetiRadio.XYZ;
+import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
+import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
+import com.esotericsoftware.jeti.JetiSDK.DominantWavelength;
+import com.esotericsoftware.jeti.JetiSDK.UV;
+import com.esotericsoftware.jeti.JetiSDK.XY;
+import com.esotericsoftware.jeti.JetiSDK.XY10;
+import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
 @DisplayName("JetiRadio Integration Tests")
 public class JetiRadioTest {
@@ -99,17 +99,17 @@ public class JetiRadioTest {
 		performMeasurementAndWait();
 
 		// Get chromaticity XY
-		JetiResult<XY> xyResult = radio.getChromaticityXY();
+		JetiResult<XY> xyResult = radio.getChromaXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
 		assertTrue(xyResult.getValue().x() >= 0 && xyResult.getValue().x() <= 1);
 		assertTrue(xyResult.getValue().y() >= 0 && xyResult.getValue().y() <= 1);
 
 		// Get chromaticity XY10
-		JetiResult<XY10> xy10Result = radio.getChromaticityXY10();
+		JetiResult<XY10> xy10Result = radio.getChromaXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
 
 		// Get chromaticity UV
-		JetiResult<UV> uvResult = radio.getChromaticityUV();
+		JetiResult<UV> uvResult = radio.getChromaUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
 
 		// Get XYZ values

@@ -15,7 +15,7 @@ import com.sun.jna.ptr.ShortByReference;
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiSpectro extends Device<JetiSpectroLibrary> {
 	private JetiSpectro (Pointer handle) {
-		super(JetiSpectroLibrary.INSTANCE, handle);
+		super(JetiSpectroLibrary.INSTANCE, handle, JetiSpectroLibrary.INSTANCE::JETI_CloseSpectro, 0, 0, 0, 1, 0, 0);
 	}
 
 	public JetiResult<float[]> measureDarkSpectrum (float integrationTime) {
@@ -47,9 +47,9 @@ public class JetiSpectro extends Device<JetiSpectroLibrary> {
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
-		int result = lib().JETI_SpectroTint(handle, floatRef);
+		int result = lib().JETI_SpectroTint(handle, f[0]);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		return success(f[0].getValue());
 	}
 
 	static public JetiResult<Integer> getDeviceCount () {

@@ -11,17 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.esotericsoftware.jeti.JetiRadio.CRI;
-import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
-import com.esotericsoftware.jeti.JetiRadio.UV;
-import com.esotericsoftware.jeti.JetiRadio.XY;
-import com.esotericsoftware.jeti.JetiRadio.XY10;
-import com.esotericsoftware.jeti.JetiRadio.XYZ;
-import com.esotericsoftware.jeti.JetiRadioEx.BlueMeasurementData;
-import com.esotericsoftware.jeti.JetiRadioEx.PeakFWHMData;
-import com.esotericsoftware.jeti.JetiRadioEx.TM30Data;
+import com.esotericsoftware.jeti.JetiSDK.BlueMeasurement;
+import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
+import com.esotericsoftware.jeti.JetiSDK.DominantWavelength;
+import com.esotericsoftware.jeti.JetiSDK.PeakFWHM;
+import com.esotericsoftware.jeti.JetiSDK.TM30;
+import com.esotericsoftware.jeti.JetiSDK.UV;
+import com.esotericsoftware.jeti.JetiSDK.XY;
+import com.esotericsoftware.jeti.JetiSDK.XY10;
+import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
 @DisplayName("JetiRadioEx Integration Tests")
 public class JetiRadioExTest {
@@ -131,24 +131,24 @@ public class JetiRadioExTest {
 
 	@Test
 	@DisplayName("Get TM30 data")
-	void testTM30Data () {
+	void testTM30 () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
 		// Test both TM30-15 and TM30-18
-		JetiResult<TM30Data> tm30_15Result = radioEx.getTM30(true);
+		JetiResult<TM30> tm30_15Result = radioEx.getTM30(true);
 		if (tm30_15Result.isSuccess()) {
-			TM30Data tm30Data = tm30_15Result.getValue();
-			assertTrue(tm30Data.rf() >= 0 && tm30Data.rf() <= 200);
-			assertTrue(tm30Data.rg() >= 0 && tm30Data.rg() <= 200);
-			assertEquals(16, tm30Data.hueAngleBins().length);
-			assertEquals(99, tm30Data.colorSamples().length);
+			TM30 TM30 = tm30_15Result.getValue();
+			assertTrue(TM30.rf() >= 0 && TM30.rf() <= 200);
+			assertTrue(TM30.rg() >= 0 && TM30.rg() <= 200);
+			assertEquals(16, TM30.hueAngleBins().length);
+			assertEquals(99, TM30.colorSamples().length);
 		}
 
-		JetiResult<TM30Data> tm30_18Result = radioEx.getTM30(false);
+		JetiResult<TM30> tm30_18Result = radioEx.getTM30(false);
 		if (tm30_18Result.isSuccess()) {
-			TM30Data tm30Data = tm30_18Result.getValue();
-			assertTrue(tm30Data.rf() >= 0 && tm30Data.rf() <= 200);
-			assertTrue(tm30Data.rg() >= 0 && tm30Data.rg() <= 200);
+			TM30 tm30 = tm30_18Result.getValue();
+			assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
+			assertTrue(tm30.rg() >= 0 && tm30.rg() <= 200);
 		}
 	}
 
@@ -158,9 +158,9 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100.0f, 1, 1);
 
 		float threshold = 0.5f;
-		JetiResult<PeakFWHMData> result = radioEx.getPeakFWHM(threshold);
+		JetiResult<PeakFWHM> result = radioEx.getPeakFWHM(threshold);
 		if (result.isSuccess()) {
-			PeakFWHMData data = result.getValue();
+			PeakFWHM data = result.getValue();
 			assertTrue(data.peak() >= 380 && data.peak() <= 780, "Peak wavelength should be in visible range: " + data.peak());
 			assertTrue(data.fwhm() > 0, "FWHM should be positive: " + data.fwhm());
 		}
@@ -171,7 +171,7 @@ public class JetiRadioExTest {
 	void testBlueMeasurementData () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
-		JetiResult<BlueMeasurementData> result = radioEx.getBlueMeasurement();
+		JetiResult<BlueMeasurement> result = radioEx.getBlueMeasurement();
 		assertTrue(result.isSuccess(), result.toString());
 	}
 
@@ -278,15 +278,15 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100, 1, 5);
 
 		// Get chromaticity XY
-		JetiResult<XY> xyResult = radioEx.getChromaticityXY();
+		JetiResult<XY> xyResult = radioEx.getChromaXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
 
 		// Get chromaticity XY10
-		JetiResult<XY10> xy10Result = radioEx.getChromaticityXY10();
+		JetiResult<XY10> xy10Result = radioEx.getChromaXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
 
 		// Get chromaticity UV
-		JetiResult<UV> uvResult = radioEx.getChromaticityUV();
+		JetiResult<UV> uvResult = radioEx.getChromaUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
 
 		// Get XYZ values
@@ -313,6 +313,38 @@ public class JetiRadioExTest {
 		JetiResult<Boolean> statusResult = radioEx.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
 		// Note: Status might still be true briefly after break
+	}
+
+	@Test
+	@DisplayName("Test all RadioEx functions for coverage")
+	void testAllRadioExFunctions () {
+		// Test measureWithAdaptation (carefully to avoid breaking other tests)
+		var adaptResult = radioEx.measureWithAdaptation(1, 5);
+		if (adaptResult.isSuccess()) {
+			// Break it immediately to avoid issues
+			radioEx.breakMeasurement();
+			
+			// Still test getAdaptationStatus
+			var adaptStatus = radioEx.getAdaptationStatus();
+			if (adaptStatus.isSuccess()) {
+				assertNotNull(adaptStatus.getValue());
+			}
+		}
+
+		// Perform a normal measurement for other tests
+		performMeasurementAndWait(100.0f, 1, 5);
+
+		// Test getDuv (not tested elsewhere)
+		var duvResult = radioEx.getDuv();
+		if (duvResult.isSuccess()) {
+			assertNotNull(duvResult.getValue());
+		}
+
+		// Test getCCT separately (already tested in testColorRenderingIndexWithCCT but let's ensure it's called)
+		var cctResult = radioEx.getCCT();
+		if (cctResult.isSuccess()) {
+			assertTrue(cctResult.getValue() >= 0);
+		}
 	}
 
 	private void performMeasurementAndWait (float integrationTime, int averageCount, int stepWidth) {
