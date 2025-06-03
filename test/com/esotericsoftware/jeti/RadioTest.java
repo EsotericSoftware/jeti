@@ -25,6 +25,7 @@ public class RadioTest {
 
 	@BeforeEach
 	void setUp () {
+		Log.TRACE();
 		JetiSDK.initialize();
 
 		Result<Integer> deviceCount = Radio.getDeviceCount();

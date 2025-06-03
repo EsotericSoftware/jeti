@@ -30,6 +30,7 @@ public class RadioExTest {
 
 	@BeforeEach
 	void setUp () {
+		Log.TRACE();
 		JetiSDK.initialize();
 
 		Result<Integer> deviceCount = RadioEx.getDeviceCount();

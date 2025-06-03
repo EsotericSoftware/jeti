@@ -18,6 +18,7 @@ public class SpectroTest {
 
 	@BeforeEach
 	void setUp () {
+		Log.TRACE();
 		JetiSDK.initialize();
 
 		Result<Integer> deviceCount = Spectro.getDeviceCount();
