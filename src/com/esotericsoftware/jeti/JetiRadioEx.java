@@ -48,15 +48,14 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 
 	public JetiResult<Boolean> getMeasurementStatus () {
 		int result = lib().JETI_MeasureStatusEx(handle, intRef);
-		if (result == SUCCESS) return success(intRef.getValue() != 0);
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(intRef.getValue() != 0);
 	}
 
 	public JetiResult<AdaptationStatus> getAdaptationStatus () {
 		int result = lib().JETI_MeasureAdaptStatusEx(handle, floatRef, shortRef, intRef);
-		if (result == SUCCESS)
-			return success(new AdaptationStatus(floatRef.getValue(), shortRef.getValue(), intRef.getValue() != 0));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new AdaptationStatus(floatRef.getValue(), shortRef.getValue(), intRef.getValue() != 0));
 	}
 
 	public JetiResult<Boolean> breakMeasurement () {
@@ -68,16 +67,16 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		int dataSize = (int)((endWavelength - beginWavelength) / step + 1);
 		var spectralData = new float[dataSize];
 		int result = lib().JETI_SpecRadEx(handle, beginWavelength, endWavelength, spectralData);
-		if (result == SUCCESS) return success(spectralData);
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(spectralData);
 	}
 
 	public JetiResult<float[]> getSpectralRadianceHiRes (int beginWavelength, int endWavelength) {
 		int dataSize = (int)((endWavelength - beginWavelength) / 0.1f + 1);
 		var spectralData = new float[dataSize];
 		int result = lib().JETI_SpecRadHiResEx(handle, beginWavelength, endWavelength, spectralData);
-		if (result == SUCCESS) return success(spectralData);
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(spectralData);
 	}
 
 	public JetiResult<Boolean> saveSpectralRadianceSPC (int beginWavelength, int endWavelength, String filePath, String operator,
@@ -93,66 +92,64 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 	// Measurement data functions
 	public JetiResult<Float> getRadiometricValue (int beginWavelength, int endWavelength) {
 		int result = lib().JETI_RadioEx(handle, beginWavelength, endWavelength, floatRef);
-		if (result == SUCCESS) return success(floatRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(floatRef.getValue());
 	}
 
 	public JetiResult<Float> getPhotometricValue () {
 		int result = lib().JETI_PhotoEx(handle, floatRef);
-		if (result == SUCCESS) return success(floatRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(floatRef.getValue());
 	}
 
 	public JetiResult<XY> getChromaticityXY () {
 		int result = lib().JETI_ChromxyEx(handle, floatRef, floatRef2);
-		if (result == SUCCESS) return success(new XY(floatRef.getValue(), floatRef2.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new XY(floatRef.getValue(), floatRef2.getValue()));
 	}
 
 	public JetiResult<XY10> getChromaticityXY10 () {
 		int result = lib().JETI_Chromxy10Ex(handle, floatRef, floatRef2);
-		if (result == SUCCESS) return success(new XY10(floatRef.getValue(), floatRef2.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new XY10(floatRef.getValue(), floatRef2.getValue()));
 	}
 
 	public JetiResult<UV> getChromaticityUV () {
 		int result = lib().JETI_ChromuvEx(handle, floatRef, floatRef2);
-		if (result == SUCCESS) return success(new UV(floatRef.getValue(), floatRef2.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new UV(floatRef.getValue(), floatRef2.getValue()));
 	}
 
 	public JetiResult<XYZ> getXYZ () {
 		int result = lib().JETI_ChromXYZEx(handle, floatRef, floatRef2, floatRef3);
-		if (result == SUCCESS) return success(new XYZ(floatRef.getValue(), floatRef2.getValue(), floatRef3.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new XYZ(floatRef.getValue(), floatRef2.getValue(), floatRef3.getValue()));
 	}
 
 	public JetiResult<DominantWavelength> getDominantWavelength () {
 		int result = lib().JETI_DWLPEEx(handle, floatRef, floatRef2);
-		if (result == SUCCESS) return success(new DominantWavelength(floatRef.getValue(), floatRef2.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new DominantWavelength(floatRef.getValue(), floatRef2.getValue()));
 	}
 
 	public JetiResult<Float> getCCT () {
 		int result = lib().JETI_CCTEx(handle, floatRef);
-		if (result == SUCCESS) return success(floatRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(floatRef.getValue());
 	}
 
 	public JetiResult<Float> getDuv () {
 		int result = lib().JETI_DuvEx(handle, floatRef);
-		if (result == SUCCESS) return success(floatRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(floatRef.getValue());
 	}
 
 	public JetiResult<CRIData> getCRI (float cct) {
 		int result = lib().JETI_CRIEx(handle, cct, cri);
-		if (result == SUCCESS) {
-			float[] samples = new float[15];
-			System.arraycopy(cri, 2, samples, 0, 15);
-			return success(new CRIData(cri[0], cri[0] / 0.0054f, cri[1], samples));
-		}
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		float[] samples = new float[15];
+		System.arraycopy(cri, 2, samples, 0, 15);
+		return success(new CRIData(cri[0], cri[0] / 0.0054f, cri[1], samples));
 	}
 
 	public JetiResult<TM30Data> getTM30 (boolean useTM3015) {
@@ -160,30 +157,28 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		var rfces = new double[99];
 		int result = lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), doubleRef, doubleRef2, doubleRef3, doubleRef4, rfi,
 			rfces);
-		if (result == SUCCESS) {
-			return success(
-				new TM30Data(doubleRef.getValue(), doubleRef2.getValue(), doubleRef3.getValue(), doubleRef4.getValue(), rfi, rfces));
-		}
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(
+			new TM30Data(doubleRef.getValue(), doubleRef2.getValue(), doubleRef3.getValue(), doubleRef4.getValue(), rfi, rfces));
 	}
 
 	public JetiResult<PeakFWHMData> getPeakFWHM (float threshold) {
 		int result = lib().JETI_PeakFWHMEx(handle, threshold, floatRef, floatRef2);
-		if (result == SUCCESS) return success(new PeakFWHMData(floatRef.getValue(), floatRef2.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new PeakFWHMData(floatRef.getValue(), floatRef2.getValue()));
 	}
 
 	public JetiResult<BlueMeasurementData> getBlueMeasurement () {
 		int result = lib().JETI_BlueMeasurementEx(handle, floatRef, floatRef2, floatRef3, floatRef4, floatRef5, floatRef6);
-		if (result == SUCCESS) return success(new BlueMeasurementData(floatRef.getValue(), floatRef2.getValue(),
-			floatRef3.getValue(), floatRef4.getValue(), floatRef5.getValue(), floatRef6.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new BlueMeasurementData(floatRef.getValue(), floatRef2.getValue(), floatRef3.getValue(),
+			floatRef4.getValue(), floatRef5.getValue(), floatRef6.getValue()));
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
 		int result = lib().JETI_RadioTintEx(handle, floatRef);
-		if (result == SUCCESS) return success(floatRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(floatRef.getValue());
 	}
 
 	public JetiResult<Boolean> setMeasurementDistance (int distance) {
@@ -192,15 +187,15 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 
 	public JetiResult<Integer> getMeasurementDistance () {
 		int result = lib().JETI_GetMeasDistEx(handle, intRef);
-		if (result == SUCCESS) return success(intRef.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(intRef.getValue());
 	}
 
 	static public JetiResult<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count);
-		if (result == SUCCESS) return success(count.getValue());
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(count.getValue());
 	}
 
 	static public JetiResult<DeviceSerials> getDeviceSerials (int deviceNumber) {
@@ -208,15 +203,15 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial);
-		if (result == SUCCESS) return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
 	static public JetiResult<JetiRadioEx> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_OpenRadioEx(deviceNumber, handle);
-		if (result == SUCCESS) return success(new JetiRadioEx(handle.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new JetiRadioEx(handle.getValue()));
 	}
 
 	static public JetiResult<DllVersion> getDllVersion () {
@@ -224,8 +219,8 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
 		int result = JetiRadioExLibrary.INSTANCE.JETI_GetRadioExDLLVersion(major, minor, build);
-		if (result == SUCCESS) return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
-		return error(result);
+		if (result != SUCCESS) return error(result);
+		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}
 
 	static public record TM30Data (
