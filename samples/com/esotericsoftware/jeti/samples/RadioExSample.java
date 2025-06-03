@@ -3,9 +3,12 @@ package com.esotericsoftware.jeti.samples;
 
 import java.util.Scanner;
 
+import com.esotericsoftware.jeti.JetiRadio;
+import com.esotericsoftware.jeti.JetiRadio.XY;
 import com.esotericsoftware.jeti.JetiRadioEx;
 import com.esotericsoftware.jeti.JetiResult;
 import com.esotericsoftware.jeti.JetiSDK;
+import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 
 public class RadioExSample {
 	static private final Scanner scanner = new Scanner(System.in);
@@ -18,14 +21,14 @@ public class RadioExSample {
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			JetiResult<Integer> deviceCount = JetiSDK.getNumberOfRadioExDevices();
+			JetiResult<Integer> deviceCount = JetiRadio.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No radio ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Radio ex devices: %d%n", deviceCount.getValue());
 
-			JetiResult<JetiRadioEx> deviceResult = JetiSDK.openRadioExDevice(0);
+			JetiResult<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open radio ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -137,15 +140,15 @@ public class RadioExSample {
 	/** Get serial numbers from the first found device */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<String[]> serialsResult = JetiRadioEx.getDeviceSerials(0);
+			JetiResult<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
 			else {
-				String[] serials = serialsResult.getValue();
-				System.out.printf("Electronics serial number: %s%n", serials[0]);
-				System.out.printf("Spectrometer serial number: %s%n", serials[1]);
-				System.out.printf("Device serial number: %s%n", serials[2]);
+				DeviceSerials serials = serialsResult.getValue();
+				System.out.printf("Electronics serial number: %s%n", serials.electronics());
+				System.out.printf("Spectrometer serial number: %s%n", serials.spectrometer());
+				System.out.printf("Device serial number: %s%n", serials.device());
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting device info: " + ex.getMessage());
@@ -226,12 +229,12 @@ public class RadioExSample {
 	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
 	static private void getChromaticityCoordinates (JetiRadioEx device) {
 		try {
-			JetiResult<float[]> result = device.getChromaticityXY();
+			JetiResult<XY> result = device.getChromaticityXY();
 			if (result.isError())
 				System.out.printf("Could not get chromaticity coordinates x and y!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
-				float[] coordinates = result.getValue();
-				System.out.printf("Chromaticity coordinates:%nx: %.4f %ny: %.4f%n", coordinates[0], coordinates[1]);
+				XY xy = result.getValue();
+				System.out.printf("Chromaticity coordinates:%nx: %.4f %ny: %.4f%n", xy.x(), xy.y());
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting chromaticity coordinates: " + ex.getMessage());
@@ -241,7 +244,7 @@ public class RadioExSample {
 	/** Returns the correlated color temperature determined by the last measurement. */
 	static private void getCorrelatedColorTemperature (JetiRadioEx device) {
 		try {
-			JetiResult<Float> result = device.getCorrelatedColorTemperature();
+			JetiResult<Float> result = device.getCCT();
 			if (result.isError())
 				System.out.printf("Could not get correlated color temperature!%nError code: 0x%08X%n", result.getErrorCode());
 			else
@@ -259,14 +262,14 @@ public class RadioExSample {
 			if (input.isEmpty()) input = "0";
 			try {
 				float cct = Float.parseFloat(input);
-				JetiResult<JetiRadioEx.CRIData> result = device.getColorRenderingIndex(cct);
+				JetiResult<JetiRadioEx.CRIData> result = device.getCRI(cct);
 				if (result.isError())
 					System.out.printf("Could not get colour rendering indizes!%nError code: 0x%08X%n", result.getErrorCode());
 				else {
 					JetiRadioEx.CRIData criData = result.getValue();
-					System.out.printf("DC: %.1E%n", criData.dc());
+					System.out.printf("DC: %.1E%n", criData.dcError());
 					System.out.printf("Ra: %.2f%n", criData.ra());
-					float[] specialIndices = criData.specialIndices();
+					float[] specialIndices = criData.samples();
 					for (int i = 0; i < specialIndices.length; i++)
 						System.out.printf("R%d: %.1f%n", i + 1, specialIndices[i]);
 				}

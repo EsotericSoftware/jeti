@@ -11,10 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
+import com.esotericsoftware.jeti.JetiRadio.UV;
+import com.esotericsoftware.jeti.JetiRadio.XY;
+import com.esotericsoftware.jeti.JetiRadio.XY10;
+import com.esotericsoftware.jeti.JetiRadio.XYZ;
 import com.esotericsoftware.jeti.JetiRadioEx.BlueMeasurementData;
 import com.esotericsoftware.jeti.JetiRadioEx.CRIData;
 import com.esotericsoftware.jeti.JetiRadioEx.PeakFWHMData;
 import com.esotericsoftware.jeti.JetiRadioEx.TM30Data;
+import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
+import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
 @DisplayName("JetiRadioEx Integration Tests")
 public class JetiRadioExTest {
@@ -41,19 +48,17 @@ public class JetiRadioExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiRadioEx.getDeviceSerials(0);
+		JetiResult<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
-			String[] serials = serialsResult.getValue();
-			assertEquals(3, serials.length);
-			assertNotNull(serials[0]); // Board serial
-			assertNotNull(serials[1]); // Spectrometer serial
-			assertNotNull(serials[2]); // Device serial
+			DeviceSerials serials = serialsResult.getValue();
+			assertNotNull(serials.electronics());
+			assertNotNull(serials.spectrometer());
+			assertNotNull(serials.device());
 		}
 
-		JetiResult<String> versionResult = JetiRadioEx.getDllVersion();
+		JetiResult<DllVersion> versionResult = JetiRadioEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
-		assertTrue(versionResult.getValue().contains("."));
 	}
 
 	@Test
@@ -105,21 +110,21 @@ public class JetiRadioExTest {
 	void testColorRenderingIndexWithCCT () {
 		performMeasurementAndWait(100.0f, 1, 5);
 
-		JetiResult<Float> cctResult = radioEx.getCorrelatedColorTemperature();
+		JetiResult<Float> cctResult = radioEx.getCCT();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		float cct = cctResult.getValue();
 
 		// Get CRI data using the measured CCT
-		JetiResult<CRIData> criResult = radioEx.getColorRenderingIndex(cct);
+		JetiResult<CRIData> criResult = radioEx.getCRI(cct);
 		assertTrue(criResult.isSuccess(), criResult.toString());
 
 		CRIData criData = criResult.getValue();
 		assertNotNull(criData);
 		assertTrue(criData.ra() >= 0 && criData.ra() <= 100);
-		assertEquals(15, criData.specialIndices().length);
+		assertEquals(15, criData.samples().length);
 
 		// Check that special indices are reasonable
-		for (float index : criData.specialIndices()) {
+		for (float index : criData.samples()) {
 			assertTrue(index >= -100 && index <= 100, "CRI special index should be between -100 and 100, got: " + index);
 		}
 	}
@@ -135,8 +140,8 @@ public class JetiRadioExTest {
 			TM30Data tm30Data = tm30_15Result.getValue();
 			assertTrue(tm30Data.rf() >= 0 && tm30Data.rf() <= 200);
 			assertTrue(tm30Data.rg() >= 0 && tm30Data.rg() <= 200);
-			assertEquals(15, tm30Data.rfi().length);
-			assertEquals(99, tm30Data.rfces().length);
+			assertEquals(16, tm30Data.hueAngleBins().length);
+			assertEquals(99, tm30Data.colorSamples().length);
 		}
 
 		JetiResult<TM30Data> tm30_18Result = radioEx.getTM30(false);
@@ -273,29 +278,24 @@ public class JetiRadioExTest {
 		performMeasurementAndWait(100, 1, 5);
 
 		// Get chromaticity XY
-		JetiResult<float[]> xyResult = radioEx.getChromaticityXY();
+		JetiResult<XY> xyResult = radioEx.getChromaticityXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
-		assertEquals(2, xyResult.getValue().length);
 
 		// Get chromaticity XY10
-		JetiResult<float[]> xy10Result = radioEx.getChromaticityXY10();
+		JetiResult<XY10> xy10Result = radioEx.getChromaticityXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
-		assertEquals(2, xy10Result.getValue().length);
 
 		// Get chromaticity UV
-		JetiResult<float[]> uvResult = radioEx.getChromaticityUV();
+		JetiResult<UV> uvResult = radioEx.getChromaticityUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
-		assertEquals(2, uvResult.getValue().length);
 
 		// Get XYZ values
-		JetiResult<float[]> xyzResult = radioEx.getXYZValues();
+		JetiResult<XYZ> xyzResult = radioEx.getXYZ();
 		assertTrue(xyzResult.isSuccess(), xyzResult.toString());
-		assertEquals(3, xyzResult.getValue().length);
 
 		// Get dominant wavelength and purity
-		JetiResult<float[]> dwlpeResult = radioEx.getDominantWavelengthAndPurity();
+		JetiResult<DominantWavelength> dwlpeResult = radioEx.getDominantWavelength();
 		assertTrue(dwlpeResult.isSuccess(), dwlpeResult.toString());
-		assertEquals(2, dwlpeResult.getValue().length);
 	}
 
 	@Test

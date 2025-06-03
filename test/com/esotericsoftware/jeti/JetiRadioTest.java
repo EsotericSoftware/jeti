@@ -10,6 +10,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
+import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
+import com.esotericsoftware.jeti.JetiRadio.UV;
+import com.esotericsoftware.jeti.JetiRadio.XY;
+import com.esotericsoftware.jeti.JetiRadio.XY10;
+import com.esotericsoftware.jeti.JetiRadio.XYZ;
+import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
+import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
 @DisplayName("JetiRadio Integration Tests")
 public class JetiRadioTest {
@@ -36,19 +43,17 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiRadio.getDeviceSerials(0);
+		JetiResult<DeviceSerials> serialsResult = JetiRadio.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
-			String[] serials = serialsResult.getValue();
-			assertEquals(3, serials.length);
-			assertNotNull(serials[0]); // Board serial
-			assertNotNull(serials[1]); // Spectrometer serial
-			assertNotNull(serials[2]); // Device serial
+			DeviceSerials serials = serialsResult.getValue();
+			assertNotNull(serials.electronics());
+			assertNotNull(serials.spectrometer());
+			assertNotNull(serials.device());
 		}
 
-		JetiResult<String> versionResult = JetiRadio.getDllVersion();
+		JetiResult<DllVersion> versionResult = JetiRadio.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
-		assertTrue(versionResult.getValue().contains("."));
 	}
 
 	@Test
@@ -94,34 +99,29 @@ public class JetiRadioTest {
 		performMeasurementAndWait();
 
 		// Get chromaticity XY
-		JetiResult<float[]> xyResult = radio.getChromaticityXY();
+		JetiResult<XY> xyResult = radio.getChromaticityXY();
 		assertTrue(xyResult.isSuccess(), xyResult.toString());
-		assertEquals(2, xyResult.getValue().length);
-		assertTrue(xyResult.getValue()[0] >= 0 && xyResult.getValue()[0] <= 1);
-		assertTrue(xyResult.getValue()[1] >= 0 && xyResult.getValue()[1] <= 1);
+		assertTrue(xyResult.getValue().x() >= 0 && xyResult.getValue().x() <= 1);
+		assertTrue(xyResult.getValue().y() >= 0 && xyResult.getValue().y() <= 1);
 
 		// Get chromaticity XY10
-		JetiResult<float[]> xy10Result = radio.getChromaticityXY10();
+		JetiResult<XY10> xy10Result = radio.getChromaticityXY10();
 		assertTrue(xy10Result.isSuccess(), xy10Result.toString());
-		assertEquals(2, xy10Result.getValue().length);
 
 		// Get chromaticity UV
-		JetiResult<float[]> uvResult = radio.getChromaticityUV();
+		JetiResult<UV> uvResult = radio.getChromaticityUV();
 		assertTrue(uvResult.isSuccess(), uvResult.toString());
-		assertEquals(2, uvResult.getValue().length);
 
 		// Get XYZ values
-		JetiResult<float[]> xyzResult = radio.getXYZValues();
+		JetiResult<XYZ> xyzResult = radio.getXYZ();
 		assertTrue(xyzResult.isSuccess(), xyzResult.toString());
-		assertEquals(3, xyzResult.getValue().length);
 
 		// Get dominant wavelength and purity
-		JetiResult<float[]> dwlpeResult = radio.getDominantWavelengthAndPurity();
-		assertTrue(dwlpeResult.isSuccess(), dwlpeResult.toString());
-		assertEquals(2, dwlpeResult.getValue().length);
+		JetiResult<DominantWavelength> dwlResult = radio.getDominantWavelength();
+		assertTrue(dwlResult.isSuccess(), dwlResult.toString());
 
 		// Get CCT
-		JetiResult<Float> cctResult = radio.getCorrelatedColorTemperature();
+		JetiResult<Float> cctResult = radio.getCCT();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		assertTrue(cctResult.getValue() > 0);
 
@@ -130,7 +130,7 @@ public class JetiRadioTest {
 		assertTrue(duvResult.isSuccess(), duvResult.toString());
 
 		// Get CRI
-		JetiResult<Float> criResult = radio.getColorRenderingIndex();
+		JetiResult<Float> criResult = radio.getCRI();
 		assertTrue(criResult.isSuccess(), criResult.toString());
 		assertTrue(criResult.getValue() >= 0 && criResult.getValue() <= 100);
 	}
@@ -142,7 +142,7 @@ public class JetiRadioTest {
 
 		JetiResult<float[]> spectralResult = radio.getSpectralRadiance();
 		assertTrue(spectralResult.isSuccess(), spectralResult.toString());
-		assertEquals(JetiSDK.SPECTRAL_DATA_SIZE, spectralResult.getValue().length);
+		assertEquals(JetiSDK.SPECTRUM_SIZE, spectralResult.getValue().length);
 
 		// Check that spectral data contains reasonable values
 		float[] spectralData = spectralResult.getValue();
@@ -197,7 +197,7 @@ public class JetiRadioTest {
 
 			JetiResult<AdaptationStatus> statusResult = radio.getAdaptationStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
-			adapting = !statusResult.getValue().isComplete();
+			adapting = !statusResult.getValue().complete();
 			attempts++;
 		}
 
@@ -207,10 +207,10 @@ public class JetiRadioTest {
 		JetiResult<AdaptationStatus> finalStatus = radio.getAdaptationStatus();
 		assertTrue(finalStatus.isSuccess(), finalStatus.toString());
 		AdaptationStatus status = finalStatus.getValue();
-		assertTrue(status.isComplete());
+		assertTrue(status.complete());
 		// BOZO - Why are these 0?
-		assertTrue(status.integrationTime() > 0);
 		assertTrue(status.averageCount() > 0);
+		assertTrue(status.integrationTime() > 0);
 	}
 
 	@Test

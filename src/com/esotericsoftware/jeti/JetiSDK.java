@@ -9,19 +9,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import com.esotericsoftware.jeti.JetiCore.DeviceInfo;
-
 /** @author Nathan Sweet <misc@n4te.com> */
 public class JetiSDK {
-	static public String[] libraries = {"jeti_core64.dll", "jeti_radio64.dll", "jeti_spectro64.dll", "jeti_radio_ex64.dll",
+	static public String[] libraries = { //
+		"jeti_core64.dll", //
+		"jeti_radio64.dll", //
+		"jeti_spectro64.dll", //
+		"jeti_radio_ex64.dll", //
 		"jeti_spectro_ex64.dll"};
 
+	static public final int SUCCESS = 0;
 	static public final int INVALID_ARGUMENT = 0x0000000D;
 	static public final int INVALID_DEVICE_NUMBER = 0x00000013;
 
-	static final int SUCCESS = 0;
-	static final int STRING_BUFFER_SIZE = 256;
-	static final int SPECTRAL_DATA_SIZE = 2048;
+	static final int STRING_SIZE = 16;
+	static final int SPECTRUM_SIZE = 81;
 
 	static private volatile boolean initialized;
 
@@ -67,8 +69,21 @@ public class JetiSDK {
 		}
 	}
 
-	static public boolean isInitialized () {
-		return initialized;
+	static private void extractLibraries (Path dir) throws IOException {
+		for (String library : libraries) {
+			try (InputStream input = JetiSDK.class.getResourceAsStream("/" + library)) {
+				if (input != null) {
+					Path path = dir.resolve(library);
+					Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
+					path.toFile().deleteOnExit();
+					Log.debug("Extracted native library: " + path);
+				} else
+					Log.warn("Native library not found: " + library);
+			}
+		}
+
+		System.setProperty("jna.library.path", dir.toString());
+		Log.debug("Native library path: " + dir);
 	}
 
 	static private void deleteLibraries (Path dir) {
@@ -84,134 +99,18 @@ public class JetiSDK {
 		}
 	}
 
-	static public JetiResult<Boolean> setLicenseKey (String licenseKey) {
-		ensureInitialized();
-		return JetiCore.setLicenseKey(licenseKey);
-	}
-
-	static public JetiResult<Boolean> importStraylightMatrix (String matrixFile) {
-		ensureInitialized();
-		return JetiCore.importStraylightMatrix(matrixFile);
-	}
-
-	static public JetiResult<Boolean> ignoreStraylightMatrix (boolean ignore) {
-		ensureInitialized();
-		return JetiCore.ignoreStraylightMatrix(ignore);
-	}
-
-	static public JetiResult<DeviceInfo[]> discoverDevices () {
-		ensureInitialized();
-		return JetiCore.getAllDeviceInfo();
-	}
-
-	static public JetiResult<JetiCore> openCoreDevice (int deviceNumber) {
-		ensureInitialized();
-		return JetiCore.openDevice(deviceNumber);
-	}
-
-	static public JetiResult<JetiCore> openCoreDeviceBySerial (String deviceSerial) {
-		ensureInitialized();
-		JetiResult<DeviceInfo[]> devicesResult = discoverDevices();
-		if (devicesResult.isError()) return JetiResult.error(devicesResult.getErrorCode());
-
-		DeviceInfo[] devices = devicesResult.getValue();
-		for (int i = 0, n = devices.length; i < n; i++) {
-			DeviceInfo device = devices[i];
-			if (deviceSerial.equals(device.deviceSerial())) return JetiCore.openDevice(i);
-		}
-		return JetiResult.error(INVALID_DEVICE_NUMBER);
-	}
-
-	static public JetiResult<JetiCore> openComDevice (int comPort, int baudrate) {
-		ensureInitialized();
-		return JetiCore.openComDevice(comPort, baudrate);
-	}
-
-	static public JetiResult<JetiCore> openTcpDevice (String ipAddress) {
-		ensureInitialized();
-		return JetiCore.openTcpDevice(ipAddress);
-	}
-
-	static public JetiResult<JetiCore> openUsbDevice (String usbSerial) {
-		ensureInitialized();
-		return JetiCore.openUsbDevice(usbSerial);
-	}
-
-	static public JetiResult<JetiCore> openBluetoothDevice (long btAddress) {
-		ensureInitialized();
-		return JetiCore.openBluetoothDevice(btAddress);
-	}
-
-	static public JetiResult<JetiCore> openBluetoothLeDevice (String devicePath) {
-		ensureInitialized();
-		return JetiCore.openBluetoothLeDevice(devicePath);
-	}
-
-	static public JetiResult<JetiRadio> openRadioDevice (int deviceNumber) {
-		ensureInitialized();
-		return JetiRadio.openDevice(deviceNumber);
-	}
-
-	static public JetiResult<JetiSpectro> openSpectroDevice (int deviceNumber) {
-		ensureInitialized();
-		return JetiSpectro.openDevice(deviceNumber);
-	}
-
-	static public JetiResult<JetiRadioEx> openRadioExDevice (int deviceNumber) {
-		ensureInitialized();
-		return JetiRadioEx.openDevice(deviceNumber);
-	}
-
-	static public JetiResult<JetiSpectroEx> openSpectroExDevice (int deviceNumber) {
-		ensureInitialized();
-		return JetiSpectroEx.openDevice(deviceNumber);
-	}
-
-	static public JetiResult<SDKVersion> getSDKVersion () {
-		ensureInitialized();
-
-		JetiResult<String> radioVersionResult = JetiRadio.getDllVersion();
-		JetiResult<String> spectroVersionResult = JetiSpectro.getDllVersion();
-		JetiResult<String> radioExVersionResult = JetiRadioEx.getDllVersion();
-		JetiResult<String> spectroExVersionResult = JetiSpectroEx.getDllVersion();
-
-		String coreVersion = "Unknown";
-		String radioVersion = radioVersionResult.isSuccess() ? radioVersionResult.getValue() : "Unknown";
-		String spectroVersion = spectroVersionResult.isSuccess() ? spectroVersionResult.getValue() : "Unknown";
-		String radioExVersion = radioExVersionResult.isSuccess() ? radioExVersionResult.getValue() : "Unknown";
-		String spectroExVersion = spectroExVersionResult.isSuccess() ? spectroExVersionResult.getValue() : "Unknown";
-
-		return JetiResult.success(new SDKVersion(coreVersion, radioVersion, spectroVersion, radioExVersion, spectroExVersion));
-	}
-
-	static public JetiResult<Integer> getNumberOfCoreDevices () {
-		ensureInitialized();
-		return JetiCore.getDeviceCount();
-	}
-
-	static public JetiResult<Integer> getNumberOfRadioDevices () {
-		ensureInitialized();
-		return JetiRadio.getDeviceCount();
-	}
-
-	static public JetiResult<Integer> getNumberOfSpectroDevices () {
-		ensureInitialized();
-		return JetiSpectro.getDeviceCount();
-	}
-
-	static public JetiResult<Integer> getNumberOfRadioExDevices () {
-		ensureInitialized();
-		return JetiRadioEx.getDeviceCount();
-	}
-
-	static public JetiResult<Integer> getNumberOfSpectroExDevices () {
-		ensureInitialized();
-		return JetiSpectroEx.getDeviceCount();
+	static String string (byte[] bytes) {
+		if (bytes == null) return "";
+		int length = 0;
+		while (length < bytes.length && bytes[length] != 0)
+			length++;
+		if (length == 0) return "";
+		return new String(bytes, 0, length, StandardCharsets.UTF_8).trim();
 	}
 
 	static public String getErrorMessage (int errorCode) {
 		return switch (errorCode) {
-		case 0x00000000 -> "No error occurred";
+		case SUCCESS -> "No error occurred";
 		case 0x00000001 -> "Device already open";
 		case 0x00000002 -> "Could not open COM-port";
 		case 0x00000003 -> "Could not set COM-port settings";
@@ -249,40 +148,7 @@ public class JetiSDK {
 		};
 	}
 
-	static private void extractLibraries (Path dir) throws IOException {
-		for (String library : libraries) {
-			try (InputStream input = JetiSDK.class.getResourceAsStream("/" + library)) {
-				if (input != null) {
-					Path path = dir.resolve(library);
-					Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
-					path.toFile().deleteOnExit();
-					Log.debug("Extracted native library: " + path);
-				} else
-					Log.warn("Native library not found: " + library);
-			}
-		}
+	static public record DeviceSerials (String electronics, String spectrometer, String device) {}
 
-		System.setProperty("jna.library.path", dir.toString());
-		Log.debug("Native library path: " + dir);
-	}
-
-	static private void ensureInitialized () {
-		if (!initialized) initialize();
-	}
-
-	static String string (byte[] bytes) {
-		if (bytes == null) return "";
-		int length = 0;
-		while (length < bytes.length && bytes[length] != 0)
-			length++;
-		if (length == 0) return "";
-		return new String(bytes, 0, length, StandardCharsets.UTF_8).trim();
-	}
-
-	public record SDKVersion (
-		String coreVersion,
-		String radioVersion,
-		String spectroVersion,
-		String radioExVersion,
-		String spectroExVersion) {}
+	static public record DllVersion (short major, short minor, short build) {}
 }

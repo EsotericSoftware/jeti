@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 import com.esotericsoftware.jeti.JetiResult;
 import com.esotericsoftware.jeti.JetiSDK;
+import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSpectroEx;
 
 public class SpectroExSample {
@@ -20,14 +21,14 @@ public class SpectroExSample {
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			JetiResult<Integer> deviceCount = JetiSDK.getNumberOfSpectroExDevices();
+			JetiResult<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No spectro ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Spectro ex devices: %d%n", deviceCount.getValue());
 
-			JetiResult<JetiSpectroEx> deviceResult = JetiSDK.openSpectroExDevice(0);
+			JetiResult<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open spectro ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -127,13 +128,15 @@ public class SpectroExSample {
 	/** Get serial numbers from the first device found. */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<String[]> serialsResult = JetiSpectroEx.getDeviceSerials(0);
+			JetiResult<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
 			if (serialsResult.isError())
-				System.out.printf("Could not get serial numbers!%nError code: 0x%08X%n", serialsResult.getErrorCode());
+				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
+					serialsResult.getErrorCode());
 			else {
-				String[] serials = serialsResult.getValue();
-				System.out.printf("electronics serial number: %s%nspectrometer serial number: %s%ndevice serial number: %s%n",
-					serials[0], serials[1], serials[2]);
+				DeviceSerials serials = serialsResult.getValue();
+				System.out.printf("Electronics serial number: %s%n", serials.electronics());
+				System.out.printf("Spectrometer serial number: %s%n", serials.spectrometer());
+				System.out.printf("Device serial number: %s%n", serials.device());
 			}
 		} catch (Throwable ex) {
 			System.err.println("Error getting device info: " + ex.getMessage());
