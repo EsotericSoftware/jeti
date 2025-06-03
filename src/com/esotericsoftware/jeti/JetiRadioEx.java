@@ -5,6 +5,7 @@ import static com.esotericsoftware.jeti.JetiResult.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
+import com.esotericsoftware.jeti.JetiRadio.CRI;
 import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
 import com.esotericsoftware.jeti.JetiRadio.UV;
 import com.esotericsoftware.jeti.JetiRadio.XY;
@@ -144,12 +145,12 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		return success(floatRef.getValue());
 	}
 
-	public JetiResult<CRIData> getCRI (float cct) {
+	public JetiResult<CRI> getCRI (float cct) {
 		int result = lib().JETI_CRIEx(handle, cct, cri);
 		if (result != SUCCESS) return error(result);
 		float[] samples = new float[15];
 		System.arraycopy(cri, 2, samples, 0, 15);
-		return success(new CRIData(cri[0], cri[0] / 0.0054f, cri[1], samples));
+		return success(new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples));
 	}
 
 	public JetiResult<TM30Data> getTM30 (boolean useTM3015) {
@@ -245,6 +246,4 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		/** 415-455nm vs 400-500nm */
 		float blueContentRatio,
 		float nonBluePeakRatio) {}
-
-	static public record CRIData (float dcError, float inaccuracyPercent, float ra, float[] samples) {}
 }

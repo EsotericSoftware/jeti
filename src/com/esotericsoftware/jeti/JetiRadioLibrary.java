@@ -56,7 +56,7 @@ public interface JetiRadioLibrary extends Library {
 
 	int JETI_Duv (Pointer dwDevice, FloatByReference fDuv);
 
-	int JETI_CRI (Pointer dwDevice, FloatByReference fCRI);
+	int JETI_CRI (Pointer dwDevice, float[] fCRI);
 
 	int JETI_RadioTint (Pointer dwDevice, FloatByReference fTint);
 

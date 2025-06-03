@@ -4,6 +4,7 @@ package com.esotericsoftware.jeti.samples;
 import java.util.Scanner;
 
 import com.esotericsoftware.jeti.JetiRadio;
+import com.esotericsoftware.jeti.JetiRadio.CRI;
 import com.esotericsoftware.jeti.JetiRadio.XY;
 import com.esotericsoftware.jeti.JetiRadioEx;
 import com.esotericsoftware.jeti.JetiResult;
@@ -262,11 +263,11 @@ public class RadioExSample {
 			if (input.isEmpty()) input = "0";
 			try {
 				float cct = Float.parseFloat(input);
-				JetiResult<JetiRadioEx.CRIData> result = device.getCRI(cct);
+				JetiResult<CRI> result = device.getCRI(cct);
 				if (result.isError())
 					System.out.printf("Could not get colour rendering indizes!%nError code: 0x%08X%n", result.getErrorCode());
 				else {
-					JetiRadioEx.CRIData criData = result.getValue();
+					CRI criData = result.getValue();
 					System.out.printf("DC: %.1E%n", criData.dcError());
 					System.out.printf("Ra: %.2f%n", criData.ra());
 					float[] specialIndices = criData.samples();

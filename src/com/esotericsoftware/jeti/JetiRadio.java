@@ -17,6 +17,7 @@ import com.sun.jna.ptr.ShortByReference;
 public class JetiRadio extends Device<JetiRadioLibrary> {
 	private final FloatByReference floatRef2 = new FloatByReference(), floatRef3 = new FloatByReference();
 	private final ShortByReference shortRef = new ShortByReference();
+	private final float[] cri = new float[17];
 
 	private JetiRadio (Pointer handle) {
 		super(JetiRadioLibrary.INSTANCE, handle);
@@ -111,10 +112,12 @@ public class JetiRadio extends Device<JetiRadioLibrary> {
 		return success(floatRef.getValue());
 	}
 
-	public JetiResult<Float> getCRI () {
-		int result = lib().JETI_CRI(handle, floatRef);
+	public JetiResult<CRI> getCRI () {
+		int result = lib().JETI_CRI(handle, cri);
 		if (result != SUCCESS) return error(result);
-		return success(floatRef.getValue());
+		float[] samples = new float[15];
+		System.arraycopy(cri, 2, samples, 0, 15);
+		return success(new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples));
 	}
 
 	public JetiResult<Float> getIntegrationTime () {
@@ -175,5 +178,8 @@ public class JetiRadio extends Device<JetiRadioLibrary> {
 
 	public record XYZ (float x, float y, float z) {}
 
+	public record CRI (float dcError, float inaccuracyPercent, float ra, float[] samples) {}
+
 	public record DominantWavelength (float wavelength, float purity) {}
+
 }

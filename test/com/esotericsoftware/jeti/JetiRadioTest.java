@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.esotericsoftware.jeti.JetiRadio.AdaptationStatus;
+import com.esotericsoftware.jeti.JetiRadio.CRI;
 import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
 import com.esotericsoftware.jeti.JetiRadio.UV;
 import com.esotericsoftware.jeti.JetiRadio.XY;
@@ -92,7 +93,6 @@ public class JetiRadioTest {
 		assertTrue(photoResult.getValue() >= 0);
 	}
 
-	// BOZO - Sometimes terminates process?!
 	@Test
 	@DisplayName("Get chromaticity and color values")
 	void testChromaticityAndColorValues () {
@@ -130,9 +130,9 @@ public class JetiRadioTest {
 		assertTrue(duvResult.isSuccess(), duvResult.toString());
 
 		// Get CRI
-		JetiResult<Float> criResult = radio.getCRI();
+		JetiResult<CRI> criResult = radio.getCRI();
 		assertTrue(criResult.isSuccess(), criResult.toString());
-		assertTrue(criResult.getValue() >= 0 && criResult.getValue() <= 100);
+		assertTrue(criResult.getValue().ra() >= 0 && criResult.getValue().ra() <= 100);
 	}
 
 	@Test
@@ -209,8 +209,8 @@ public class JetiRadioTest {
 		AdaptationStatus status = finalStatus.getValue();
 		assertTrue(status.complete());
 		// BOZO - Why are these 0?
-		assertTrue(status.averageCount() > 0);
 		assertTrue(status.integrationTime() > 0);
+		assertTrue(status.averageCount() > 0);
 	}
 
 	@Test

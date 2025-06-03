@@ -11,13 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.esotericsoftware.jeti.JetiRadio.CRI;
 import com.esotericsoftware.jeti.JetiRadio.DominantWavelength;
 import com.esotericsoftware.jeti.JetiRadio.UV;
 import com.esotericsoftware.jeti.JetiRadio.XY;
 import com.esotericsoftware.jeti.JetiRadio.XY10;
 import com.esotericsoftware.jeti.JetiRadio.XYZ;
 import com.esotericsoftware.jeti.JetiRadioEx.BlueMeasurementData;
-import com.esotericsoftware.jeti.JetiRadioEx.CRIData;
 import com.esotericsoftware.jeti.JetiRadioEx.PeakFWHMData;
 import com.esotericsoftware.jeti.JetiRadioEx.TM30Data;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
@@ -115,10 +115,10 @@ public class JetiRadioExTest {
 		float cct = cctResult.getValue();
 
 		// Get CRI data using the measured CCT
-		JetiResult<CRIData> criResult = radioEx.getCRI(cct);
+		JetiResult<CRI> criResult = radioEx.getCRI(cct);
 		assertTrue(criResult.isSuccess(), criResult.toString());
 
-		CRIData criData = criResult.getValue();
+		CRI criData = criResult.getValue();
 		assertNotNull(criData);
 		assertTrue(criData.ra() >= 0 && criData.ra() <= 100);
 		assertEquals(15, criData.samples().length);
