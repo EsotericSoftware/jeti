@@ -11,8 +11,8 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface JetiRadioExLibrary extends Library {
-	final JetiRadioExLibrary INSTANCE = Native.load("jeti_radio_ex64", JetiRadioExLibrary.class);
+public interface RadioExLibrary extends Library {
+	final RadioExLibrary INSTANCE = Native.load("jeti_radio_ex64", RadioExLibrary.class);
 
 	// Device discovery and connection
 	int JETI_GetNumRadioEx (IntByReference dwNumDevices);

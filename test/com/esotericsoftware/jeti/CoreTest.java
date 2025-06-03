@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class JetiCoreTest {
+public class CoreTest {
 	static public final String IP = "10.1.0.55";
 
 	static private String getTestLicenseKey () {
@@ -39,7 +39,7 @@ public class JetiCoreTest {
 	void testSetLicenseKey () {
 		String licenseKey = getTestLicenseKey();
 		assumeFalse(licenseKey == null, "JETI license key not configured");
-		var result = JetiCore.setLicenseKey(licenseKey);
+		var result = Core.setLicenseKey(licenseKey);
 		assertTrue(result.isSuccess(), result.toString());
 	}
 
@@ -47,7 +47,7 @@ public class JetiCoreTest {
 	@Order(3)
 	@DisplayName("Get DLL version")
 	void testGetDllVersion () {
-		var result = JetiCore.getDllVersion();
+		var result = Core.getDllVersion();
 		assertTrue(result.isSuccess(), result.toString());
 		assertNotNull(result.getValue());
 		System.out.println(
@@ -58,7 +58,7 @@ public class JetiCoreTest {
 	@Order(4)
 	@DisplayName("Get device count")
 	void testGetDeviceCount () {
-		var result = JetiCore.getDeviceCount();
+		var result = Core.getDeviceCount();
 		assertTrue(result.isSuccess(), result.toString());
 		assertTrue(result.getValue() >= 0);
 		System.out.println("Found " + result.getValue() + " Core devices");
@@ -68,7 +68,7 @@ public class JetiCoreTest {
 	@Order(5)
 	@DisplayName("Get device info")
 	void testGetDeviceInfo () {
-		var result = JetiCore.getAllDeviceInfo();
+		var result = Core.getAllDeviceInfo();
 		assertTrue(result.isSuccess(), result.toString());
 		assertNotNull(result.getValue());
 		for (var device : result.getValue()) {
@@ -80,7 +80,7 @@ public class JetiCoreTest {
 	@Order(6)
 	@DisplayName("Open TCP device")
 	void testOpenTcpDevice () {
-		var result = JetiCore.openTcpDevice(IP);
+		var result = Core.openTcpDevice(IP);
 		assertTrue(result.isSuccess(), result.toString());
 		var device = result.getValue();
 		assertNotNull(device);
@@ -89,7 +89,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testDeviceOperations (JetiCore device) {
+	private void testDeviceOperations (Core device) {
 		// Test basic device info
 		var firmwareResult = device.getFirmwareVersion();
 		assertTrue(firmwareResult.isSuccess(), firmwareResult.toString());
@@ -134,7 +134,7 @@ public class JetiCoreTest {
 		testConfigurationFunctions(device);
 	}
 
-	private void testMeasurement (JetiCore device) {
+	private void testMeasurement (Core device) {
 		// Prepare measurement
 		var prepareResult = device.prepareMeasurement();
 		if (prepareResult.isSuccess()) {
@@ -157,7 +157,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testParameterFunctions (JetiCore device) {
+	private void testParameterFunctions (Core device) {
 		// Test pixel binning
 		var pixBinResult = device.getPixelBinning();
 		if (pixBinResult.isSuccess()) {
@@ -189,7 +189,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testConfigurationFunctions (JetiCore device) {
+	private void testConfigurationFunctions (Core device) {
 		// Test dark mode configuration
 		var darkModeResult = device.getDarkModeConfig();
 		if (darkModeResult.isSuccess()) {
@@ -223,11 +223,11 @@ public class JetiCoreTest {
 	@DisplayName("Test straylight matrix functions")
 	void testStrayLightMatrix () {
 		// Test ignore straylight matrix
-		var ignoreResult = JetiCore.ignoreStraylightMatrix(true);
+		var ignoreResult = Core.ignoreStraylightMatrix(true);
 		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
 
 		// Reset to not ignore
-		ignoreResult = JetiCore.ignoreStraylightMatrix(false);
+		ignoreResult = Core.ignoreStraylightMatrix(false);
 		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
 	}
 
@@ -239,7 +239,7 @@ public class JetiCoreTest {
 		testDeviceDiscoveryFunctions();
 
 		// Open device and test all device-specific functions
-		var openResult = JetiCore.openTcpDevice(IP);
+		var openResult = Core.openTcpDevice(IP);
 		assumeFalse(openResult.isError(), "Could not open device: " + openResult);
 
 		try (var device = openResult.getValue()) {
@@ -249,9 +249,9 @@ public class JetiCoreTest {
 
 	private void testDeviceDiscoveryFunctions () {
 		// Test getDeviceSerials
-		var countResult = JetiCore.getDeviceCount();
+		var countResult = Core.getDeviceCount();
 		if (countResult.isSuccess() && countResult.getValue() > 0) {
-			var serialsResult = JetiCore.getDeviceSerials(0);
+			var serialsResult = Core.getDeviceSerials(0);
 			if (serialsResult.isSuccess()) {
 				assertNotNull(serialsResult.getValue());
 			}
@@ -259,46 +259,46 @@ public class JetiCoreTest {
 
 		// Test getDeviceInfo and getDeviceInfoEx
 		if (countResult.isSuccess() && countResult.getValue() > 0) {
-			var infoResult = JetiCore.getDeviceInfo(0);
+			var infoResult = Core.getDeviceInfo(0);
 			if (infoResult.isSuccess()) {
 				assertNotNull(infoResult.getValue());
 			}
 
-			var infoExResult = JetiCore.getDeviceInfoEx(0);
+			var infoExResult = Core.getDeviceInfoEx(0);
 			if (infoExResult.isSuccess()) {
 				assertNotNull(infoExResult.getValue());
 			}
 		}
 
 		// Test different open methods
-		var openDeviceResult = JetiCore.openDevice(0);
+		var openDeviceResult = Core.openDevice(0);
 		if (openDeviceResult.isSuccess()) {
 			openDeviceResult.getValue().close();
 		}
 
 		// Test other connection methods (these will likely fail but we're testing they're callable)
-		var comResult = JetiCore.openComDevice(1, 115200);
+		var comResult = Core.openComDevice(1, 115200);
 		if (comResult.isSuccess()) {
 			comResult.getValue().close();
 		}
 
-		var usbResult = JetiCore.openUsbDevice("TEST");
+		var usbResult = Core.openUsbDevice("TEST");
 		if (usbResult.isSuccess()) {
 			usbResult.getValue().close();
 		}
 
-		var btResult = JetiCore.openBluetoothDevice(123456789L);
+		var btResult = Core.openBluetoothDevice(123456789L);
 		if (btResult.isSuccess()) {
 			btResult.getValue().close();
 		}
 
-		var btleResult = JetiCore.openBluetoothLeDevice("TEST_PATH");
+		var btleResult = Core.openBluetoothLeDevice("TEST_PATH");
 		if (btleResult.isSuccess()) {
 			btleResult.getValue().close();
 		}
 	}
 
-	private void testAllDeviceFunctions (JetiCore device) {
+	private void testAllDeviceFunctions (Core device) {
 		// Test device communication functions
 		testDeviceCommunication(device);
 
@@ -324,7 +324,7 @@ public class JetiCoreTest {
 		testCalculationFunctions(device);
 	}
 
-	private void testDeviceCommunication (JetiCore device) {
+	private void testDeviceCommunication (Core device) {
 		// Test reset functions
 		device.reset();
 		device.hardReset();
@@ -401,7 +401,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testMeasurementFunctions (JetiCore device) {
+	private void testMeasurementFunctions (Core device) {
 		// Test break measurement
 		var breakResult = device.breakMeasurement();
 		if (breakResult.isSuccess()) {
@@ -424,7 +424,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testCalibrationFunctions (JetiCore device) {
+	private void testCalibrationFunctions (Core device) {
 		// Test calibration functions
 		var calibRangeResult = device.getCalibrationRange();
 		if (calibRangeResult.isSuccess()) {
@@ -463,7 +463,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testAllParameterFunctions (JetiCore device) {
+	private void testAllParameterFunctions (Core device) {
 		// Test additional parameter functions not in testParameterFunctions
 		var fitResult = device.getFit();
 		if (fitResult.isSuccess()) {
@@ -637,7 +637,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testControlFunctions (JetiCore device) {
+	private void testControlFunctions (Core device) {
 		// Test laser status
 		var getLaserResult = device.getLaserStatus();
 		if (getLaserResult.isSuccess()) {
@@ -798,7 +798,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testAllConfigurationFunctions (JetiCore device) {
+	private void testAllConfigurationFunctions (Core device) {
 		// Test exposure config
 		var getExposureResult = device.getExposureConfig();
 		if (getExposureResult.isSuccess()) {
@@ -938,7 +938,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testFetchFunctions (JetiCore device) {
+	private void testFetchFunctions (Core device) {
 		// Get pixel count for array size
 		var pixelCountResult = device.getPixelCount();
 		int pixelCount = pixelCountResult.isSuccess() ? pixelCountResult.getValue() : SPECTRUM_SIZE;
@@ -1051,7 +1051,7 @@ public class JetiCoreTest {
 		}
 	}
 
-	private void testCalculationFunctions (JetiCore device) {
+	private void testCalculationFunctions (Core device) {
 		// Test calculate linear dark
 		var calcLintDarkResult = device.calculateLinearDark(380, 780, 5.0f);
 		if (calcLintDarkResult.isSuccess()) {
@@ -1190,7 +1190,7 @@ public class JetiCoreTest {
 	@DisplayName("Test import straylight matrix")
 	void testImportStraylightMatrix () {
 		// This will likely fail without a valid matrix file, but we're testing it's callable
-		var importResult = JetiCore.importStraylightMatrix("test_matrix.slm");
+		var importResult = Core.importStraylightMatrix("test_matrix.slm");
 		// Don't assert success since file may not exist
 		assertNotNull(importResult);
 	}

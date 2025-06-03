@@ -10,8 +10,8 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface JetiSpectroLibrary extends Library {
-	final JetiSpectroLibrary INSTANCE = Native.load("jeti_spectro64", JetiSpectroLibrary.class);
+public interface SpectroLibrary extends Library {
+	final SpectroLibrary INSTANCE = Native.load("jeti_spectro64", SpectroLibrary.class);
 
 	// Device discovery and connection
 	int JETI_GetNumSpectro (IntByReference dwNumDevices);

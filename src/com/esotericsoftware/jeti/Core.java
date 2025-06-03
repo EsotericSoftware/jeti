@@ -1,8 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
+import static com.esotericsoftware.jeti.Result.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,9 +28,9 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiCore extends Device<JetiCoreLibrary> {
-	private JetiCore (Pointer handle) {
-		super(JetiCoreLibrary.INSTANCE, handle, JetiCoreLibrary.INSTANCE::JETI_CloseDevice, 3, 2, 4, 8, 4, 1);
+public class Core extends Device<CoreLibrary> {
+	private Core (Pointer handle) {
+		super(CoreLibrary.INSTANCE, handle, CoreLibrary.INSTANCE::JETI_CloseDevice, 3, 2, 4, 8, 4, 1);
 	}
 
 	// Device info
@@ -992,20 +992,20 @@ public class JetiCore extends Device<JetiCoreLibrary> {
 	}
 
 	static public Result<Boolean> setLicenseKey (String licenseKey) {
-		return result(JetiCoreLibrary.INSTANCE.JETI_SetLicKey(licenseKey));
+		return result(CoreLibrary.INSTANCE.JETI_SetLicKey(licenseKey));
 	}
 
 	static public Result<Boolean> importStraylightMatrix (String matrixFile) {
-		return result(JetiCoreLibrary.INSTANCE.JETI_ImportSLM(matrixFile));
+		return result(CoreLibrary.INSTANCE.JETI_ImportSLM(matrixFile));
 	}
 
 	static public Result<Boolean> ignoreStraylightMatrix (boolean ignore) {
-		return result(JetiCoreLibrary.INSTANCE.JETI_IgnoreSLM((byte)(ignore ? 1 : 0)));
+		return result(CoreLibrary.INSTANCE.JETI_IgnoreSLM((byte)(ignore ? 1 : 0)));
 	}
 
 	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetNumDevices(count);
+		int result = CoreLibrary.INSTANCE.JETI_GetNumDevices(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
@@ -1014,7 +1014,7 @@ public class JetiCore extends Device<JetiCoreLibrary> {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetSerialDevice(deviceNumber, boardSerial, specSerial, deviceSerial);
+		int result = CoreLibrary.INSTANCE.JETI_GetSerialDevice(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
@@ -1028,8 +1028,8 @@ public class JetiCore extends Device<JetiCoreLibrary> {
 		var ipAddress = new byte[STRING_SIZE];
 		var usbSerial = new byte[STRING_SIZE];
 		var btAddress = new LongByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetDeviceInfo(deviceNumber, connType, deviceType, deviceSerial, comPortNr,
-			baudrate, ipAddress, usbSerial, btAddress);
+		int result = CoreLibrary.INSTANCE.JETI_GetDeviceInfo(deviceNumber, connType, deviceType, deviceSerial, comPortNr, baudrate,
+			ipAddress, usbSerial, btAddress);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceInfo(ConnectionType.values[connType.getValue()], DeviceType.values[deviceType.getValue()],
 			string(deviceSerial), (int)comPortNr.getValue(), baudrate.getValue(), string(ipAddress), string(usbSerial),
@@ -1046,7 +1046,7 @@ public class JetiCore extends Device<JetiCoreLibrary> {
 		var usbSerial = new byte[STRING_SIZE];
 		var btAddress = new LongByReference();
 		var btleDevicePath = new char[256]; // Size?
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetDeviceInfoEx(deviceNumber, connType, deviceType, deviceSerial, comPortNr,
+		int result = CoreLibrary.INSTANCE.JETI_GetDeviceInfoEx(deviceNumber, connType, deviceType, deviceSerial, comPortNr,
 			baudrate, ipAddress, usbSerial, btAddress, btleDevicePath);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceInfo(ConnectionType.values[connType.getValue()], DeviceType.values[deviceType.getValue()],
@@ -1066,54 +1066,54 @@ public class JetiCore extends Device<JetiCoreLibrary> {
 		return success(devices.toArray(DeviceInfo[]::new));
 	}
 
-	static public Result<JetiCore> openDevice (int deviceNumber) {
+	static public Result<Core> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenDevice(deviceNumber, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenDevice(deviceNumber, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
-	static public Result<JetiCore> openComDevice (int comPort, int baudrate) {
+	static public Result<Core> openComDevice (int comPort, int baudrate) {
 		var handle = new PointerByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenCOMDevice(comPort, baudrate, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenCOMDevice(comPort, baudrate, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
-	static public Result<JetiCore> openTcpDevice (String ipAddress) {
+	static public Result<Core> openTcpDevice (String ipAddress) {
 		var handle = new PointerByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenTCPDevice(ipAddress, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenTCPDevice(ipAddress, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
-	static public Result<JetiCore> openUsbDevice (String usbSerial) {
+	static public Result<Core> openUsbDevice (String usbSerial) {
 		var handle = new PointerByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenFTDIDevice(usbSerial, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenFTDIDevice(usbSerial, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
-	static public Result<JetiCore> openBluetoothDevice (long btAddress) {
+	static public Result<Core> openBluetoothDevice (long btAddress) {
 		var handle = new PointerByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenBTDevice(btAddress, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenBTDevice(btAddress, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
-	static public Result<JetiCore> openBluetoothLeDevice (String devicePath) {
+	static public Result<Core> openBluetoothLeDevice (String devicePath) {
 		var handle = new PointerByReference();
 		char[] pathChars = devicePath.toCharArray();
-		int result = JetiCoreLibrary.INSTANCE.JETI_OpenBTLEDevice(pathChars, handle);
+		int result = CoreLibrary.INSTANCE.JETI_OpenBTLEDevice(pathChars, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiCore(handle.getValue()));
+		return success(new Core(handle.getValue()));
 	}
 
 	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-		int result = JetiCoreLibrary.INSTANCE.JETI_GetCoreDLLVersion(major, minor, build);
+		int result = CoreLibrary.INSTANCE.JETI_GetCoreDLLVersion(major, minor, build);
 		if (result != SUCCESS) return error(result);
 		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}

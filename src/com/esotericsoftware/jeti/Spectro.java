@@ -1,8 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
+import static com.esotericsoftware.jeti.Result.*;
 
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
@@ -13,9 +13,9 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiSpectro extends Device<JetiSpectroLibrary> {
-	private JetiSpectro (Pointer handle) {
-		super(JetiSpectroLibrary.INSTANCE, handle, JetiSpectroLibrary.INSTANCE::JETI_CloseSpectro, 0, 0, 0, 1, 0, 0);
+public class Spectro extends Device<SpectroLibrary> {
+	private Spectro (Pointer handle) {
+		super(SpectroLibrary.INSTANCE, handle, SpectroLibrary.INSTANCE::JETI_CloseSpectro, 0, 0, 0, 1, 0, 0);
 	}
 
 	public Result<float[]> measureDarkSpectrum (float integrationTime) {
@@ -54,7 +54,7 @@ public class JetiSpectro extends Device<JetiSpectroLibrary> {
 
 	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
-		int result = JetiSpectroLibrary.INSTANCE.JETI_GetNumSpectro(count);
+		int result = SpectroLibrary.INSTANCE.JETI_GetNumSpectro(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
@@ -63,24 +63,24 @@ public class JetiSpectro extends Device<JetiSpectroLibrary> {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
-		int result = JetiSpectroLibrary.INSTANCE.JETI_GetSerialSpectro(deviceNumber, boardSerial, specSerial, deviceSerial);
+		int result = SpectroLibrary.INSTANCE.JETI_GetSerialSpectro(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
-	static public Result<JetiSpectro> openDevice (int deviceNumber) {
+	static public Result<Spectro> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
-		int result = JetiSpectroLibrary.INSTANCE.JETI_OpenSpectro(deviceNumber, handle);
+		int result = SpectroLibrary.INSTANCE.JETI_OpenSpectro(deviceNumber, handle);
 
 		if (result != SUCCESS) return error(result);
-		return success(new JetiSpectro(handle.getValue()));
+		return success(new Spectro(handle.getValue()));
 	}
 
 	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-		int result = JetiSpectroLibrary.INSTANCE.JETI_GetSpectroDLLVersion(major, minor, build);
+		int result = SpectroLibrary.INSTANCE.JETI_GetSpectroDLLVersion(major, minor, build);
 		if (result != SUCCESS) return error(result);
 		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}

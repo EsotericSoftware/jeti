@@ -3,33 +3,33 @@ package com.esotericsoftware.jeti.samples;
 
 import java.util.Scanner;
 
-import com.esotericsoftware.jeti.JetiRadio;
-import com.esotericsoftware.jeti.JetiRadioEx;
-import com.esotericsoftware.jeti.Result;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.XY;
+import com.esotericsoftware.jeti.Radio;
+import com.esotericsoftware.jeti.RadioEx;
+import com.esotericsoftware.jeti.Result;
 
 public class RadioExSample {
 	static private final Scanner scanner = new Scanner(System.in);
 
 	static public void main (String[] args) {
-		JetiRadioEx radioDevice = null;
+		RadioEx radioDevice = null;
 
 		try {
 			System.out.println("Initializing the JETI SDK...");
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			Result<Integer> deviceCount = JetiRadio.getDeviceCount();
+			Result<Integer> deviceCount = Radio.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No radio ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Radio ex devices: %d%n", deviceCount.getValue());
 
-			Result<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
+			Result<RadioEx> deviceResult = RadioEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open radio ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -99,7 +99,7 @@ public class RadioExSample {
 	}
 
 	/** Start a radiometric measurement in the range of 380 to 780 nm. */
-	static private void performRadioMeasurement (JetiRadioEx device) {
+	static private void performRadioMeasurement (RadioEx device) {
 		try {
 			float integrationTime = promptIntegrationTime();
 			int averageCount = promptAveragingCount();
@@ -141,7 +141,7 @@ public class RadioExSample {
 	/** Get serial numbers from the first found device */
 	static private void getDeviceInfo () {
 		try {
-			Result<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
+			Result<DeviceSerials> serialsResult = RadioEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
@@ -157,7 +157,7 @@ public class RadioExSample {
 	}
 
 	/** Start a new measurement. */
-	static private void startMeasurement (JetiRadioEx device) {
+	static private void startMeasurement (RadioEx device) {
 		try {
 			float integrationTime = promptIntegrationTime();
 			int averageCount = promptAveragingCount();
@@ -174,7 +174,7 @@ public class RadioExSample {
 	}
 
 	/** Cancels an initiated measurement. */
-	static private void breakMeasurement (JetiRadioEx device) {
+	static private void breakMeasurement (RadioEx device) {
 		try {
 			Result<Boolean> result = device.breakMeasurement();
 			if (result.isError())
@@ -187,7 +187,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the status of any current measurement. */
-	static private void getMeasurementStatus (JetiRadioEx device) {
+	static private void getMeasurementStatus (RadioEx device) {
 		try {
 			Result<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
@@ -202,7 +202,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the radiometric value determined by the last measurement. */
-	static private void getRadiometricValue (JetiRadioEx device) {
+	static private void getRadiometricValue (RadioEx device) {
 		try {
 			Result<Float> result = device.getRadiometricValue(380, 780);
 			if (result.isError())
@@ -215,7 +215,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the photometric value determined by the last measuement. */
-	static private void getPhotometricValue (JetiRadioEx device) {
+	static private void getPhotometricValue (RadioEx device) {
 		try {
 			Result<Float> result = device.getPhotometricValue();
 			if (result.isError())
@@ -228,7 +228,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
-	static private void getChromaticityCoordinates (JetiRadioEx device) {
+	static private void getChromaticityCoordinates (RadioEx device) {
 		try {
 			Result<XY> result = device.getChromaXY();
 			if (result.isError())
@@ -243,7 +243,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the correlated color temperature determined by the last measurement. */
-	static private void getCCT (JetiRadioEx device) {
+	static private void getCCT (RadioEx device) {
 		try {
 			Result<Float> result = device.getCCT();
 			if (result.isError())
@@ -256,7 +256,7 @@ public class RadioExSample {
 	}
 
 	/** Returns the color rendering indices according to the CIE 13.3-1995 publication. */
-	static private void getCRI (JetiRadioEx device) {
+	static private void getCRI (RadioEx device) {
 		try {
 			System.out.print("Enter the CCT of the reference source (or 0): [0] ");
 			String input = scanner.nextLine();

@@ -20,17 +20,17 @@ import com.esotericsoftware.jeti.JetiSDK.XY10;
 import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
 @DisplayName("JetiRadio Integration Tests")
-public class JetiRadioTest {
-	private JetiRadio radio;
+public class RadioTest {
+	private Radio radio;
 
 	@BeforeEach
 	void setUp () {
 		JetiSDK.initialize();
 
-		Result<Integer> deviceCount = JetiRadio.getDeviceCount();
+		Result<Integer> deviceCount = Radio.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio devices available for testing " + deviceCount);
 
-		Result<JetiRadio> result = JetiRadio.openDevice(0);
+		Result<Radio> result = Radio.openDevice(0);
 		assumeTrue(result.isSuccess(), "Could not open radio device " + result);
 
 		radio = result.getValue();
@@ -44,7 +44,7 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = JetiRadio.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = Radio.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -52,7 +52,7 @@ public class JetiRadioTest {
 			assertNotNull(serials.device());
 		}
 
-		Result<DllVersion> versionResult = JetiRadio.getDllVersion();
+		Result<DllVersion> versionResult = Radio.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}

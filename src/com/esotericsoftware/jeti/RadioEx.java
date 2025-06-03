@@ -1,8 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
+import static com.esotericsoftware.jeti.Result.*;
 
 import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
 import com.esotericsoftware.jeti.JetiSDK.BlueMeasurement;
@@ -23,11 +23,11 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiRadioEx extends Device<JetiRadioExLibrary> {
+public class RadioEx extends Device<RadioExLibrary> {
 	private final float[] cri = new float[17];
 
-	private JetiRadioEx (Pointer handle) {
-		super(JetiRadioExLibrary.INSTANCE, handle, JetiRadioExLibrary.INSTANCE::JETI_CloseRadioEx, 0, 1, 1, 6, 4, 0);
+	private RadioEx (Pointer handle) {
+		super(RadioExLibrary.INSTANCE, handle, RadioExLibrary.INSTANCE::JETI_CloseRadioEx, 0, 1, 1, 6, 4, 0);
 	}
 
 	// Measurement functions
@@ -188,7 +188,7 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 
 	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count);
+		int result = RadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
@@ -197,23 +197,23 @@ public class JetiRadioEx extends Device<JetiRadioExLibrary> {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
-		int result = JetiRadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial);
+		int result = RadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
-	static public Result<JetiRadioEx> openDevice (int deviceNumber) {
+	static public Result<RadioEx> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_OpenRadioEx(deviceNumber, handle);
+		int result = RadioExLibrary.INSTANCE.JETI_OpenRadioEx(deviceNumber, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiRadioEx(handle.getValue()));
+		return success(new RadioEx(handle.getValue()));
 	}
 
 	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-		int result = JetiRadioExLibrary.INSTANCE.JETI_GetRadioExDLLVersion(major, minor, build);
+		int result = RadioExLibrary.INSTANCE.JETI_GetRadioExDLLVersion(major, minor, build);
 		if (result != SUCCESS) return error(result);
 		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}

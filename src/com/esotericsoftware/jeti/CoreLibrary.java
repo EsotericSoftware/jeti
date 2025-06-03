@@ -14,8 +14,8 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface JetiCoreLibrary extends Library {
-	final JetiCoreLibrary INSTANCE = Native.load("jeti_core64", JetiCoreLibrary.class);
+public interface CoreLibrary extends Library {
+	final CoreLibrary INSTANCE = Native.load("jeti_core64", CoreLibrary.class);
 
 	// License and setup
 	int JETI_SetLicKey (String cLicKey);

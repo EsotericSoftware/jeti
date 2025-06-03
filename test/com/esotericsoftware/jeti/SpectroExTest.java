@@ -13,18 +13,18 @@ import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
 @DisplayName("JetiSpectroEx Integration Tests")
-public class JetiSpectroExTest {
-	private JetiSpectroEx spectroEx;
+public class SpectroExTest {
+	private SpectroEx spectroEx;
 
 	@BeforeEach
 	void setUp () {
 		JetiSDK.initialize();
 
-		Result<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
+		Result<Integer> deviceCount = SpectroEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro ex devices available for testing " + deviceCount);
 
-		Result<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
+		Result<SpectroEx> deviceResult = SpectroEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open spectro ex device " + deviceResult);
 
 		spectroEx = deviceResult.getValue();
@@ -38,7 +38,7 @@ public class JetiSpectroExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = SpectroEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -46,7 +46,7 @@ public class JetiSpectroExTest {
 			assertNotNull(serials.device());
 		}
 
-		Result<DllVersion> versionResult = JetiSpectroEx.getDllVersion();
+		Result<DllVersion> versionResult = SpectroEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}

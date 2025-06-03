@@ -5,30 +5,30 @@ import static com.esotericsoftware.jeti.samples.RadioExSample.*;
 
 import java.util.Scanner;
 
-import com.esotericsoftware.jeti.Result;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
-import com.esotericsoftware.jeti.JetiSpectroEx;
+import com.esotericsoftware.jeti.Result;
+import com.esotericsoftware.jeti.SpectroEx;
 
 public class SpectroExSample {
 	static private final Scanner scanner = new Scanner(System.in);
 
 	static public void main (String[] args) {
-		JetiSpectroEx spectroDevice = null;
+		SpectroEx spectroDevice = null;
 
 		try {
 			System.out.println("Initializing the JETI SDK...");
 			JetiSDK.initialize();
 
 			System.out.println("Searching for devices...");
-			Result<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
+			Result<Integer> deviceCount = SpectroEx.getDeviceCount();
 			if (deviceCount.isError() || deviceCount.getValue() == 0) {
 				System.out.printf("No spectro ex devices found! Error code: 0x%08X", deviceCount.getErrorCode());
 				return;
 			}
 			System.out.printf("Spectro ex devices: %d%n", deviceCount.getValue());
 
-			Result<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
+			Result<SpectroEx> deviceResult = SpectroEx.openDevice(0);
 			if (deviceResult.isError()) {
 				System.out.printf("Could not open spectro ex device!%nError code: 0x%08X%n", deviceResult.getErrorCode());
 				return;
@@ -83,7 +83,7 @@ public class SpectroExSample {
 		}
 	}
 
-	static private void performSpectroMeasurement (JetiSpectroEx device) {
+	static private void performSpectroMeasurement (SpectroEx device) {
 		try {
 			float integrationTime = promptIntegrationTime();
 			int averageCount = promptAveragingCount();
@@ -128,7 +128,7 @@ public class SpectroExSample {
 	/** Get serial numbers from the first device found. */
 	static private void getDeviceInfo () {
 		try {
-			Result<DeviceSerials> serialsResult = JetiSpectroEx.getDeviceSerials(0);
+			Result<DeviceSerials> serialsResult = SpectroEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());
@@ -144,7 +144,7 @@ public class SpectroExSample {
 	}
 
 	/** Start a new measurement. */
-	static private void startMeasurement (JetiSpectroEx device) {
+	static private void startMeasurement (SpectroEx device) {
 		try {
 			float integrationTime = promptIntegrationTime();
 			int averageCount = promptAveragingCount();
@@ -160,7 +160,7 @@ public class SpectroExSample {
 	}
 
 	/** Cancels an initiated measurement. */
-	static private void breakMeasurement (JetiSpectroEx device) {
+	static private void breakMeasurement (SpectroEx device) {
 		try {
 			Result<Boolean> result = device.breakMeasurement();
 			if (result.isError())
@@ -173,7 +173,7 @@ public class SpectroExSample {
 	}
 
 	/** Returns the status of any current measurement. */
-	static private void getMeasurementStatus (JetiSpectroEx device) {
+	static private void getMeasurementStatus (SpectroEx device) {
 		try {
 			Result<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
@@ -190,7 +190,7 @@ public class SpectroExSample {
 	}
 
 	/** Read the light spectrum, 380-780nm. */
-	static private void getLightSpectrumWavelength (JetiSpectroEx device) {
+	static private void getLightSpectrumWavelength (SpectroEx device) {
 		try {
 			Result<float[]> result = device.getLightWaveData(380, 780, 1.0f);
 			if (result.isError())
@@ -206,7 +206,7 @@ public class SpectroExSample {
 	}
 
 	/** Read the light spectrum, pixel based. */
-	static private void getLightSpectrumPixel (JetiSpectroEx device) {
+	static private void getLightSpectrumPixel (SpectroEx device) {
 		try {
 			Result<int[]> result = device.getLightPixelData();
 			if (result.isError())

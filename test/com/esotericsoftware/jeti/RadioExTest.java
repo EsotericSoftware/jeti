@@ -25,17 +25,17 @@ import com.esotericsoftware.jeti.JetiSDK.XY10;
 import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
 @DisplayName("JetiRadioEx Integration Tests")
-public class JetiRadioExTest {
-	private JetiRadioEx radioEx;
+public class RadioExTest {
+	private RadioEx radioEx;
 
 	@BeforeEach
 	void setUp () {
 		JetiSDK.initialize();
 
-		Result<Integer> deviceCount = JetiRadioEx.getDeviceCount();
+		Result<Integer> deviceCount = RadioEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio ex devices available for testing");
 
-		Result<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
+		Result<RadioEx> deviceResult = RadioEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open radio ex device");
 
 		radioEx = deviceResult.getValue();
@@ -49,7 +49,7 @@ public class JetiRadioExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		Result<DeviceSerials> serialsResult = JetiRadioEx.getDeviceSerials(0);
+		Result<DeviceSerials> serialsResult = RadioEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			DeviceSerials serials = serialsResult.getValue();
 			assertNotNull(serials.electronics());
@@ -57,7 +57,7 @@ public class JetiRadioExTest {
 			assertNotNull(serials.device());
 		}
 
-		Result<DllVersion> versionResult = JetiRadioEx.getDllVersion();
+		Result<DllVersion> versionResult = RadioEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 	}

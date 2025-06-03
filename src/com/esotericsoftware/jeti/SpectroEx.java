@@ -1,8 +1,8 @@
 
 package com.esotericsoftware.jeti;
 
-import static com.esotericsoftware.jeti.Result.*;
 import static com.esotericsoftware.jeti.JetiSDK.*;
+import static com.esotericsoftware.jeti.Result.*;
 
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
@@ -13,9 +13,9 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
-	private JetiSpectroEx (Pointer handle) {
-		super(JetiSpectroExLibrary.INSTANCE, handle, JetiSpectroExLibrary.INSTANCE::JETI_CloseSpectroEx, 0, 0, 1, 1, 0, 0);
+public class SpectroEx extends Device<SpectroExLibrary> {
+	private SpectroEx (Pointer handle) {
+		super(SpectroExLibrary.INSTANCE, handle, SpectroExLibrary.INSTANCE::JETI_CloseSpectroEx, 0, 0, 1, 1, 0, 0);
 	}
 
 	// Dark measurement functions
@@ -227,7 +227,7 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 
 	static public Result<Integer> getDeviceCount () {
 		var count = new IntByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetNumSpectroEx(count);
+		int result = SpectroExLibrary.INSTANCE.JETI_GetNumSpectroEx(count);
 		if (result != SUCCESS) return error(result);
 		return success(count.getValue());
 	}
@@ -236,23 +236,23 @@ public class JetiSpectroEx extends Device<JetiSpectroExLibrary> {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetSerialSpectroEx(deviceNumber, boardSerial, specSerial, deviceSerial);
+		int result = SpectroExLibrary.INSTANCE.JETI_GetSerialSpectroEx(deviceNumber, boardSerial, specSerial, deviceSerial);
 		if (result != SUCCESS) return error(result);
 		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
 	}
 
-	static public Result<JetiSpectroEx> openDevice (int deviceNumber) {
+	static public Result<SpectroEx> openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_OpenSpectroEx(deviceNumber, handle);
+		int result = SpectroExLibrary.INSTANCE.JETI_OpenSpectroEx(deviceNumber, handle);
 		if (result != SUCCESS) return error(result);
-		return success(new JetiSpectroEx(handle.getValue()));
+		return success(new SpectroEx(handle.getValue()));
 	}
 
 	static public Result<DllVersion> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetSpectroExDLLVersion(major, minor, build);
+		int result = SpectroExLibrary.INSTANCE.JETI_GetSpectroExDLLVersion(major, minor, build);
 		if (result != SUCCESS) return error(result);
 		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
 	}
