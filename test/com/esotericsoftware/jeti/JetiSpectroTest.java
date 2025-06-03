@@ -17,11 +17,11 @@ public class JetiSpectroTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiSpectro.getSpectroDeviceCount();
+		JetiResult<Integer> deviceCount = JetiSpectro.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro devices available for testing " + deviceCount);
 
-		JetiResult<JetiSpectro> deviceResult = JetiSpectro.openSpectroDevice(0);
+		JetiResult<JetiSpectro> deviceResult = JetiSpectro.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open spectro device " + deviceResult);
 
 		spectro = deviceResult.getValue();
@@ -35,7 +35,7 @@ public class JetiSpectroTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiSpectro.getSpectroDeviceSerials(0);
+		JetiResult<String[]> serialsResult = JetiSpectro.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			String[] serials = serialsResult.getValue();
 			assertEquals(3, serials.length);
@@ -44,7 +44,7 @@ public class JetiSpectroTest {
 			assertNotNull(serials[2]); // Device serial
 		}
 
-		JetiResult<String> versionResult = JetiSpectro.getSpectroDllVersion();
+		JetiResult<String> versionResult = JetiSpectro.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 		assertTrue(versionResult.getValue().contains("."));
@@ -134,7 +134,7 @@ public class JetiSpectroTest {
 	@Test
 	@DisplayName("Get spectro integration time")
 	void testGetSpectroIntegrationTime () {
-		JetiResult<Float> tintResult = spectro.getSpectroIntegrationTime();
+		JetiResult<Float> tintResult = spectro.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0, "Integration time should be positive");
 	}

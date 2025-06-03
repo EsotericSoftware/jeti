@@ -101,7 +101,7 @@ public class JetiSDK {
 
 	static public JetiResult<DeviceInfo[]> discoverDevices () {
 		ensureInitialized();
-		return JetiCore.getAllDevices();
+		return JetiCore.getAllDeviceInfo();
 	}
 
 	static public JetiResult<JetiCore> openCoreDevice (int deviceNumber) {
@@ -149,31 +149,31 @@ public class JetiSDK {
 
 	static public JetiResult<JetiRadio> openRadioDevice (int deviceNumber) {
 		ensureInitialized();
-		return JetiRadio.openRadioDevice(deviceNumber);
+		return JetiRadio.openDevice(deviceNumber);
 	}
 
 	static public JetiResult<JetiSpectro> openSpectroDevice (int deviceNumber) {
 		ensureInitialized();
-		return JetiSpectro.openSpectroDevice(deviceNumber);
+		return JetiSpectro.openDevice(deviceNumber);
 	}
 
 	static public JetiResult<JetiRadioEx> openRadioExDevice (int deviceNumber) {
 		ensureInitialized();
-		return JetiRadioEx.openRadioExDevice(deviceNumber);
+		return JetiRadioEx.openDevice(deviceNumber);
 	}
 
 	static public JetiResult<JetiSpectroEx> openSpectroExDevice (int deviceNumber) {
 		ensureInitialized();
-		return JetiSpectroEx.openSpectroExDevice(deviceNumber);
+		return JetiSpectroEx.openDevice(deviceNumber);
 	}
 
 	static public JetiResult<SDKVersion> getSDKVersion () {
 		ensureInitialized();
 
-		JetiResult<String> radioVersionResult = JetiRadio.getRadioDllVersion();
-		JetiResult<String> spectroVersionResult = JetiSpectro.getSpectroDllVersion();
-		JetiResult<String> radioExVersionResult = JetiRadioEx.getRadioExDllVersion();
-		JetiResult<String> spectroExVersionResult = JetiSpectroEx.getSpectroExDllVersion();
+		JetiResult<String> radioVersionResult = JetiRadio.getDllVersion();
+		JetiResult<String> spectroVersionResult = JetiSpectro.getDllVersion();
+		JetiResult<String> radioExVersionResult = JetiRadioEx.getDllVersion();
+		JetiResult<String> spectroExVersionResult = JetiSpectroEx.getDllVersion();
 
 		String coreVersion = "Unknown";
 		String radioVersion = radioVersionResult.isSuccess() ? radioVersionResult.getValue() : "Unknown";
@@ -191,22 +191,22 @@ public class JetiSDK {
 
 	static public JetiResult<Integer> getNumberOfRadioDevices () {
 		ensureInitialized();
-		return JetiRadio.getRadioDeviceCount();
+		return JetiRadio.getDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfSpectroDevices () {
 		ensureInitialized();
-		return JetiSpectro.getSpectroDeviceCount();
+		return JetiSpectro.getDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfRadioExDevices () {
 		ensureInitialized();
-		return JetiRadioEx.getRadioExDeviceCount();
+		return JetiRadioEx.getDeviceCount();
 	}
 
 	static public JetiResult<Integer> getNumberOfSpectroExDevices () {
 		ensureInitialized();
-		return JetiSpectroEx.getSpectroExDeviceCount();
+		return JetiSpectroEx.getDeviceCount();
 	}
 
 	static public String getErrorMessage (int errorCode) {

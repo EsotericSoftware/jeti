@@ -59,7 +59,7 @@ public class JetiSpectro implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<Float> getSpectroIntegrationTime () {
+	public JetiResult<Float> getIntegrationTime () {
 		ensureOpen();
 		int result = JetiSpectroLibrary.INSTANCE.JETI_SpectroTint(deviceHandle, floatRef);
 		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
@@ -131,14 +131,14 @@ public class JetiSpectro implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getSpectroDeviceCount () {
+	static public JetiResult<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiSpectroLibrary.INSTANCE.JETI_GetNumSpectro(count);
 		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String[]> getSpectroDeviceSerials (int deviceNumber) {
+	static public JetiResult<String[]> getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_BUFFER_SIZE];
 		var specSerial = new byte[STRING_BUFFER_SIZE];
 		var deviceSerial = new byte[STRING_BUFFER_SIZE];
@@ -150,7 +150,7 @@ public class JetiSpectro implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<JetiSpectro> openSpectroDevice (int deviceNumber) {
+	static public JetiResult<JetiSpectro> openDevice (int deviceNumber) {
 		var deviceHandle = new PointerByReference();
 		int result = JetiSpectroLibrary.INSTANCE.JETI_OpenSpectro(deviceNumber, deviceHandle);
 
@@ -158,7 +158,7 @@ public class JetiSpectro implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String> getSpectroDllVersion () {
+	static public JetiResult<String> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();

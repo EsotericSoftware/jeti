@@ -19,10 +19,10 @@ public class JetiRadioTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiRadio.getRadioDeviceCount();
+		JetiResult<Integer> deviceCount = JetiRadio.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio devices available for testing " + deviceCount);
 
-		JetiResult<JetiRadio> deviceResult = JetiRadio.openRadioDevice(0);
+		JetiResult<JetiRadio> deviceResult = JetiRadio.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open radio device " + deviceResult);
 
 		radio = deviceResult.getValue();
@@ -36,7 +36,7 @@ public class JetiRadioTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiRadio.getRadioDeviceSerials(0);
+		JetiResult<String[]> serialsResult = JetiRadio.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			String[] serials = serialsResult.getValue();
 			assertEquals(3, serials.length);
@@ -45,7 +45,7 @@ public class JetiRadioTest {
 			assertNotNull(serials[2]); // Device serial
 		}
 
-		JetiResult<String> versionResult = JetiRadio.getRadioDllVersion();
+		JetiResult<String> versionResult = JetiRadio.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 		assertTrue(versionResult.getValue().contains("."));

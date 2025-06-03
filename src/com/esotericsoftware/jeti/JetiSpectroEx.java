@@ -297,7 +297,7 @@ public class JetiSpectroEx implements AutoCloseable {
 	}
 
 	// Device status and control
-	public JetiResult<Boolean> getSpectroStatus () {
+	public JetiResult<Boolean> getMeasurementStatus () {
 		ensureOpen();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroStatusEx(deviceHandle, intRef);
 		if (result == SUCCESS) return JetiResult.success(intRef.getValue() != 0);
@@ -318,7 +318,7 @@ public class JetiSpectroEx implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	public JetiResult<Float> getSpectroIntegrationTime () {
+	public JetiResult<Float> getIntegrationTime () {
 		ensureOpen();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_SpectroTintEx(deviceHandle, floatRef);
 		if (result == SUCCESS) return JetiResult.success(floatRef.getValue());
@@ -346,14 +346,14 @@ public class JetiSpectroEx implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getSpectroExDeviceCount () {
+	static public JetiResult<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_GetNumSpectroEx(count);
 		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String[]> getSpectroExDeviceSerials (int deviceNumber) {
+	static public JetiResult<String[]> getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_BUFFER_SIZE];
 		var specSerial = new byte[STRING_BUFFER_SIZE];
 		var deviceSerial = new byte[STRING_BUFFER_SIZE];
@@ -365,14 +365,14 @@ public class JetiSpectroEx implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<JetiSpectroEx> openSpectroExDevice (int deviceNumber) {
+	static public JetiResult<JetiSpectroEx> openDevice (int deviceNumber) {
 		var deviceHandle = new PointerByReference();
 		int result = JetiSpectroExLibrary.INSTANCE.JETI_OpenSpectroEx(deviceNumber, deviceHandle);
 		if (result == SUCCESS) return JetiResult.success(new JetiSpectroEx(deviceHandle.getValue()));
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String> getSpectroExDllVersion () {
+	static public JetiResult<String> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();

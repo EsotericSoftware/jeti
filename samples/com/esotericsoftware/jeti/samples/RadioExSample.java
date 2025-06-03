@@ -137,7 +137,7 @@ public class RadioExSample {
 	/** Get serial numbers from the first found device */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<String[]> serialsResult = JetiRadioEx.getRadioExDeviceSerials(0);
+			JetiResult<String[]> serialsResult = JetiRadioEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get device serial information (normal for TCP devices)%nError code: 0x%08X%n",
 					serialsResult.getErrorCode());

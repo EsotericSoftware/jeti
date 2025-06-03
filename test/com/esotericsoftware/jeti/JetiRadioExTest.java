@@ -24,10 +24,10 @@ public class JetiRadioExTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiRadioEx.getRadioExDeviceCount();
+		JetiResult<Integer> deviceCount = JetiRadioEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio ex devices available for testing");
 
-		JetiResult<JetiRadioEx> deviceResult = JetiRadioEx.openRadioExDevice(0);
+		JetiResult<JetiRadioEx> deviceResult = JetiRadioEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open radio ex device");
 
 		radioEx = deviceResult.getValue();
@@ -41,7 +41,7 @@ public class JetiRadioExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiRadioEx.getRadioExDeviceSerials(0);
+		JetiResult<String[]> serialsResult = JetiRadioEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			String[] serials = serialsResult.getValue();
 			assertEquals(3, serials.length);
@@ -50,7 +50,7 @@ public class JetiRadioExTest {
 			assertNotNull(serials[2]); // Device serial
 		}
 
-		JetiResult<String> versionResult = JetiRadioEx.getRadioExDllVersion();
+		JetiResult<String> versionResult = JetiRadioEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 		assertTrue(versionResult.getValue().contains("."));

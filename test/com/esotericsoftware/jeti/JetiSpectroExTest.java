@@ -17,11 +17,11 @@ public class JetiSpectroExTest {
 	void setUp () {
 		JetiSDK.initialize();
 
-		JetiResult<Integer> deviceCount = JetiSpectroEx.getSpectroExDeviceCount();
+		JetiResult<Integer> deviceCount = JetiSpectroEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro ex devices available for testing " + deviceCount);
 
-		JetiResult<JetiSpectroEx> deviceResult = JetiSpectroEx.openSpectroExDevice(0);
+		JetiResult<JetiSpectroEx> deviceResult = JetiSpectroEx.openDevice(0);
 		assumeTrue(deviceResult.isSuccess(), "Could not open spectro ex device " + deviceResult);
 
 		spectroEx = deviceResult.getValue();
@@ -35,7 +35,7 @@ public class JetiSpectroExTest {
 	@Test
 	@DisplayName("Get device information")
 	void testGetDeviceInfo () {
-		JetiResult<String[]> serialsResult = JetiSpectroEx.getSpectroExDeviceSerials(0);
+		JetiResult<String[]> serialsResult = JetiSpectroEx.getDeviceSerials(0);
 		if (serialsResult.isSuccess()) {
 			String[] serials = serialsResult.getValue();
 			assertEquals(3, serials.length);
@@ -44,7 +44,7 @@ public class JetiSpectroExTest {
 			assertNotNull(serials[2]); // Device serial
 		}
 
-		JetiResult<String> versionResult = JetiSpectroEx.getSpectroExDllVersion();
+		JetiResult<String> versionResult = JetiSpectroEx.getDllVersion();
 		assertTrue(versionResult.isSuccess(), versionResult.toString());
 		assertNotNull(versionResult.getValue());
 		assertTrue(versionResult.getValue().contains("."));
@@ -349,7 +349,7 @@ public class JetiSpectroExTest {
 	@DisplayName("Test device status and control")
 	void testDeviceStatusAndControl () {
 		// Test getting spectro status
-		JetiResult<Boolean> statusResult = spectroEx.getSpectroStatus();
+		JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
 		assertTrue(statusResult.isSuccess(), statusResult.toString());
 
 		// Start a measurement and then break it
@@ -361,7 +361,7 @@ public class JetiSpectroExTest {
 		assertTrue(breakResult.isSuccess(), breakResult.toString());
 
 		// Check status after break
-		JetiResult<Boolean> statusAfterBreak = spectroEx.getSpectroStatus();
+		JetiResult<Boolean> statusAfterBreak = spectroEx.getMeasurementStatus();
 		assertTrue(statusAfterBreak.isSuccess(), statusAfterBreak.toString());
 	}
 
@@ -374,7 +374,7 @@ public class JetiSpectroExTest {
 		assertTrue(pixelCountResult.getValue() > 0, "Pixel count should be positive");
 
 		// Test getting spectro integration time
-		JetiResult<Float> tintResult = spectroEx.getSpectroIntegrationTime();
+		JetiResult<Float> tintResult = spectroEx.getIntegrationTime();
 		assertTrue(tintResult.isSuccess(), tintResult.toString());
 		assertTrue(tintResult.getValue() > 0, "Integration time should be positive");
 	}
@@ -457,7 +457,7 @@ public class JetiSpectroExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = spectroEx.getSpectroStatus();
+			JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
 			if (statusResult.isSuccess()) {
 				measuring = statusResult.getValue();
 			} else {
@@ -485,7 +485,7 @@ public class JetiSpectroExTest {
 				fail("Test interrupted");
 			}
 
-			JetiResult<Boolean> statusResult = spectroEx.getSpectroStatus();
+			JetiResult<Boolean> statusResult = spectroEx.getMeasurementStatus();
 			if (statusResult.isSuccess()) {
 				measuring = statusResult.getValue();
 			} else {

@@ -191,14 +191,14 @@ public class JetiRadio implements AutoCloseable {
 		return deviceHandle == null;
 	}
 
-	static public JetiResult<Integer> getRadioDeviceCount () {
+	static public JetiResult<Integer> getDeviceCount () {
 		var count = new IntByReference();
 		int result = JetiRadioLibrary.INSTANCE.JETI_GetNumRadio(count);
 		if (result == SUCCESS) return JetiResult.success(count.getValue());
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String[]> getRadioDeviceSerials (int deviceNumber) {
+	static public JetiResult<String[]> getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_BUFFER_SIZE];
 		var specSerial = new byte[STRING_BUFFER_SIZE];
 		var deviceSerial = new byte[STRING_BUFFER_SIZE];
@@ -210,14 +210,14 @@ public class JetiRadio implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<JetiRadio> openRadioDevice (int deviceNumber) {
+	static public JetiResult<JetiRadio> openDevice (int deviceNumber) {
 		var deviceHandle = new PointerByReference();
 		int result = JetiRadioLibrary.INSTANCE.JETI_OpenRadio(deviceNumber, deviceHandle);
 		if (result == SUCCESS) return JetiResult.success(new JetiRadio(deviceHandle.getValue()));
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<String> getRadioDllVersion () {
+	static public JetiResult<String> getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();

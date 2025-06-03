@@ -195,7 +195,7 @@ public class JetiCore implements AutoCloseable {
 		return JetiResult.error(result);
 	}
 
-	static public JetiResult<DeviceInfo[]> getAllDevices () {
+	static public JetiResult<DeviceInfo[]> getAllDeviceInfo () {
 		JetiResult<Integer> numDevicesResult = getDeviceCount();
 		if (numDevicesResult.isError()) return JetiResult.error(numDevicesResult.getErrorCode());
 

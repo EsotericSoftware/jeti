@@ -101,7 +101,7 @@ public class SpectroExSample {
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
-				JetiResult<Boolean> statusResult = device.getSpectroStatus();
+				JetiResult<Boolean> statusResult = device.getMeasurementStatus();
 				if (statusResult.isSuccess())
 					measuring = statusResult.getValue();
 				else {
@@ -127,7 +127,7 @@ public class SpectroExSample {
 	/** Get serial numbers from the first device found. */
 	static private void getDeviceInfo () {
 		try {
-			JetiResult<String[]> serialsResult = JetiSpectroEx.getSpectroExDeviceSerials(0);
+			JetiResult<String[]> serialsResult = JetiSpectroEx.getDeviceSerials(0);
 			if (serialsResult.isError())
 				System.out.printf("Could not get serial numbers!%nError code: 0x%08X%n", serialsResult.getErrorCode());
 			else {
@@ -172,7 +172,7 @@ public class SpectroExSample {
 	/** Returns the status of any current measurement. */
 	static private void getMeasurementStatus (JetiSpectroEx device) {
 		try {
-			JetiResult<Boolean> result = device.getSpectroStatus();
+			JetiResult<Boolean> result = device.getMeasurementStatus();
 			if (result.isError())
 				System.out.printf("Could not determine measurement status!%nError code: 0x%08X%n", result.getErrorCode());
 			else {
