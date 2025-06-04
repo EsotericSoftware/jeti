@@ -436,7 +436,7 @@ public class CoreTest {
 			assertTrue(enquiryResult.getValue() >= 0);
 		}
 
-		// Not tested (needs window).
+		// Not tested (needs window, undocumented).
 		// device.setCallbackFunction((byte)'E', null);
 	}
 

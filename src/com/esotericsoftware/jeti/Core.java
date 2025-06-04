@@ -106,9 +106,7 @@ public class Core extends Device<CoreLibrary> {
 	}
 
 	public Result<Boolean> setCallbackFunction (byte eventChar, WinDef.HWND mainWindow) {
-		if (mainWindow == null) {
-			return error(INVALID_ARGUMENT);
-		}
+		if (mainWindow == null) return error(INVALID_ARGUMENT);
 		return result(lib().JETI_SetCallbackFunction(handle, eventChar, mainWindow));
 	}
 
