@@ -84,7 +84,7 @@ public class SyncSample {
 		}
 
 		// Set sync mode
-		Result<Boolean> syncModeResult = core.setSyncMode((byte)1); // TRUE = 1
+		Result<Boolean> syncModeResult = core.setSyncMode(true);
 		if (syncModeResult.isError()) {
 			System.out.println("Could not set sync mode! Error: " + syncModeResult);
 			return;
@@ -134,6 +134,6 @@ public class SyncSample {
 		System.out.println(String.format("Sync frequency [Hz]: %.2f", syncFreq));
 
 		// Set sync mode back to use integration time in ms
-		core.setSyncMode((byte)0); // FALSE = 0
+		core.setSyncMode(false);
 	}
 }

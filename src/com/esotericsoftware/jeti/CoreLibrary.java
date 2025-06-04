@@ -80,7 +80,7 @@ public interface CoreLibrary extends Library {
 
 	int JETI_MeasureStatusCore (Pointer dwDevice, IntByReference boStatus);
 
-	int JETI_WaitReadTrigger (Pointer dwDevice, IntByReference iSpec, int dwTimeout);
+	int JETI_WaitReadTrigger (Pointer dwDevice, int[] iSpec, int dwTimeout);
 
 	// Calibration
 

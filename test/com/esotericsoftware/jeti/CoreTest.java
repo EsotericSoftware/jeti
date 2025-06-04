@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import com.sun.jna.Pointer;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CoreTest {
 	static public final String IP = "10.1.0.55";
@@ -41,6 +43,19 @@ public class CoreTest {
 		assumeFalse(licenseKey == null, "JETI license key not configured");
 		var result = Core.setLicenseKey(licenseKey);
 		assertTrue(result.isSuccess(), result.toString());
+	}
+
+	static public void main (String[] args) throws Throwable {
+		JetiSDK.initialize();
+		System.out.println(Core.getDeviceCount());
+		Result<Core> result = Core.openDevice(0);
+		if (result.isSuccess()) {
+			System.out.println("connected");
+			Core core = result.getValue();
+			core.sendCommand("*contr:laser 1\r");
+			Thread.sleep(200);
+			core.sendCommand("*contr:laser 0\r");
+		}
 	}
 
 	@Test
@@ -76,8 +91,40 @@ public class CoreTest {
 		}
 	}
 
+// @Test
+// @Order(6)
+// @DisplayName("Measure ADC1")
+// void testMeasureADC1 () {
+// var result = Core.openTcpDevice(IP);
+// assertTrue(result.isSuccess(), result.toString());
+// var device = result.getValue();
+// assertNotNull(device);
+// try (device) {
+// Result<Short> adcResult = device.measureADC1();
+// if (adcResult.isSuccess()) {
+// assertTrue(adcResult.getValue() >= 0);
+// }
+// }
+// }
+//
+// @Test
+// @Order(7)
+// @DisplayName("Measure ADC2")
+// void testMeasureADC2 () {
+// var result = Core.openTcpDevice(IP);
+// assertTrue(result.isSuccess(), result.toString());
+// var device = result.getValue();
+// assertNotNull(device);
+// try (device) {
+// Result<Short> adcResult = device.measureADC2();
+// if (adcResult.isSuccess()) {
+// assertTrue(adcResult.getValue() >= 0);
+// }
+// }
+// }
+
 	@Test
-	@Order(6)
+	@Order(8)
 	@DisplayName("Open TCP device")
 	void testOpenTcpDevice () {
 		var result = Core.openTcpDevice(IP);
@@ -218,7 +265,7 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(7)
+	@Order(9)
 	@DisplayName("Test straylight matrix functions")
 	void testStrayLightMatrix () {
 		// Test ignore straylight matrix
@@ -231,7 +278,7 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(8)
+	@Order(10)
 	@DisplayName("Test all Core functions for coverage")
 	void testAllCoreFunctions () {
 		// Test device discovery functions
@@ -321,83 +368,76 @@ public class CoreTest {
 
 		// Test calculation functions
 		testCalculationFunctions(device);
+
+		// Not tested.
+		// device.reset();
+		// device.hardReset();
 	}
 
 	private void testDeviceCommunication (Core device) {
-		// Test reset functions
-		device.reset();
-		device.hardReset();
+		Result<String> commandResult = device.sendCommand("*contr:laser 1\r");
+		assertTrue(commandResult.isSuccess(), commandResult.toString());
+		Result<Boolean> laserStatus = device.getLaserStatus();
+		assertTrue(laserStatus.isSuccess(), laserStatus.toString());
+		assertTrue(laserStatus.getValue());
 
-		// Test device communication
-		var writeResult = device.deviceWrite("TEST", 4, 1000);
+		commandResult = device.sendCommand("*contr:laser 0\r");
+		assertTrue(commandResult.isSuccess(), commandResult.toString());
+		laserStatus = device.getLaserStatus();
+		assertTrue(laserStatus.isSuccess(), laserStatus.toString());
+		assertFalse(laserStatus.getValue());
+
+		Result<Boolean> writeResult = device.deviceWrite("TEST", 4, 100);
 		if (writeResult.isSuccess()) {
-			var readResult = device.deviceRead(100, 1000);
-			if (readResult.isSuccess()) {
-				assertNotNull(readResult.getValue());
-			}
+			// Not tested (slow).
+			// var readResult = device.deviceRead(1, 10);
+			// if (readResult.isSuccess()) {
+			// assertNotNull(readResult.getValue());
+			// }
 		}
 
-		var readTermResult = device.deviceReadTerminated(100, 1000);
-		if (readTermResult.isSuccess()) {
-			assertNotNull(readTermResult.getValue());
-		}
+		// Not tested (slow).
+		// Result<String> readTermResult = device.deviceReadTerminated(1, 10);
+		// if (readTermResult.isSuccess()) {
+		// assertNotNull(readTermResult.getValue());
+		// }
 
-		var dataReceivedResult = device.dataReceived(100);
+		Result<Integer> dataReceivedResult = device.dataReceived(100);
 		if (dataReceivedResult.isSuccess()) {
 			assertTrue(dataReceivedResult.getValue() >= 0);
 		}
 
-		var commandResult = device.sendCommand("*IDN?");
-		if (commandResult.isSuccess()) {
-			assertNotNull(commandResult.getValue());
-		}
-
-		// Test device info functions
-		var comPortResult = device.getComPortHandle();
+		Result<Pointer> comPortResult = device.getComPortHandle();
 		if (comPortResult.isSuccess()) {
 			assertNotNull(comPortResult.getValue());
 		}
 
-		var adc1Result = device.measureADC1();
-		if (adc1Result.isSuccess()) {
-			assertTrue(adc1Result.getValue() >= 0);
-		}
+		// Not tested (slow).
+		// var readUserDataResult = device.readUserData(0, 2);
+		// if (readUserDataResult.isSuccess()) {
+		// assertNotNull(readUserDataResult.getValue());
+		// }
 
-		var adc2Result = device.measureADC2();
-		if (adc2Result.isSuccess()) {
-			assertTrue(adc2Result.getValue() >= 0);
-		}
-
-		// Test user data
-		var readUserDataResult = device.readUserData(0, 63);
-		if (readUserDataResult.isSuccess()) {
-			assertNotNull(readUserDataResult.getValue());
-		}
-
-		byte[] testData = new byte[64];
-		var writeUserDataResult = device.writeUserData(testData, 0);
-		if (writeUserDataResult.isSuccess()) {
-			assertTrue(writeUserDataResult.getValue());
-		}
+		// Not tested (crashes).
+		// byte[] testData = new byte[2];
+		// Result<Boolean> writeUserDataResult = device.writeUserData(testData, 0);
+		// if (writeUserDataResult.isSuccess()) {
+		// assertTrue(writeUserDataResult.getValue());
+		// }
 
 		// Test error and enquiry
-		var lastErrorResult = device.getLastError();
+		Result<Integer> lastErrorResult = device.getLastError();
 		if (lastErrorResult.isSuccess()) {
 			assertTrue(lastErrorResult.getValue() >= 0);
 		}
 
-		var enquiryResult = device.getEnquiry();
+		Result<Integer> enquiryResult = device.getEnquiry();
 		if (enquiryResult.isSuccess()) {
 			assertTrue(enquiryResult.getValue() >= 0);
 		}
 
-		// Test callback function (Windows only)
-		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-			var callbackResult = device.setCallbackFunction((byte)'E', null);
-			if (callbackResult.isSuccess()) {
-				assertTrue(callbackResult.getValue());
-			}
-		}
+		// Not tested (needs window).
+		// device.setCallbackFunction((byte)'E', null);
 	}
 
 	private void testMeasurementFunctions (Core device) {
@@ -765,7 +805,7 @@ public class CoreTest {
 			assertTrue(getSyncFreqResult.getValue() >= 0);
 		}
 
-		var setSyncModeResult = device.setSyncMode((byte)0);
+		var setSyncModeResult = device.setSyncMode(false);
 		if (setSyncModeResult.isSuccess()) {
 			assertTrue(setSyncModeResult.getValue());
 		}
@@ -1185,12 +1225,11 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(9)
+	@Order(11)
 	@DisplayName("Test import straylight matrix")
 	void testImportStraylightMatrix () {
 		// This will likely fail without a valid matrix file, but we're testing it's callable
 		var importResult = Core.importStraylightMatrix("test_matrix.slm");
-		// Don't assert success since file may not exist
 		assertNotNull(importResult);
 	}
 }

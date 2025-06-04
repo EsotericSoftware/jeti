@@ -49,7 +49,7 @@ public class Core extends Device<CoreLibrary> {
 		var versionBuffer = new byte[256];
 		int result = lib().JETI_GetFirmwareVersion(handle, versionBuffer);
 		if (result != SUCCESS) return error(result);
-		return success(new String(versionBuffer, StandardCharsets.UTF_8).trim());
+		return success(string(versionBuffer));
 	}
 
 	public Result<Float> getTemperature () {
@@ -106,6 +106,9 @@ public class Core extends Device<CoreLibrary> {
 	}
 
 	public Result<Boolean> setCallbackFunction (byte eventChar, WinDef.HWND mainWindow) {
+		if (mainWindow == null) {
+			return error(INVALID_ARGUMENT);
+		}
 		return result(lib().JETI_SetCallbackFunction(handle, eventChar, mainWindow));
 	}
 
@@ -145,7 +148,7 @@ public class Core extends Device<CoreLibrary> {
 		var answer = new byte[1024]; // Size?
 		int result = lib().JETI_ArbitraryCommand(handle, command, answer);
 		if (result != SUCCESS) return error(result);
-		return success(new String(answer, StandardCharsets.UTF_8).trim());
+		return success(string(answer));
 	}
 
 	// Measurement
@@ -175,8 +178,8 @@ public class Core extends Device<CoreLibrary> {
 	}
 
 	public Result<int[]> waitReadTrigger (int timeout) {
-		var spec = new int[1024]; // Size?
-		int result = lib().JETI_WaitReadTrigger(handle, i[0], timeout);
+		var spec = new int[1024 * 10]; // Size?
+		int result = lib().JETI_WaitReadTrigger(handle, spec, timeout);
 		if (result != SUCCESS) return error(result);
 		return success(spec);
 	}
@@ -562,14 +565,14 @@ public class Core extends Device<CoreLibrary> {
 		return success(f[0].getValue());
 	}
 
-	public Result<Boolean> setSyncMode (byte mode) {
-		return result(lib().JETI_SetSyncMode(handle, mode));
+	public Result<Boolean> setSyncMode (boolean mode) {
+		return result(lib().JETI_SetSyncMode(handle, mode ? (byte)1 : 0));
 	}
 
-	public Result<Byte> getSyncMode () {
+	public Result<Boolean> getSyncMode () {
 		int result = lib().JETI_GetSyncMode(handle, b[0]);
 		if (result != SUCCESS) return error(result);
-		return success(b[0].getValue());
+		return success(b[0].getValue() != 0);
 	}
 
 	public Result<Byte> getDigitalIOInput () {
