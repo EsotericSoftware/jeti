@@ -11,88 +11,86 @@ import com.esotericsoftware.jeti.Result;
 import com.esotericsoftware.jeti.SpectroEx;
 
 public class SpectroExSample {
-	static private final Scanner scanner = new Scanner(System.in);
+	private SpectroEx spectroEx;
+	private final Scanner scanner = new Scanner(System.in);
 
 	static public void main (String[] args) {
-		SpectroEx spectroEx = null;
-
-		try {
-			System.out.println("Initializing the JETI SDK...");
-			JetiSDK.initialize();
-
-			System.out.println("Searching for devices...");
-			Result<Integer> deviceCount = SpectroEx.getDeviceCount();
-			if (deviceCount.isError() || deviceCount.getValue() == 0) {
-				System.out.println(String.format("No spectro ex devices found! Error code: 0x%08X", deviceCount));
-				return;
-			}
-			System.out.println("Spectro ex devices: " + deviceCount.getValue());
-
-			Result<SpectroEx> deviceResult = SpectroEx.openDevice(0);
-			if (deviceResult.isError()) {
-				System.out.println("Could not open spectro ex device! Error: " + deviceResult);
-				return;
-			}
-
-			spectroEx = deviceResult.getValue();
-			System.out.println("Connected.");
-
-			char choice;
-			do {
-				System.out.println("""
-
-					Select:
-					--------------
-					1) Perform light measurement...
-					2) Get serial numbers...
-
-					Single operations:
-					------------------
-					a) Start light measurement...
-					b) Break measurement...
-					c) Get measurement status...
-					d) Get the light spectrum (wavelength based)...
-					e) Get the light spectrum (pixel based)...
-					0) Exit
-					""");
-
-				System.out.print("Choose: [0] ");
-				String input = scanner.nextLine().trim();
-				choice = input.isEmpty() ? '0' : input.charAt(0);
-				System.out.println("*** " + choice + " ***\n");
-
-				switch (choice) {
-				case '1' -> performSpectroMeasurement(spectroEx);
-				case '2' -> getDeviceInfo();
-				case 'a' -> startMeasurement(spectroEx);
-				case 'b' -> breakMeasurement(spectroEx);
-				case 'c' -> getMeasurementStatus(spectroEx);
-				case 'd' -> getLightSpectrumWavelength(spectroEx);
-				case 'e' -> getLightSpectrumPixel(spectroEx);
-				case '0' -> {
-					return;
-				}
-				default -> System.out.println("Invalid selection.");
-				}
-			} while (choice != '0');
-		} catch (Throwable ex) {
-			System.err.println("Error: " + ex.getMessage());
-			ex.printStackTrace();
-		} finally {
-			spectroEx.close();
-		}
+		new SpectroExSample().run();
 	}
 
-	static private void performSpectroMeasurement (SpectroEx device) {
+	public void run () {
+		System.out.println("Initializing the JETI SDK...");
+		JetiSDK.initialize();
+
+		System.out.println("Searching for devices...");
+		Result<Integer> deviceCount = SpectroEx.getDeviceCount();
+		if (deviceCount.isError() || deviceCount.getValue() == 0) {
+			System.out.println(String.format("No spectro ex devices found! Error code: 0x%08X", deviceCount));
+			return;
+		}
+		System.out.println("Spectro ex devices: " + deviceCount.getValue());
+
+		Result<SpectroEx> deviceResult = SpectroEx.openDevice(0);
+		if (deviceResult.isError()) {
+			System.out.println("Could not open spectro ex device! Error: " + deviceResult);
+			return;
+		}
+
+		spectroEx = deviceResult.getValue();
+		System.out.println("Connected.");
+
+		char choice;
+		do {
+			System.out.println("""
+
+				Select:
+				--------------
+				1) Perform light measurement...
+				2) Get serial numbers...
+
+				Single operations:
+				------------------
+				a) Start light measurement...
+				b) Break measurement...
+				c) Get measurement status...
+				d) Get the light spectrum (wavelength based)...
+				e) Get the light spectrum (pixel based)...
+				0) Exit
+				""");
+
+			System.out.print("Choose: [0] ");
+			String input = scanner.nextLine().trim();
+			choice = input.isEmpty() ? '0' : input.charAt(0);
+			System.out.println("*** " + choice + " ***\n");
+
+			switch (choice) {
+			case '1' -> performSpectroMeasurement();
+			case '2' -> getDeviceInfo();
+			case 'a' -> startMeasurement();
+			case 'b' -> breakMeasurement();
+			case 'c' -> getMeasurementStatus();
+			case 'd' -> getLightSpectrumWavelength();
+			case 'e' -> getLightSpectrumPixel();
+			case '0' -> {
+				return;
+			}
+			default -> System.out.println("Invalid selection.");
+			}
+		} while (choice != '0');
+
+		spectroEx.close();
+	}
+
+	private void performSpectroMeasurement () {
 		try {
-			float integrationTime = promptIntegrationTime();
-			int averageCount = promptAveragingCount();
-			int stepWidth = promptStepWidth();
+			float integrationTime = promptIntegrationTime(scanner);
+			int averageCount = promptAveragingCount(scanner);
+			int stepWidth = promptStepWidth(scanner);
 
 			System.out.println("Performing measurement...\n");
 
 			// Start measurement.
-			Result<Boolean> startResult = device.startLightMeasurement(integrationTime, averageCount);
+			Result<Boolean> startResult = spectroEx.startLightMeasurement(integrationTime, averageCount);
 			if (startResult.isError()) {
 				System.out.println("Could not start measurement! Error: " + startResult);
 				return;
@@ -102,7 +100,7 @@ public class SpectroExSample {
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
-				Result<Boolean> statusResult = device.getMeasurementStatus();
+				Result<Boolean> statusResult = spectroEx.getMeasurementStatus();
 				if (statusResult.isSuccess())
 					measuring = statusResult.getValue();
 				else {
@@ -112,7 +110,7 @@ public class SpectroExSample {
 			}
 
 			// Read the light spectrum (380-780nm, 1nm step size).
-			Result<float[]> spectrumResult = device.getLightWaveData(380, 780, stepWidth);
+			Result<float[]> spectrumResult = spectroEx.getLightWaveData(380, 780, stepWidth);
 			if (spectrumResult.isError())
 				System.out.println("Could not read light spectrum! Error: " + spectrumResult);
 			else {
@@ -126,7 +124,7 @@ public class SpectroExSample {
 	}
 
 	/** Get serial numbers from the first device found. */
-	static private void getDeviceInfo () {
+	private void getDeviceInfo () {
 		try {
 			Result<DeviceSerials> serialsResult = SpectroEx.getDeviceSerials(0);
 			if (serialsResult.isError())
@@ -143,12 +141,12 @@ public class SpectroExSample {
 	}
 
 	/** Start a new measurement. */
-	static private void startMeasurement (SpectroEx device) {
+	private void startMeasurement () {
 		try {
-			float integrationTime = promptIntegrationTime();
-			int averageCount = promptAveragingCount();
+			float integrationTime = promptIntegrationTime(scanner);
+			int averageCount = promptAveragingCount(scanner);
 
-			Result<Boolean> result = device.startLightMeasurement(integrationTime, averageCount);
+			Result<Boolean> result = spectroEx.startLightMeasurement(integrationTime, averageCount);
 			if (result.isError())
 				System.out.println("Could not start measurement! Error: " + result);
 			else
@@ -159,9 +157,9 @@ public class SpectroExSample {
 	}
 
 	/** Cancels an initiated measurement. */
-	static private void breakMeasurement (SpectroEx device) {
+	private void breakMeasurement () {
 		try {
-			Result<Boolean> result = device.breakMeasurement();
+			Result<Boolean> result = spectroEx.breakMeasurement();
 			if (result.isError())
 				System.out.println("Could not break measurement! Error: " + result);
 			else
@@ -172,9 +170,9 @@ public class SpectroExSample {
 	}
 
 	/** Returns the status of any current measurement. */
-	static private void getMeasurementStatus (SpectroEx device) {
+	private void getMeasurementStatus () {
 		try {
-			Result<Boolean> result = device.getMeasurementStatus();
+			Result<Boolean> result = spectroEx.getMeasurementStatus();
 			if (result.isError())
 				System.out.println("Could not determine measurement status! Error: " + result);
 			else {
@@ -189,9 +187,9 @@ public class SpectroExSample {
 	}
 
 	/** Read the light spectrum, 380-780nm. */
-	static private void getLightSpectrumWavelength (SpectroEx device) {
+	private void getLightSpectrumWavelength () {
 		try {
-			Result<float[]> result = device.getLightWaveData(380, 780, 1.0f);
+			Result<float[]> result = spectroEx.getLightWaveData(380, 780, 1.0f);
 			if (result.isError())
 				System.out.println("Could not read light spectrum! Error: " + result);
 			else {
@@ -205,13 +203,13 @@ public class SpectroExSample {
 	}
 
 	/** Read the light spectrum, pixel based. */
-	static private void getLightSpectrumPixel (SpectroEx device) {
+	private void getLightSpectrumPixel () {
 		try {
-			Result<Integer> pixelCountResult = device.getPixelCount();
+			Result<Integer> pixelCountResult = spectroEx.getPixelCount();
 			if (pixelCountResult.isError()) throw new RuntimeException("Could not get pixel count! Error: " + pixelCountResult);
 			int pixelCount = pixelCountResult.getValue();
 
-			Result<int[]> result = device.getLightPixelData(pixelCount);
+			Result<int[]> result = spectroEx.getLightPixelData(pixelCount);
 			if (result.isError()) throw new RuntimeException("Could not read light spectrum! Error: " + result);
 			int[] spectrum = result.getValue();
 			for (int i = 0; i < spectrum.length; i++)

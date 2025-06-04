@@ -19,15 +19,11 @@ import com.esotericsoftware.jeti.JetiSDK.XY;
 import com.esotericsoftware.jeti.JetiSDK.XY10;
 import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
-@DisplayName("JetiRadio Integration Tests")
-public class RadioTest {
+public class RadioTest extends JetiTest {
 	private Radio radio;
 
 	@BeforeEach
 	void setUp () {
-		Log.TRACE();
-		JetiSDK.initialize();
-
 		Result<Integer> deviceCount = Radio.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio devices available for testing " + deviceCount);
 
@@ -69,11 +65,7 @@ public class RadioTest {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 100) { // Timeout after 10 seconds
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			sleep(100);
 			result = radio.getMeasurementStatus();
 			assertTrue(result.isSuccess(), result.toString());
 			measuring = result.getValue();
@@ -183,15 +175,10 @@ public class RadioTest {
 		Result<Boolean> result = radio.measureWithAdaptation();
 		assertTrue(result.isSuccess(), result.toString());
 
-		// Wait for adaptation to complete
 		boolean adapting = true;
 		int attempts = 0;
 		while (adapting && attempts < 200) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			sleep(100);
 			Result<AdaptationStatus> adaptResult = radio.getAdaptationStatus();
 			assertTrue(adaptResult.isSuccess(), adaptResult.toString());
 			adapting = !adaptResult.getValue().complete();
@@ -218,10 +205,7 @@ public class RadioTest {
 		result = radio.breakMeasurement();
 		assertTrue(result.isSuccess(), result.toString());
 
-		try {
-			Thread.sleep(250);
-		} catch (InterruptedException ignored) {
-		}
+		sleep(250);
 
 		// Check that measurement is no longer active
 		result = radio.getMeasurementStatus();
@@ -243,22 +227,17 @@ public class RadioTest {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 100) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			System.out.print(".");
+			sleep(100);
 			result = radio.getMeasurementStatus();
 			assertTrue(result.isSuccess(), result.toString());
 			measuring = result.getValue();
 			attempts++;
 		}
+		System.out.println();
 
 		assertFalse(measuring, "Measurement should complete within timeout");
 
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException ignored) {
-		}
+		sleep(100);
 	}
 }

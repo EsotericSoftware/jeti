@@ -24,22 +24,12 @@ import com.esotericsoftware.jeti.JetiSDK.XY;
 import com.esotericsoftware.jeti.JetiSDK.XY10;
 import com.esotericsoftware.jeti.JetiSDK.XYZ;
 
-@DisplayName("JetiRadioEx Integration Tests")
-public class RadioExTest {
+public class RadioExTest extends JetiTest {
 	private RadioEx radioEx;
 
 	@BeforeEach
 	void setUp () {
-		Log.TRACE();
-		JetiSDK.initialize();
-
 		Result<Integer> deviceCount = RadioEx.getDeviceCount();
-		if (deviceCount.isSuccess() && deviceCount.getValue() > 0) {
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException ignored) {
-			}
-		}
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0, "No radio ex devices available for testing");
 
 		Result<RadioEx> result = RadioEx.openDevice(0);
@@ -97,7 +87,7 @@ public class RadioExTest {
 	@DisplayName("Get spectral data with wavelength range")
 	void testSpectralDataWithRange () {
 		int step = 5;
-		performMeasurementAndWait(100.0f, 1, step);
+		performMeasurementAndWait(0, 1, step);
 
 		int beginWavelength = 400;
 		int endWavelength = 700;
@@ -116,13 +106,12 @@ public class RadioExTest {
 	@Test
 	@DisplayName("Get color rendering index with CCT")
 	void testCRIwithCCT () {
-		performMeasurementAndWait(100.0f, 1, 5);
+		performMeasurementAndWait(0, 1, 5);
 
 		Result<Float> cctResult = radioEx.getCCT();
 		assertTrue(cctResult.isSuccess(), cctResult.toString());
 		float cct = cctResult.getValue();
 
-		// Get CRI data using the measured CCT
 		Result<CRI> criResult = radioEx.getCRI(cct);
 		assertTrue(criResult.isSuccess(), criResult.toString());
 
@@ -131,7 +120,6 @@ public class RadioExTest {
 		assertTrue(criData.ra() >= 0 && criData.ra() <= 100);
 		assertEquals(15, criData.samples().length);
 
-		// Check that special indices are reasonable
 		for (float index : criData.samples()) {
 			assertTrue(index >= -100 && index <= 100, "CRI special index should be between -100 and 100, got: " + index);
 		}
@@ -140,24 +128,23 @@ public class RadioExTest {
 	@Test
 	@DisplayName("Get TM30 data")
 	void testTM30 () {
-		performMeasurementAndWait(100.0f, 1, 5);
-
-		// Test both TM30-15 and TM30-18
-		Result<TM30> tm30_15Result = radioEx.getTM30(true);
-		if (tm30_15Result.isSuccess()) {
-			TM30 TM30 = tm30_15Result.getValue();
-			assertTrue(TM30.rf() >= 0 && TM30.rf() <= 200);
-			assertTrue(TM30.rg() >= 0 && TM30.rg() <= 200);
-			assertEquals(16, TM30.hueAngleBins().length);
-			assertEquals(99, TM30.colorSamples().length);
-		}
+		performMeasurementAndWait(0, 1, 5);
 
 		Result<TM30> tm30_18Result = radioEx.getTM30(false);
-		if (tm30_18Result.isSuccess()) {
-			TM30 tm30 = tm30_18Result.getValue();
-			assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
-			assertTrue(tm30.rg() >= 0 && tm30.rg() <= 200);
-		}
+		assertTrue(tm30_18Result.isSuccess(), tm30_18Result.toString());
+		TM30 tm30 = tm30_18Result.getValue();
+		assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
+		assertTrue(tm30.rg() >= 0 && tm30.rg() <= 200);
+		assertEquals(16, tm30.hueAngleBins().length);
+		assertEquals(99, tm30.colorSamples().length);
+
+		Result<TM30> tm30_15Result = radioEx.getTM30(true);
+		assertTrue(tm30_15Result.isSuccess(), tm30_15Result.toString());
+		tm30 = tm30_15Result.getValue();
+		assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
+		assertTrue(tm30.rg() >= 0 && tm30.rg() <= 200);
+		assertEquals(16, tm30.hueAngleBins().length);
+		assertEquals(99, tm30.colorSamples().length);
 	}
 
 	@Test
@@ -194,13 +181,11 @@ public class RadioExTest {
 		String memo = "Integration test measurement";
 		String tempDir = System.getProperty("java.io.tmpdir");
 
-		// Test SPC format
 		String spcPath = new File(tempDir, "test_measurement.spc").getAbsolutePath();
 		Result<Boolean> result = radioEx.saveSpectralRadianceSPC(beginWavelength, endWavelength, spcPath, operator, memo);
 		// BOZO - Internal DLL error?
 		assertTrue(result.isSuccess(), result.toString());
 
-		// Test CSV format
 		String csvPath = new File(tempDir, "test_measurement.csv").getAbsolutePath();
 		result = radioEx.saveSpectralRadianceCSV(beginWavelength, endWavelength, csvPath, operator, memo);
 		assertTrue(result.isSuccess(), result.toString());
@@ -222,11 +207,7 @@ public class RadioExTest {
 		boolean adapting = true;
 		int attempts = 0;
 		while (adapting && attempts < 200) { // Longer timeout for adaptation
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			sleep(100);
 			Result<AdaptationStatus> adaptResult = radioEx.getAdaptationStatus();
 			assertTrue(adaptResult.isSuccess(), adaptResult.toString());
 			adapting = !adaptResult.getValue().complete();
@@ -358,22 +339,17 @@ public class RadioExTest {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 100) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			System.out.print(".");
+			sleep(100);
 			Result<Boolean> statusResult = radioEx.getMeasurementStatus();
 			assertTrue(statusResult.isSuccess(), statusResult.toString());
 			measuring = statusResult.getValue();
 			attempts++;
 		}
+		System.out.println();
 
 		assertFalse(measuring, "Measurement should complete within timeout");
 
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException ignored) {
-		}
+		sleep(100);
 	}
 }

@@ -12,15 +12,11 @@ import org.junit.jupiter.api.Test;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
-@DisplayName("JetiSpectro Integration Tests")
-public class SpectroTest {
+public class SpectroTest extends JetiTest {
 	private Spectro spectro;
 
 	@BeforeEach
 	void setUp () {
-		Log.TRACE();
-		JetiSDK.initialize();
-
 		Result<Integer> deviceCount = Spectro.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro devices available for testing " + deviceCount);

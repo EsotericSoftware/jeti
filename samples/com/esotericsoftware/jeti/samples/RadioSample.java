@@ -83,7 +83,6 @@ public class RadioSample {
 			}
 		} while (choice != '0');
 
-		// Close the connection to the device
 		radio.close();
 	}
 

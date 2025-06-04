@@ -12,15 +12,11 @@ import org.junit.jupiter.api.Test;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
-@DisplayName("JetiSpectroEx Integration Tests")
-public class SpectroExTest {
+public class SpectroExTest extends JetiTest {
 	private SpectroEx spectroEx;
 
 	@BeforeEach
 	void setUp () {
-		Log.TRACE();
-		JetiSDK.initialize();
-
 		Result<Integer> deviceCount = SpectroEx.getDeviceCount();
 		assumeTrue(deviceCount.isSuccess() && deviceCount.getValue() > 0,
 			"No spectro ex devices available for testing " + deviceCount);
@@ -428,11 +424,8 @@ public class SpectroExTest {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 100) { // 10 second timeout
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			System.out.print(".");
+			sleep(100);
 			Result<Boolean> result = spectroEx.getMeasurementStatus();
 			if (result.isSuccess()) {
 				measuring = result.getValue();
@@ -442,6 +435,7 @@ public class SpectroExTest {
 			}
 			attempts++;
 		}
+		System.out.println();
 
 		if (measuring) {
 			// Try to break the measurement if it's stuck
@@ -454,11 +448,7 @@ public class SpectroExTest {
 		boolean measuring = true;
 		int attempts = 0;
 		while (measuring && attempts < 200) { // 20 second timeout for continuous measurements
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException ignored) {
-			}
-
+			sleep(100);
 			Result<Boolean> result = spectroEx.getMeasurementStatus();
 			if (result.isSuccess()) {
 				measuring = result.getValue();

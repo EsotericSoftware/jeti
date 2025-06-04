@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("JetiSpectro Integration Tests")
-public class SpectraTest {
-
+public class SpectraTest extends JetiTest {
 	@Test
 	@DisplayName("Calculate transmittance with valid spectra")
 	void testCalculateTransmittance () {

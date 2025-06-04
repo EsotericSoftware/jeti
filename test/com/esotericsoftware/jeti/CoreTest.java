@@ -14,29 +14,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import com.sun.jna.Pointer;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CoreTest {
-	static public final String IP = "10.1.0.55";
-
-	static private String getTestLicenseKey () {
-		String licenseKey = System.getenv("JETI_LICENSE_KEY");
-		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
-
-		licenseKey = System.getProperty("jeti.license.key");
-		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
-
-		return null;
-	}
-
+public class CoreTest extends JetiTest {
 	@Test
 	@Order(1)
-	@DisplayName("Initialize SDK")
-	void testInitialization () {
-		Log.TRACE();
-		assertDoesNotThrow( () -> JetiSDK.initialize());
-	}
-
-	@Test
-	@Order(2)
 	@DisplayName("Set license key")
 	void testSetLicenseKey () {
 		String licenseKey = getTestLicenseKey();
@@ -45,21 +25,8 @@ public class CoreTest {
 		assertTrue(result.isSuccess(), result.toString());
 	}
 
-	static public void main (String[] args) throws Throwable {
-		JetiSDK.initialize();
-		System.out.println(Core.getDeviceCount());
-		Result<Core> result = Core.openDevice(0);
-		if (result.isSuccess()) {
-			System.out.println("connected");
-			Core core = result.getValue();
-			core.sendCommand("*contr:laser 1\r");
-			Thread.sleep(200);
-			core.sendCommand("*contr:laser 0\r");
-		}
-	}
-
 	@Test
-	@Order(3)
+	@Order(2)
 	@DisplayName("Get DLL version")
 	void testGetDllVersion () {
 		var result = Core.getDllVersion();
@@ -70,7 +37,7 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(4)
+	@Order(3)
 	@DisplayName("Get device count")
 	void testGetDeviceCount () {
 		var result = Core.getDeviceCount();
@@ -80,7 +47,7 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(5)
+	@Order(4)
 	@DisplayName("Get device info")
 	void testGetDeviceInfo () {
 		var result = Core.getAllDeviceInfo();
@@ -91,40 +58,40 @@ public class CoreTest {
 		}
 	}
 
-// @Test
-// @Order(6)
-// @DisplayName("Measure ADC1")
-// void testMeasureADC1 () {
-// var result = Core.openTcpDevice(IP);
-// assertTrue(result.isSuccess(), result.toString());
-// var device = result.getValue();
-// assertNotNull(device);
-// try (device) {
-// Result<Short> adcResult = device.measureADC1();
-// if (adcResult.isSuccess()) {
-// assertTrue(adcResult.getValue() >= 0);
-// }
-// }
-// }
-//
-// @Test
-// @Order(7)
-// @DisplayName("Measure ADC2")
-// void testMeasureADC2 () {
-// var result = Core.openTcpDevice(IP);
-// assertTrue(result.isSuccess(), result.toString());
-// var device = result.getValue();
-// assertNotNull(device);
-// try (device) {
-// Result<Short> adcResult = device.measureADC2();
-// if (adcResult.isSuccess()) {
-// assertTrue(adcResult.getValue() >= 0);
-// }
-// }
-// }
+	@Test
+	@Order(5)
+	@DisplayName("Measure ADC1")
+	void testMeasureADC1 () {
+		var result = Core.openTcpDevice(IP);
+		assertTrue(result.isSuccess(), result.toString());
+		var device = result.getValue();
+		assertNotNull(device);
+		try (device) {
+			Result<Short> adcResult = device.measureADC1();
+			if (adcResult.isSuccess()) {
+				assertTrue(adcResult.getValue() >= 0);
+			}
+		}
+	}
 
 	@Test
-	@Order(8)
+	@Order(6)
+	@DisplayName("Measure ADC2")
+	void testMeasureADC2 () {
+		var result = Core.openTcpDevice(IP);
+		assertTrue(result.isSuccess(), result.toString());
+		var device = result.getValue();
+		assertNotNull(device);
+		try (device) {
+			Result<Short> adcResult = device.measureADC2();
+			if (adcResult.isSuccess()) {
+				assertTrue(adcResult.getValue() >= 0);
+			}
+		}
+	}
+
+	@Test
+	@Order(7)
 	@DisplayName("Open TCP device")
 	void testOpenTcpDevice () {
 		var result = Core.openTcpDevice(IP);
@@ -188,13 +155,7 @@ public class CoreTest {
 			// Start measurement
 			var measureResult = device.measure();
 			if (measureResult.isSuccess()) {
-				// Wait for measurement to complete
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException ignored) {
-				}
-
-				// Check status
+				sleep(100);
 				var statusResult = device.getMeasurementStatus();
 				if (statusResult.isSuccess()) {
 					System.out.println("Measurement complete: " + statusResult.getValue());
@@ -1225,11 +1186,21 @@ public class CoreTest {
 	}
 
 	@Test
-	@Order(11)
+	@Order(8)
 	@DisplayName("Test import straylight matrix")
 	void testImportStraylightMatrix () {
 		// This will likely fail without a valid matrix file, but we're testing it's callable
 		var importResult = Core.importStraylightMatrix("test_matrix.slm");
 		assertNotNull(importResult);
+	}
+
+	static private String getTestLicenseKey () {
+		String licenseKey = System.getenv("JETI_LICENSE_KEY");
+		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
+
+		licenseKey = System.getProperty("jeti.license.key");
+		if (licenseKey != null && !licenseKey.trim().isEmpty()) return licenseKey.trim();
+
+		return null;
 	}
 }
