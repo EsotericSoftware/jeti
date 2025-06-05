@@ -89,7 +89,9 @@ public class RadioExTest extends JetiTest {
 	@Test
 	@DisplayName("Get TM30 data")
 	void testTM30 () {
-		performMeasurementAndWait(0, 1, 1); // 1nm step required for TM-30.
+		radioEx.measureWithAdaptation(1, 1); // 1nm step required for TM-30.
+		while (radioEx.getAdaptationStatus().measuring())
+			sleep(100);
 
 		TM30 tm30 = radioEx.getTM30(false);
 		assertTrue(tm30.rf() >= 0 && tm30.rf() <= 200);
@@ -100,7 +102,7 @@ public class RadioExTest extends JetiTest {
 		TM30 tm30_15 = radioEx.getTM30(true);
 		assertTrue(tm30_15.rf() >= 0 && tm30_15.rf() <= 200);
 		assertTrue(tm30_15.rg() >= 0 && tm30_15.rg() <= 200);
-		assertEquals(16, tm30_15.hueAngleBins().length);
+		assertEquals(15, tm30_15.hueAngleBins().length);
 		assertEquals(99, tm30_15.colorSamples().length);
 	}
 

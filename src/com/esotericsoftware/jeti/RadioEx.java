@@ -136,8 +136,8 @@ public class RadioEx extends Device<RadioExLibrary> {
 	}
 
 	public TM30 getTM30 (boolean useTM3015) {
-		var rfi = new double[99];
-		var rfces = new double[16];
+		var rfi = new double[useTM3015 ? 15 : 16];
+		var rfces = new double[99];
 		check(lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces));
 		return new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces);
 	}

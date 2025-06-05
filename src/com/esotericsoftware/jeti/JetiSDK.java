@@ -173,10 +173,10 @@ public class JetiSDK {
 		double rg,
 		double avgChromaShift,
 		double avgHueShift,
-		/** Fidelity indices for 99 color samples (Rf,CES1 through Rf,CES99). */
-		double[] colorSamples,
 		/** Color fidelity by hue angle bins (15 or 16 bins). */
-		double[] hueAngleBins) {}
+		double[] hueAngleBins,
+		/** Fidelity indices for 99 color samples (Rf,CES1 through Rf,CES99). */
+		double[] colorSamples) {}
 
 	public record PeakFWHM (float peak, float fwhm) {}
 
