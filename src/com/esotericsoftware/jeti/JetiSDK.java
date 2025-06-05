@@ -167,16 +167,33 @@ public class JetiSDK {
 	public record DominantWavelength (float wavelength, float purity) {}
 
 	public record TM30 (
-		/** Fidelity index (0-100, like CRI but better). */
+		/** Overall color fidelity index (0-100, like CRI but more accurate). */
 		double rf,
-		/** Gamut index (color saturation, <100 = less saturated, >100 = more). */
+		/** Overall color gamut index (100 = no change, <100 = decreased saturation, >100 = increased saturation). */
 		double rg,
-		double avgChromaShift,
-		double avgHueShift,
-		/** Color fidelity by hue angle bins (15 or 16 bins). */
+		/** Chroma shift for each of 16 hue angle bins (negative = desaturation, positive = increased saturation). */
+		double[] chromaShift,
+		/** Hue shift for each of 16 hue angle bins in degrees (negative = CCW shift, positive = CW shift). */
+		double[] hueShift,
+		/** Individual color fidelity indices (Rf,hj) for each of 16 hue angle bins (0-100). */
 		double[] hueAngleBins,
-		/** Fidelity indices for 99 color samples (Rf,CES1 through Rf,CES99). */
-		double[] colorSamples) {}
+		/** Color fidelity indices for 99 CES (Color Evaluation Samples), Rf,CES1 through Rf,CES99 (0-100). */
+		double[] colorSamples) {
+
+		public double averageHueShift () {
+			double sum = 0;
+			for (double value : hueShift)
+				sum += value;
+			return sum / hueShift.length;
+		}
+
+		public double averageChromaShift () {
+			double sum = 0;
+			for (double value : chromaShift)
+				sum += value;
+			return sum / chromaShift.length;
+		}
+	}
 
 	public record PeakFWHM (float peak, float fwhm) {}
 

@@ -30,7 +30,7 @@ public class Core extends Device<CoreLibrary> {
 	}
 
 	private Core (Pointer handle) {
-		super(CoreLibrary.INSTANCE, handle, CoreLibrary.INSTANCE::JETI_CloseDevice, 3, 2, 4, 8, 4, 1);
+		super(CoreLibrary.INSTANCE, handle, CoreLibrary.INSTANCE::JETI_CloseDevice, 3, 2, 4, 8, 2, 1);
 	}
 
 	// Device info
@@ -866,10 +866,12 @@ public class Core extends Device<CoreLibrary> {
 	}
 
 	public TM30 calculateTM30 (boolean useTM3015) {
-		var rfi = new double[useTM3015 ? 15 : 16];
+		var dChroma = new double[16];
+		var dHue = new double[16];
+		var rfi = new double[16];
 		var rfces = new double[99];
-		check(lib().JETI_CalcTM30(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces));
-		return new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces);
+		check(lib().JETI_CalcTM30(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], dChroma, dHue, rfi, rfces));
+		return new TM30(d[0].getValue(), d[1].getValue(), dChroma, dHue, rfi, rfces);
 	}
 
 	public PeakFWHM calculatePeakFWHM (float threshold) {

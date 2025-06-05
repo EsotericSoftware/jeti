@@ -104,7 +104,7 @@ public class RadioTest extends JetiTest {
 	}
 
 	@Test
-	@DisplayName("Break measurement")
+	@DisplayName("Cancel measurement")
 	void testCancelMeasurement () {
 		radio.measure();
 		radio.cancelMeasurement();

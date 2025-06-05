@@ -1,16 +1,16 @@
 
 package com.esotericsoftware.jeti;
 
-import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
+import com.sun.jna.win32.StdCallLibrary;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface SpectroExLibrary extends Library {
+public interface SpectroExLibrary extends StdCallLibrary {
 	final SpectroExLibrary INSTANCE = Native.load("jeti_spectro_ex64", SpectroExLibrary.class);
 
 	// Device discovery and connection

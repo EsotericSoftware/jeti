@@ -1,16 +1,16 @@
 
 package com.esotericsoftware.jeti;
 
-import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
+import com.sun.jna.win32.StdCallLibrary;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface RadioLibrary extends Library {
+public interface RadioLibrary extends StdCallLibrary {
 	final RadioLibrary INSTANCE = Native.load("jeti_radio64", RadioLibrary.class);
 
 	// Device discovery and connection

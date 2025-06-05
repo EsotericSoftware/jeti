@@ -1,7 +1,6 @@
 
 package com.esotericsoftware.jeti;
 
-import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.DoubleByReference;
@@ -9,9 +8,10 @@ import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
+import com.sun.jna.win32.StdCallLibrary;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface RadioExLibrary extends Library {
+public interface RadioExLibrary extends StdCallLibrary {
 	final RadioExLibrary INSTANCE = Native.load("jeti_radio_ex64", RadioExLibrary.class);
 
 	// Device discovery and connection
@@ -70,8 +70,8 @@ public interface RadioExLibrary extends Library {
 
 	int JETI_CRIEx (Pointer dwDevice, float fCCT, float[] fCRI);
 
-	int JETI_TM30Ex (Pointer dwDevice, byte bUseTM3015, DoubleByReference dRf, DoubleByReference dRg, DoubleByReference dChroma,
-		DoubleByReference dHue, double[] dRfi, double[] dRfces);
+	int JETI_TM30Ex (Pointer dwDevice, byte bUseTM3015, DoubleByReference dRf, DoubleByReference dRg, double[] dChroma,
+		double[] dHue, double[] dRfi, double[] dRfces);
 
 	int JETI_PeakFWHMEx (Pointer dwDevice, float fThreshold, FloatByReference fPeak, FloatByReference fFWHM);
 

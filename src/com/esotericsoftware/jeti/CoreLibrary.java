@@ -1,7 +1,6 @@
 
 package com.esotericsoftware.jeti;
 
-import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef;
@@ -12,9 +11,10 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
+import com.sun.jna.win32.StdCallLibrary;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public interface CoreLibrary extends Library {
+public interface CoreLibrary extends StdCallLibrary {
 	final CoreLibrary INSTANCE = Native.load("jeti_core64", CoreLibrary.class);
 
 	// License and setup
@@ -413,8 +413,8 @@ public interface CoreLibrary extends Library {
 		FloatByReference fChromx, FloatByReference fChromy, FloatByReference fChromu, FloatByReference fChromv,
 		FloatByReference fDWL, FloatByReference fPE);
 
-	int JETI_CalcTM30 (Pointer dwDevice, byte bUseTM3015, DoubleByReference dRf, DoubleByReference dRg, DoubleByReference dChroma,
-		DoubleByReference dHue, double[] dRfi, double[] dRfces);
+	int JETI_CalcTM30 (Pointer dwDevice, byte bUseTM3015, DoubleByReference dRf, DoubleByReference dRg, double[] dChroma,
+		double[] dHue, double[] dRfi, double[] dRfces);;
 
 	int JETI_CalcPeakFWHM (Pointer dwDevice, float fThreshold, FloatByReference fPeak, FloatByReference fFWHM);
 

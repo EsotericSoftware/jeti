@@ -26,7 +26,7 @@ public class RadioEx extends Device<RadioExLibrary> {
 	private final float[] cri = new float[17];
 
 	private RadioEx (Pointer handle) {
-		super(RadioExLibrary.INSTANCE, handle, RadioExLibrary.INSTANCE::JETI_CloseRadioEx, 0, 1, 1, 6, 4, 0);
+		super(RadioExLibrary.INSTANCE, handle, RadioExLibrary.INSTANCE::JETI_CloseRadioEx, 0, 1, 1, 6, 2, 0);
 	}
 
 	// Measurement functions
@@ -59,6 +59,7 @@ public class RadioEx extends Device<RadioExLibrary> {
 
 	// Spectral data functions
 
+	/** @param step Must match last measurement. */
 	public float[] getSpectralRadiance (int beginWavelength, int endWavelength, float step) {
 		int dataSize = (int)((endWavelength - beginWavelength) / step + 1);
 		var spectralData = new float[dataSize];
@@ -136,10 +137,12 @@ public class RadioEx extends Device<RadioExLibrary> {
 	}
 
 	public TM30 getTM30 (boolean useTM3015) {
-		var rfi = new double[useTM3015 ? 15 : 16];
+		var dChroma = new double[16];
+		var dHue = new double[16];
+		var rfi = new double[16];
 		var rfces = new double[99];
-		check(lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces));
-		return new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces);
+		check(lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], dChroma, dHue, rfi, rfces));
+		return new TM30(d[0].getValue(), d[1].getValue(), dChroma, dHue, rfi, rfces);
 	}
 
 	public PeakFWHM getPeakFWHM (float threshold) {
