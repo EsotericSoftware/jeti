@@ -2,7 +2,6 @@
 package com.esotericsoftware.jeti;
 
 import static com.esotericsoftware.jeti.JetiSDK.*;
-import static com.esotericsoftware.jeti.Result.*;
 
 import com.esotericsoftware.jeti.JetiSDK.AdaptationStatus;
 import com.esotericsoftware.jeti.JetiSDK.BlueMeasurement;
@@ -32,192 +31,167 @@ public class RadioEx extends Device<RadioExLibrary> {
 
 	// Measurement functions
 
-	public Result<Boolean> measure (float integrationTime, int averageCount, int step) {
-		return result(lib().JETI_MeasureEx(handle, integrationTime, (short)averageCount, step));
+	public void measure (float integrationTime, int averageCount, int step) {
+		check(lib().JETI_MeasureEx(handle, integrationTime, (short)averageCount, step));
 	}
 
-	public Result<Boolean> measureWithAdaptation (int averageCount, int step) {
-		return result(lib().JETI_MeasureAdaptEx(handle, (short)averageCount, step));
+	public void measureWithAdaptation (int averageCount, int step) {
+		check(lib().JETI_MeasureAdaptEx(handle, (short)averageCount, step));
 	}
 
-	public Result<Boolean> prepareMeasurement (float integrationTime, int averageCount, int step) {
-		return result(lib().JETI_PrepareMeasureEx(handle, integrationTime, (short)averageCount, step));
+	public void prepareMeasurement (float integrationTime, int averageCount, int step) {
+		check(lib().JETI_PrepareMeasureEx(handle, integrationTime, (short)averageCount, step));
 	}
 
-	public Result<Boolean> getMeasurementStatus () {
-		int result = lib().JETI_MeasureStatusEx(handle, i[0]);
-		if (result != SUCCESS) return error(result);
-		return success(i[0].getValue() != 0);
+	public boolean isMeasuring () {
+		check(lib().JETI_MeasureStatusEx(handle, i[0]));
+		return i[0].getValue() != 0;
 	}
 
-	public Result<AdaptationStatus> getAdaptationStatus () {
-		int result = lib().JETI_MeasureAdaptStatusEx(handle, f[0], s[0], i[0]);
-		if (result != SUCCESS) return error(result);
-		return success(new AdaptationStatus(f[0].getValue(), s[0].getValue(), i[0].getValue() != 0));
+	public AdaptationStatus getAdaptationStatus () {
+		check(lib().JETI_MeasureAdaptStatusEx(handle, f[0], s[0], i[0]));
+		return new AdaptationStatus(f[0].getValue(), s[0].getValue(), i[0].getValue() != 0);
 	}
 
-	public Result<Boolean> breakMeasurement () {
-		return result(lib().JETI_MeasureBreakEx(handle));
+	public void cancelMeasurement () {
+		check(lib().JETI_MeasureBreakEx(handle));
 	}
 
 	// Spectral data functions
 
-	public Result<float[]> getSpectralRadiance (int beginWavelength, int endWavelength, float step) {
+	public float[] getSpectralRadiance (int beginWavelength, int endWavelength, float step) {
 		int dataSize = (int)((endWavelength - beginWavelength) / step + 1);
 		var spectralData = new float[dataSize];
-		int result = lib().JETI_SpecRadEx(handle, beginWavelength, endWavelength, spectralData);
-		if (result != SUCCESS) return error(result);
-		return success(spectralData);
+		check(lib().JETI_SpecRadEx(handle, beginWavelength, endWavelength, spectralData));
+		return spectralData;
 	}
 
-	public Result<float[]> getSpectralRadianceHiRes (int beginWavelength, int endWavelength) {
+	public float[] getSpectralRadianceHiRes (int beginWavelength, int endWavelength) {
 		int dataSize = (int)((endWavelength - beginWavelength) / 0.1f + 1);
 		var spectralData = new float[dataSize];
-		int result = lib().JETI_SpecRadHiResEx(handle, beginWavelength, endWavelength, spectralData);
-		if (result != SUCCESS) return error(result);
-		return success(spectralData);
+		check(lib().JETI_SpecRadHiResEx(handle, beginWavelength, endWavelength, spectralData));
+		return spectralData;
 	}
 
-	public Result<Boolean> saveSpectralRadianceSPC (int beginWavelength, int endWavelength, String filePath, String operator,
-		String memo) {
-		return result(lib().JETI_SaveSpecRadSPCEx(handle, beginWavelength, endWavelength, filePath, operator, memo));
+	public void saveSpectralRadianceSPC (int beginWavelength, int endWavelength, String filePath, String operator, String memo) {
+		check(lib().JETI_SaveSpecRadSPCEx(handle, beginWavelength, endWavelength, filePath, operator, memo));
 	}
 
-	public Result<Boolean> saveSpectralRadianceCSV (int beginWavelength, int endWavelength, String pathName, String operator,
-		String memo) {
-		return result(lib().JETI_SaveSpecRadCSVEx(handle, beginWavelength, endWavelength, pathName, operator, memo));
+	public void saveSpectralRadianceCSV (int beginWavelength, int endWavelength, String pathName, String operator, String memo) {
+		check(lib().JETI_SaveSpecRadCSVEx(handle, beginWavelength, endWavelength, pathName, operator, memo));
 	}
 
 	// Measurement data functions
 
-	public Result<Float> getRadiometricValue (int beginWavelength, int endWavelength) {
-		int result = lib().JETI_RadioEx(handle, beginWavelength, endWavelength, f[0]);
-		if (result != SUCCESS) return error(result);
-		return success(f[0].getValue());
+	public float getRadiometricValue (int beginWavelength, int endWavelength) {
+		check(lib().JETI_RadioEx(handle, beginWavelength, endWavelength, f[0]));
+		return f[0].getValue();
 	}
 
-	public Result<Float> getPhotometricValue () {
-		int result = lib().JETI_PhotoEx(handle, f[0]);
-		if (result != SUCCESS) return error(result);
-		return success(f[0].getValue());
+	public float getPhotometricValue () {
+		check(lib().JETI_PhotoEx(handle, f[0]));
+		return f[0].getValue();
 	}
 
-	public Result<XY> getChromaXY () {
-		int result = lib().JETI_ChromxyEx(handle, f[0], f[1]);
-		if (result != SUCCESS) return error(result);
-		return success(new XY(f[0].getValue(), f[1].getValue()));
+	public XY getChromaXY () {
+		check(lib().JETI_ChromxyEx(handle, f[0], f[1]));
+		return new XY(f[0].getValue(), f[1].getValue());
 	}
 
-	public Result<XY10> getChromaXY10 () {
-		int result = lib().JETI_Chromxy10Ex(handle, f[0], f[1]);
-		if (result != SUCCESS) return error(result);
-		return success(new XY10(f[0].getValue(), f[1].getValue()));
+	public XY10 getChromaXY10 () {
+		check(lib().JETI_Chromxy10Ex(handle, f[0], f[1]));
+		return new XY10(f[0].getValue(), f[1].getValue());
 	}
 
-	public Result<UV> getChromaUV () {
-		int result = lib().JETI_ChromuvEx(handle, f[0], f[1]);
-		if (result != SUCCESS) return error(result);
-		return success(new UV(f[0].getValue(), f[1].getValue()));
+	public UV getChromaUV () {
+		check(lib().JETI_ChromuvEx(handle, f[0], f[1]));
+		return new UV(f[0].getValue(), f[1].getValue());
 	}
 
-	public Result<XYZ> getXYZ () {
-		int result = lib().JETI_ChromXYZEx(handle, f[0], f[1], f[2]);
-		if (result != SUCCESS) return error(result);
-		return success(new XYZ(f[0].getValue(), f[1].getValue(), f[2].getValue()));
+	public XYZ getXYZ () {
+		check(lib().JETI_ChromXYZEx(handle, f[0], f[1], f[2]));
+		return new XYZ(f[0].getValue(), f[1].getValue(), f[2].getValue());
 	}
 
-	public Result<DominantWavelength> getDominantWavelength () {
-		int result = lib().JETI_DWLPEEx(handle, f[0], f[1]);
-		if (result != SUCCESS) return error(result);
-		return success(new DominantWavelength(f[0].getValue(), f[1].getValue()));
+	public DominantWavelength getDominantWavelength () {
+		check(lib().JETI_DWLPEEx(handle, f[0], f[1]));
+		return new DominantWavelength(f[0].getValue(), f[1].getValue());
 	}
 
-	public Result<Float> getCCT () {
-		int result = lib().JETI_CCTEx(handle, f[0]);
-		if (result != SUCCESS) return error(result);
-		return success(f[0].getValue());
+	public float getCCT () {
+		check(lib().JETI_CCTEx(handle, f[0]));
+		return f[0].getValue();
 	}
 
-	public Result<Float> getDuv () {
-		int result = lib().JETI_DuvEx(handle, f[0]);
-		if (result != SUCCESS) return error(result);
-		return success(f[0].getValue());
+	public float getDuv () {
+		check(lib().JETI_DuvEx(handle, f[0]));
+		return f[0].getValue();
 	}
 
-	public Result<CRI> getCRI (float cct) {
-		int result = lib().JETI_CRIEx(handle, cct, cri);
-		if (result != SUCCESS) return error(result);
+	public CRI getCRI (float cct) {
+		check(lib().JETI_CRIEx(handle, cct, cri));
 		float[] samples = new float[15];
 		System.arraycopy(cri, 2, samples, 0, 15);
-		return success(new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples));
+		return new CRI(cri[0], cri[0] / 0.0054f, cri[1], samples);
 	}
 
-	public Result<TM30> getTM30 (boolean useTM3015) {
-		var rfi = new double[16];
-		var rfces = new double[99];
-		int result = lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces);
-		if (result != SUCCESS) return error(result);
-		return success(new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces));
+	public TM30 getTM30 (boolean useTM3015) {
+		var rfi = new double[99];
+		var rfces = new double[16];
+		check(lib().JETI_TM30Ex(handle, (byte)(useTM3015 ? 1 : 0), d[0], d[1], d[2], d[3], rfi, rfces));
+		return new TM30(d[0].getValue(), d[1].getValue(), d[2].getValue(), d[3].getValue(), rfi, rfces);
 	}
 
-	public Result<PeakFWHM> getPeakFWHM (float threshold) {
-		int result = lib().JETI_PeakFWHMEx(handle, threshold, f[0], f[1]);
-		if (result != SUCCESS) return error(result);
-		return success(new PeakFWHM(f[0].getValue(), f[1].getValue()));
+	public PeakFWHM getPeakFWHM (float threshold) {
+		check(lib().JETI_PeakFWHMEx(handle, threshold, f[0], f[1]));
+		return new PeakFWHM(f[0].getValue(), f[1].getValue());
 	}
 
-	public Result<BlueMeasurement> getBlueMeasurement () {
-		int result = lib().JETI_BlueMeasurementEx(handle, f[0], f[1], f[2], f[3], f[4], f[5]);
-		if (result != SUCCESS) return error(result);
-		return success(new BlueMeasurement(f[0].getValue(), f[1].getValue(), f[2].getValue(), f[3].getValue(), f[4].getValue(),
-			f[5].getValue()));
+	public BlueMeasurement getBlueMeasurement () {
+		check(lib().JETI_BlueMeasurementEx(handle, f[0], f[1], f[2], f[3], f[4], f[5]));
+		return new BlueMeasurement(f[0].getValue(), f[1].getValue(), f[2].getValue(), f[3].getValue(), f[4].getValue(),
+			f[5].getValue());
 	}
 
-	public Result<Float> getIntegrationTime () {
-		int result = lib().JETI_RadioTintEx(handle, f[0]);
-		if (result != SUCCESS) return error(result);
-		return success(f[0].getValue());
+	public float getIntegrationTime () {
+		check(lib().JETI_RadioTintEx(handle, f[0]));
+		return f[0].getValue();
 	}
 
-	public Result<Boolean> setMeasurementDistance (int distance) {
-		return result(lib().JETI_SetMeasDistEx(handle, distance));
+	public void setMeasurementDistance (int distance) {
+		check(lib().JETI_SetMeasDistEx(handle, distance));
 	}
 
-	public Result<Integer> getMeasurementDistance () {
-		int result = lib().JETI_GetMeasDistEx(handle, i[0]);
-		if (result != SUCCESS) return error(result);
-		return success(i[0].getValue());
+	public int getMeasurementDistance () {
+		check(lib().JETI_GetMeasDistEx(handle, i[0]));
+		return i[0].getValue();
 	}
 
-	static public Result<Integer> getDeviceCount () {
+	static public int getDeviceCount () {
 		var count = new IntByReference();
-		int result = RadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count);
-		if (result != SUCCESS) return error(result);
-		return success(count.getValue());
+		check(RadioExLibrary.INSTANCE.JETI_GetNumRadioEx(count));
+		return count.getValue();
 	}
 
-	static public Result<DeviceSerials> getDeviceSerials (int deviceNumber) {
+	static public DeviceSerials getDeviceSerials (int deviceNumber) {
 		var boardSerial = new byte[STRING_SIZE];
 		var specSerial = new byte[STRING_SIZE];
 		var deviceSerial = new byte[STRING_SIZE];
-		int result = RadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial);
-		if (result != SUCCESS) return error(result);
-		return success(new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial)));
+		check(RadioExLibrary.INSTANCE.JETI_GetSerialRadioEx(deviceNumber, boardSerial, specSerial, deviceSerial));
+		return new DeviceSerials(string(boardSerial), string(specSerial), string(deviceSerial));
 	}
 
-	static public Result<RadioEx> openDevice (int deviceNumber) {
+	static public RadioEx openDevice (int deviceNumber) {
 		var handle = new PointerByReference();
-		int result = RadioExLibrary.INSTANCE.JETI_OpenRadioEx(deviceNumber, handle);
-		if (result != SUCCESS) return error(result);
-		return success(new RadioEx(handle.getValue()));
+		check(RadioExLibrary.INSTANCE.JETI_OpenRadioEx(deviceNumber, handle));
+		return new RadioEx(handle.getValue());
 	}
 
-	static public Result<DllVersion> getDllVersion () {
+	static public DllVersion getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();
 		var build = new ShortByReference();
-		int result = RadioExLibrary.INSTANCE.JETI_GetRadioExDLLVersion(major, minor, build);
-		if (result != SUCCESS) return error(result);
-		return success(new DllVersion(major.getValue(), minor.getValue(), build.getValue()));
+		check(RadioExLibrary.INSTANCE.JETI_GetRadioExDLLVersion(major, minor, build));
+		return new DllVersion(major.getValue(), minor.getValue(), build.getValue());
 	}
 }

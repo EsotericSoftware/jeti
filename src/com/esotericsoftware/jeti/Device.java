@@ -62,13 +62,16 @@ abstract public class Device<L extends Library> implements AutoCloseable {
 
 	public void close () {
 		if (handle != null) {
-			int result = close.apply(handle);
-			if (result != SUCCESS) new RuntimeException("Unable to close device: 0x" + Integer.toHexString(result));
+			check(close.apply(handle));
 			handle = null;
 		}
 	}
 
 	public boolean isClosed () {
 		return handle == null;
+	}
+
+	static void check (int result) {
+		if (result != SUCCESS) throw new JetiException(result);
 	}
 }

@@ -152,7 +152,7 @@ public class JetiSDK {
 
 	public record DllVersion (short major, short minor, short build) {}
 
-	public record AdaptationStatus (float integrationTime, int averageCount, boolean complete) {}
+	public record AdaptationStatus (float integrationTime, int averageCount, boolean measuring) {}
 
 	public record XY (float x, float y) {}
 

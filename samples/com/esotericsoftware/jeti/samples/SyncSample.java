@@ -4,10 +4,9 @@ package com.esotericsoftware.jeti.samples;
 import java.util.Scanner;
 
 import com.esotericsoftware.jeti.Core;
-import com.esotericsoftware.jeti.Core.FlickerFrequency;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.Radio;
-import com.esotericsoftware.jeti.Result;
+import com.esotericsoftware.jeti.RadioEx;
 
 /** This sample shows how to make synchronized measurements with the use of an optical trigger and the cycle mode.
  * 
@@ -28,20 +27,15 @@ public class SyncSample {
 		JetiSDK.initialize();
 
 		System.out.println("Searching for devices...");
-		Result<Integer> deviceCount = Radio.getDeviceCount();
-		if (deviceCount.isError() || deviceCount.getValue() == 0) {
-			System.out.println("No radio devices found! Error: " + deviceCount);
+		int count = RadioEx.getDeviceCount();
+		if (count == 0) {
+			System.out.println("No radio devices found!");
 			return;
 		}
-		System.out.println("Radio devices: " + deviceCount.getValue());
+		System.out.println("Radio devices: " + count);
 
 		// Open the first found device (zero-based index)
-		Result<Radio> result = Radio.openDevice(0);
-		if (result.isError()) {
-			System.out.println("Could not open radio device! Error: " + result);
-			return;
-		}
-		radio = result.getValue();
+		radio = Radio.openDevice(0);
 		core = new Core(radio);
 		System.out.println("Connected.");
 
@@ -73,62 +67,30 @@ public class SyncSample {
 
 		// Try to determine flicker frequency automatically
 		System.out.println("Try to determine flicker frequency...");
-		Result<FlickerFrequency> flickerResult = core.getFlickerFrequency();
-		if (flickerResult.isError() || flickerResult.getValue().frequency() == 0.0f) {
-			System.out.print("Could not determine flicker frequency!\nEnter a sync frequency in Hz: ");
-			syncFreq = scanner.nextFloat();
-		} else {
-			syncFreq = flickerResult.getValue().frequency();
-			System.out.println(
-				String.format("Detected flicker frequency: %.2f Hz, warning: %s", syncFreq, flickerResult.getValue().warning()));
-		}
+		syncFreq = core.getFlickerFrequency().frequency();
+		System.out.println(
+			String.format("Detected flicker frequency: %.2f Hz, warning: %s", syncFreq, core.getFlickerFrequency().warning()));
 
-		// Set sync mode
-		Result<Boolean> syncModeResult = core.setSyncMode(true);
-		if (syncModeResult.isError()) {
-			System.out.println("Could not set sync mode! Error: " + syncModeResult);
-			return;
-		}
-
-		// Set sync frequency in Hz
-		Result<Boolean> syncFreqResult = core.setSyncFrequency(syncFreq);
-		if (syncFreqResult.isError()) {
-			System.out.println("Could not set sync frequency! Error: " + syncFreqResult);
-			return;
-		}
+		core.setSyncMode(true);
+		core.setSyncFrequency(syncFreq);
 
 		// Start measurement
-		Result<Boolean> measureResult = radio.measure();
-		if (measureResult.isError()) {
-			System.out.println("Could not start measurement! Error: " + measureResult);
-			return;
-		}
+		radio.measure();
 		System.out.println("Measurement started. Please wait...");
 
-		// Wait until measurement is finished
 		boolean measuring = true;
 		while (measuring) {
-			Result<Boolean> statusResult = radio.getMeasurementStatus();
-			if (statusResult.isError()) {
-				System.out.println("Could not determine measurement status! Error: " + statusResult);
-				return;
-			}
-			measuring = statusResult.getValue();
+			measuring = radio.isMeasuring();
 			System.out.print(".");
-
 			try {
 				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// Ignore
+			} catch (InterruptedException ignored) {
 			}
 		}
 		System.out.println("\n");
 
 		// Read radiometric value
-		Result<Float> radioResult = radio.getRadiometricValue();
-		if (radioResult.isSuccess()) {
-			System.out.println(String.format("Radiometric value: %.3E", radioResult.getValue()));
-		}
+		System.out.println(String.format("Radiometric value: %.3E", radio.getRadiometricValue()));
 
 		// Show info about the sync frequency
 		System.out.println(String.format("Sync frequency [Hz]: %.2f", syncFreq));

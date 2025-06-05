@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import com.sun.jna.Pointer;
+import com.esotericsoftware.jeti.JetiSDK.DllVersion;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CoreTest extends JetiTest {
@@ -21,1168 +21,412 @@ public class CoreTest extends JetiTest {
 	void testSetLicenseKey () {
 		String licenseKey = getTestLicenseKey();
 		assumeFalse(licenseKey == null, "JETI license key not configured");
-		var result = Core.setLicenseKey(licenseKey);
-		assertTrue(result.isSuccess(), result.toString());
+		Core.setLicenseKey(licenseKey);
 	}
 
 	@Test
 	@Order(2)
 	@DisplayName("Get DLL version")
 	void testGetDllVersion () {
-		var result = Core.getDllVersion();
-		assertTrue(result.isSuccess(), result.toString());
-		assertNotNull(result.getValue());
-		System.out.println(
-			"Core DLL version: " + result.getValue().major() + "." + result.getValue().minor() + "." + result.getValue().build());
+		DllVersion version = Core.getDllVersion();
+		assertNotNull(version);
+		System.out.println("Core DLL version: " + version.major() + "." + version.minor() + "." + version.build());
 	}
 
 	@Test
 	@Order(3)
 	@DisplayName("Get device count")
 	void testGetDeviceCount () {
-		var result = Core.getDeviceCount();
-		assertTrue(result.isSuccess(), result.toString());
-		assertTrue(result.getValue() >= 0);
-		System.out.println("Found " + result.getValue() + " Core devices");
+		int count = Core.getDeviceCount();
+		assertTrue(count >= 0);
+		System.out.println("Found " + count + " Core devices");
 	}
 
 	@Test
 	@Order(4)
 	@DisplayName("Get device info")
 	void testGetDeviceInfo () {
-		var result = Core.getAllDeviceInfo();
-		assertTrue(result.isSuccess(), result.toString());
-		assertNotNull(result.getValue());
-		for (var device : result.getValue()) {
+		Core.DeviceInfo[] devices = Core.getAllDeviceInfo();
+		assertNotNull(devices);
+		for (Core.DeviceInfo device : devices)
 			System.out.println("Device: " + device.deviceType() + " - " + device.deviceSerial());
-		}
 	}
 
-	@Test
-	@Order(5)
-	@DisplayName("Measure ADC1")
-	void testMeasureADC1 () {
-		var result = Core.openTcpDevice(IP);
-		assertTrue(result.isSuccess(), result.toString());
-		var device = result.getValue();
-		assertNotNull(device);
-		try (device) {
-			Result<Short> adcResult = device.measureADC1();
-			if (adcResult.isSuccess()) {
-				assertTrue(adcResult.getValue() >= 0);
-			}
-		}
-	}
+	// BOZO - Times out.
+	// @Test
+	// @Order(5)
+	// @DisplayName("Measure ADC1")
+	// void testMeasureADC1 () {
+	// Core core = Core.openTcpDevice(IP);
+	// assertNotNull(core);
+	// try (core) {
+	// assertTrue(core.measureADC1() >= 0);
+	// }
+	// }
 
-	@Test
-	@Order(6)
-	@DisplayName("Measure ADC2")
-	void testMeasureADC2 () {
-		var result = Core.openTcpDevice(IP);
-		assertTrue(result.isSuccess(), result.toString());
-		var device = result.getValue();
-		assertNotNull(device);
-		try (device) {
-			Result<Short> adcResult = device.measureADC2();
-			if (adcResult.isSuccess()) {
-				assertTrue(adcResult.getValue() >= 0);
-			}
-		}
-	}
+	// BOZO - Times out.
+	// @Test
+	// @Order(6)
+	// @DisplayName("Measure ADC2")
+	// void testMeasureADC2 () {
+	// Core core = Core.openTcpDevice(IP);
+	// assertNotNull(core);
+	// try (core) {
+	// assertTrue(core.measureADC2() >= 0);
+	// }
+	// }
 
 	@Test
 	@Order(7)
 	@DisplayName("Open TCP device")
 	void testOpenTcpDevice () {
-		var result = Core.openTcpDevice(IP);
-		assertTrue(result.isSuccess(), result.toString());
-		var device = result.getValue();
-		assertNotNull(device);
-		try (device) {
-			testDeviceOperations(device);
+		Core core = Core.openTcpDevice(IP);
+		assertNotNull(core);
+		try (core) {
+			testDeviceOperations(core);
 		}
 	}
 
-	private void testDeviceOperations (Core device) {
-		// Test basic device info
-		var firmwareResult = device.getFirmwareVersion();
-		assertTrue(firmwareResult.isSuccess(), firmwareResult.toString());
-		System.out.println("Firmware version: " + firmwareResult.getValue());
+	private void testDeviceOperations (Core core) {
+		System.out.println("Firmware version: " + core.getFirmwareVersion());
+		System.out.println("Device type: " + core.getDeviceType());
+		System.out.println("Battery: " + core.getBatteryInfo());
+		System.out.println("Temperature: " + core.getTemperature() + " C");
+		System.out.println("Integration time: " + core.getIntegrationTime() + " ms");
+		System.out.println("Pixel count: " + core.getPixelCount());
 
-		var deviceTypeResult = device.getDeviceType();
-		assertTrue(deviceTypeResult.isSuccess(), deviceTypeResult.toString());
-		System.out.println("Device type: " + deviceTypeResult.getValue());
-
-		// Test battery info
-		var batteryResult = device.getBatteryInfo();
-		if (batteryResult.isSuccess()) {
-			var battery = batteryResult.getValue();
-			System.out.println("Battery: " + battery.voltage() + "V, " + battery.percent() + "%, charging=" + battery.charging());
-		}
-
-		// Test temperature
-		var tempResult = device.getTemperature();
-		if (tempResult.isSuccess()) {
-			System.out.println("Temperature: " + tempResult.getValue() + "°C");
-		}
-
-		// Test integration time
-		var tintResult = device.getIntegrationTime();
-		if (tintResult.isSuccess()) {
-			System.out.println("Integration time: " + tintResult.getValue() + "ms");
-		}
-
-		// Test pixel count
-		var pixelResult = device.getPixelCount();
-		if (pixelResult.isSuccess()) {
-			System.out.println("Pixel count: " + pixelResult.getValue());
-		}
-
-		// Test measurement
-		testMeasurement(device);
-
-		// Test parameter functions
-		testParameterFunctions(device);
-
-		// Test configuration functions
-		testConfigurationFunctions(device);
+		testMeasurement(core);
+		testParameterFunctions(core);
+		testConfigurationFunctions(core);
 	}
 
-	private void testMeasurement (Core device) {
-		// Prepare measurement
-		var prepareResult = device.prepareMeasurement();
-		if (prepareResult.isSuccess()) {
-			// Start measurement
-			var measureResult = device.measure();
-			if (measureResult.isSuccess()) {
-				sleep(100);
-				var statusResult = device.getMeasurementStatus();
-				if (statusResult.isSuccess()) {
-					System.out.println("Measurement complete: " + statusResult.getValue());
-				}
-			}
+	private void testMeasurement (Core core) {
+		// BOZO - Not supported?
+		// core.prepareTriggeredMeasurement();
+
+		core.measure();
+		int attempts = 0;
+		while (core.isMeasuring() && attempts++ < 100) {
+			System.out.print(".");
+			sleep(100);
 		}
+		System.out.println();
+		assertFalse(attempts >= 100, "Measurement should complete within timeout");
 	}
 
-	private void testParameterFunctions (Core device) {
-		// Test pixel binning
-		var pixBinResult = device.getPixelBinning();
-		if (pixBinResult.isSuccess()) {
-			System.out.println("Pixel binning: " + pixBinResult.getValue());
-		}
+	private void testParameterFunctions (Core core) {
+		System.out.println("Pixel binning: " + core.getPixelBinning());
+		System.out.println("Scan delay: " + core.getScanDelay());
 
-		// Test scan delay
-		var delayResult = device.getScanDelay();
-		if (delayResult.isSuccess()) {
-			System.out.println("Scan delay: " + delayResult.getValue());
-		}
-
-		// Test distance
-		var distanceResult = device.getDistance();
-		if (distanceResult.isSuccess()) {
-			System.out.println("Distance: " + distanceResult.getValue());
-		}
-
-		// Test trigger timeout
-		var trigTimeoutResult = device.getTriggerTimeout();
-		if (trigTimeoutResult.isSuccess()) {
-			System.out.println("Trigger timeout: " + trigTimeoutResult.getValue());
-		}
-
-		// Test baudrate
-		var baudrateResult = device.getBaudrate();
-		if (baudrateResult.isSuccess()) {
-			System.out.println("Baudrate: " + baudrateResult.getValue());
-		}
+		// BOZO - Not supported?
+		// System.out.println("Distance: " + core.getDistance());
+		// System.out.println("Trigger timeout: " + core.getTriggerTimeout());
+		System.out.println("Baudrate: " + core.getBaudrate());
 	}
 
-	private void testConfigurationFunctions (Core device) {
-		// Test dark mode configuration
-		var darkModeResult = device.getDarkModeConfig();
-		if (darkModeResult.isSuccess()) {
-			System.out.println("Dark mode: " + darkModeResult.getValue());
-		}
-
-		// Test integration time configuration
-		var tintConfResult = device.getIntegrationTimeConfig();
-		if (tintConfResult.isSuccess()) {
-			var conf = tintConfResult.getValue();
-			System.out.println("Integration time config - previous: " + conf.previous() + ", configured: " + conf.configured());
-		}
-
-		// Test wavelength range configuration
-		var wranResult = device.getWavelengthRangeConfig();
-		if (wranResult.isSuccess()) {
-			var range = wranResult.getValue();
-			System.out.println("Wavelength range: " + range.begin() + "-" + range.end() + " nm, step=" + range.step());
-		}
-
-		// Test level
-		var levelResult = device.getLevel();
-		if (levelResult.isSuccess()) {
-			var level = levelResult.getValue();
-			System.out.println("Level - counts: " + level.counts() + ", percent: " + level.percent() + "%");
-		}
+	private void testConfigurationFunctions (Core core) {
+		System.out.println("Dark mode: " + core.getDarkModeConfig());
+		System.out.println("Integration time config: " + core.getIntegrationTimeConfig());
+		System.out.println("Wavelength range: " + core.getWavelengthRangeConfig());
+		System.out.println("Level: " + core.getLevel());
 	}
 
 	@Test
 	@Order(9)
 	@DisplayName("Test straylight matrix functions")
 	void testStrayLightMatrix () {
-		// Test ignore straylight matrix
-		var ignoreResult = Core.ignoreStraylightMatrix(true);
-		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
-
-		// Reset to not ignore
-		ignoreResult = Core.ignoreStraylightMatrix(false);
-		assertTrue(ignoreResult.isSuccess(), ignoreResult.toString());
+		Core.ignoreStraylightMatrix(true);
+		Core.ignoreStraylightMatrix(false);
 	}
 
 	@Test
 	@Order(10)
 	@DisplayName("Test all Core functions for coverage")
 	void testAllCoreFunctions () {
-		// Test device discovery functions
 		testDeviceDiscoveryFunctions();
-
-		// Open device and test all device-specific functions
-		var openResult = Core.openTcpDevice(IP);
-		assumeFalse(openResult.isError(), "Could not open device: " + openResult);
-
-		try (var device = openResult.getValue()) {
-			testAllDeviceFunctions(device);
+		try (Core core = Core.openTcpDevice(IP)) {
+			testAllDeviceFunctions(core);
 		}
 	}
 
 	private void testDeviceDiscoveryFunctions () {
-		// Test getDeviceSerials
-		var countResult = Core.getDeviceCount();
-		if (countResult.isSuccess() && countResult.getValue() > 0) {
-			var serialsResult = Core.getDeviceSerials(0);
-			if (serialsResult.isSuccess()) {
-				assertNotNull(serialsResult.getValue());
-			}
+		int deviceCount = Core.getDeviceCount();
+		if (deviceCount > 0) {
+			assertNotNull(Core.getDeviceSerials(0));
+			assertNotNull(Core.getDeviceInfo(0));
+			assertNotNull(Core.getDeviceInfoEx(0));
 		}
 
-		// Test getDeviceInfo and getDeviceInfoEx
-		if (countResult.isSuccess() && countResult.getValue() > 0) {
-			var infoResult = Core.getDeviceInfo(0);
-			if (infoResult.isSuccess()) {
-				assertNotNull(infoResult.getValue());
-			}
-
-			var infoExResult = Core.getDeviceInfoEx(0);
-			if (infoExResult.isSuccess()) {
-				assertNotNull(infoExResult.getValue());
-			}
-		}
-
-		// Test different open methods
-		var openDeviceResult = Core.openDevice(0);
-		if (openDeviceResult.isSuccess()) {
-			openDeviceResult.getValue().close();
-		}
+		Core.openDevice(0).close();
 
 		// Test other connection methods (these will likely fail but we're testing they're callable)
-		var comResult = Core.openComDevice(1, 115200);
-		if (comResult.isSuccess()) {
-			comResult.getValue().close();
-		}
-
-		var usbResult = Core.openUsbDevice("TEST");
-		if (usbResult.isSuccess()) {
-			usbResult.getValue().close();
-		}
-
-		var btResult = Core.openBluetoothDevice(123456789L);
-		if (btResult.isSuccess()) {
-			btResult.getValue().close();
-		}
-
-		var btleResult = Core.openBluetoothLeDevice("TEST_PATH");
-		if (btleResult.isSuccess()) {
-			btleResult.getValue().close();
+		try {
+			Core.openComDevice(1, 115200).close();
+			Core.openUsbDevice("TEST").close();
+			Core.openBluetoothDevice(123456789L).close();
+			Core.openBluetoothLeDevice("TEST_PATH").close();
+		} catch (JetiException ignored) {
 		}
 	}
 
-	private void testAllDeviceFunctions (Core device) {
-		// Test device communication functions
-		testDeviceCommunication(device);
-
-		// Test measurement functions
-		testMeasurementFunctions(device);
-
-		// Test calibration functions
-		testCalibrationFunctions(device);
-
-		// Test all parameter functions
-		testAllParameterFunctions(device);
-
-		// Test all control functions
-		testControlFunctions(device);
-
-		// Test all configuration functions
-		testAllConfigurationFunctions(device);
-
-		// Test fetch functions
-		testFetchFunctions(device);
-
-		// Test calculation functions
-		testCalculationFunctions(device);
+	private void testAllDeviceFunctions (Core core) {
+		testControlFunctions(core);
+		testDeviceCommunication(core);
+		testMeasurementFunctions(core);
+		testCalibrationFunctions(core);
+		testAllParameterFunctions(core);
+		testAllConfigurationFunctions(core);
+		testFetchFunctions(core);
+		testCalculationFunctions(core);
 
 		// Not tested.
-		// device.reset();
-		// device.hardReset();
+		// core.reset();
+		// core.hardReset();
 	}
 
-	private void testDeviceCommunication (Core device) {
-		Result<String> commandResult = device.sendCommand("*contr:laser 1\r");
-		assertTrue(commandResult.isSuccess(), commandResult.toString());
-		Result<Boolean> laserStatus = device.getLaserStatus();
-		assertTrue(laserStatus.isSuccess(), laserStatus.toString());
-		assertTrue(laserStatus.getValue());
+	private void testDeviceCommunication (Core core) {
+		assertNotNull(core.sendCommand("*contr:laser 1\r"));
+		boolean laserStatus = core.getLaserStatus();
+		assertTrue(core.getLaserStatus());
+		assertNotNull(core.sendCommand("*contr:laser 0\r"));
+		assertFalse(core.getLaserStatus());
 
-		commandResult = device.sendCommand("*contr:laser 0\r");
-		assertTrue(commandResult.isSuccess(), commandResult.toString());
-		laserStatus = device.getLaserStatus();
-		assertTrue(laserStatus.isSuccess(), laserStatus.toString());
-		assertFalse(laserStatus.getValue());
+		// BOZO - Causes other functions to return not supported (11).
+		// core.deviceWrite("TEST", 4, 100);
 
-		Result<Boolean> writeResult = device.deviceWrite("TEST", 4, 100);
-		if (writeResult.isSuccess()) {
-			// Not tested (slow).
-			// var readResult = device.deviceRead(1, 10);
-			// if (readResult.isSuccess()) {
-			// assertNotNull(readResult.getValue());
-			// }
+		// BOZO - Times out.
+		// assertNotNull(core.deviceRead(1, 4));
+		// assertNotNull(core.deviceReadTerminated(1, 10));
+
+		// core.dataReceived(100);
+
+		try {
+			assertNotNull(core.getComPortHandle());
+		} catch (JetiException ignored) { // Not connected.
 		}
 
-		// Not tested (slow).
-		// Result<String> readTermResult = device.deviceReadTerminated(1, 10);
-		// if (readTermResult.isSuccess()) {
-		// assertNotNull(readTermResult.getValue());
-		// }
+		// BOZO - Times out.
+		// assertNotNull(core.readUserData(0, 2));
 
-		Result<Integer> dataReceivedResult = device.dataReceived(100);
-		if (dataReceivedResult.isSuccess()) {
-			assertTrue(dataReceivedResult.getValue() >= 0);
-		}
+		// BOZO - Crashes.
+		// core.writeUserData(new byte[2], 0);
 
-		Result<Pointer> comPortResult = device.getComPortHandle();
-		if (comPortResult.isSuccess()) {
-			assertNotNull(comPortResult.getValue());
-		}
-
-		// Not tested (slow).
-		// var readUserDataResult = device.readUserData(0, 2);
-		// if (readUserDataResult.isSuccess()) {
-		// assertNotNull(readUserDataResult.getValue());
-		// }
-
-		// Not tested (crashes).
-		// byte[] testData = new byte[2];
-		// Result<Boolean> writeUserDataResult = device.writeUserData(testData, 0);
-		// if (writeUserDataResult.isSuccess()) {
-		// assertTrue(writeUserDataResult.getValue());
-		// }
-
-		// Test error and enquiry
-		Result<Integer> lastErrorResult = device.getLastError();
-		if (lastErrorResult.isSuccess()) {
-			assertTrue(lastErrorResult.getValue() >= 0);
-		}
-
-		Result<Integer> enquiryResult = device.getEnquiry();
-		if (enquiryResult.isSuccess()) {
-			assertTrue(enquiryResult.getValue() >= 0);
-		}
+		// BOZO - Not supported?
+		// assertTrue(core.getLastError() >= 0);
+		// assertTrue(core.getEnquiry() >= 0);
 
 		// Not tested (needs window, undocumented).
-		// device.setCallbackFunction((byte)'E', null);
+		// core.setCallbackFunction((byte)'E', null);
 	}
 
-	private void testMeasurementFunctions (Core device) {
-		// Test break measurement
-		var breakResult = device.breakMeasurement();
-		if (breakResult.isSuccess()) {
-			assertTrue(breakResult.getValue());
-		}
+	private void testMeasurementFunctions (Core core) {
+		core.cancelMeasurement();
 
-		// Test wait read trigger
-		var waitResult = device.waitReadTrigger(100);
-		if (waitResult.isSuccess()) {
-			assertNotNull(waitResult.getValue());
-		}
+		// BOZO - Times out.
+		// assertNotNull(core.waitReadTrigger(100));
 
-		// Test adaptation
-		var startAdaptResult = device.startAdaptation(false);
-		if (startAdaptResult.isSuccess()) {
-			var checkAdaptResult = device.checkAdaptationStatus();
-			if (checkAdaptResult.isSuccess()) {
-				assertNotNull(checkAdaptResult.getValue());
-			}
-		}
+		// BOZO - Not supported?
+		// core.startAdaptation(false);
+		// int attempts = 0;
+		// while (!core.checkAdaptationStatus().complete() && attempts++ < 100) {
+		// System.out.print(".");
+		// sleep(100);
+		// }
+		// System.out.println();
+		// assertFalse(attempts >= 100, "Measurement should complete within timeout");
 	}
 
-	private void testCalibrationFunctions (Core device) {
-		// Test calibration functions
-		var calibRangeResult = device.getCalibrationRange();
-		if (calibRangeResult.isSuccess()) {
-			assertNotNull(calibRangeResult.getValue());
-		}
+	private void testCalibrationFunctions (Core core) {
+		// BOZO - Not supported?
+		// assertNotNull(core.getCalibrationRange());
 
-		var readCalibResult = device.readCalibration(0);
-		if (readCalibResult.isSuccess()) {
-			assertNotNull(readCalibResult.getValue());
-		}
+		// BOZO - Crashes.
+		// assertNotNull(core.readCalibration(0));
 
-		double[] testValues = new double[100];
-		var writeCalibResult = device.writeCalibration(0, "TEST", "Test calibration", 380, 780, 5, 100, testValues);
-		if (writeCalibResult.isSuccess()) {
-			assertTrue(writeCalibResult.getValue());
-		}
+		// Skip.
+		// core.writeCalibration(0, "TEST", "Test calibration", 380, 780, 5, 100, new double[100]);
+		//
+		// core.deleteCalibration(0);
+		//
+		// core.setCalibration((byte)0);
+		//
+		// byte calibIndex = core.getCalibration();
+		// assertTrue(calibIndex >= 0);
 
-		var deleteCalibResult = device.deleteCalibration(0);
-		if (deleteCalibResult.isSuccess()) {
-			assertTrue(deleteCalibResult.getValue());
-		}
-
-		var setCalibResult = device.setCalibration((byte)0);
-		if (setCalibResult.isSuccess()) {
-			assertTrue(setCalibResult.getValue());
-		}
-
-		var getCalibResult = device.getCalibration();
-		if (getCalibResult.isSuccess()) {
-			assertTrue(getCalibResult.getValue() >= 0);
-		}
-
-		var measCompDarkResult = device.measureCompensationDark();
-		if (measCompDarkResult.isSuccess()) {
-			assertTrue(measCompDarkResult.getValue());
-		}
+		// BOZO - Not supported?
+		// core.measureCompensationDark();
 	}
 
-	private void testAllParameterFunctions (Core device) {
-		// Test additional parameter functions not in testParameterFunctions
-		var fitResult = device.getFit();
-		if (fitResult.isSuccess()) {
-			assertTrue(fitResult.getValue() >= 0);
-		}
+	private void testAllParameterFunctions (Core core) {
+		// BOZO - Not supported?
+		// assertTrue(core.getFit() >= 0);
+		// core.setScanDelay(100);
+		// assertTrue(core.getADCResolution() > 0);
+		// assertTrue(core.getSplitTime() >= 0);
+		// assertNotNull(core.getBorder());
+		// core.setDistance(100);
 
-		var setSDelayResult = device.setScanDelay(100);
-		if (setSDelayResult.isSuccess()) {
-			assertTrue(setSDelayResult.getValue());
-		}
+		// BOZO - Times out.
+		// core.setParameterBlock(core.getParameterBlock());
 
-		var adcResResult = device.getADCResolution();
-		if (adcResResult.isSuccess()) {
-			assertTrue(adcResResult.getValue() > 0);
-		}
+		// BOZO - Not supported?
+		// assertNotNull(core.getOpticalTrigger());
+		// core.setLaserIntensity(50, 100);
+		// core.setTrigger(0);
+		// core.setTriggerTimeout((short)1000);
+		// core.setFlashMode(false);
+		// core.setFlashCycle(1);
+		// assertNotNull(core.getCorrectionStatus());
+		// core.setCorrectionStatus(true);
+		// assertNotNull(core.getCorrectionRange());
 
-		var splitTimeResult = device.getSplitTime();
-		if (splitTimeResult.isSuccess()) {
-			assertTrue(splitTimeResult.getValue() >= 0);
-		}
-
-		var borderResult = device.getBorder();
-		if (borderResult.isSuccess()) {
-			assertNotNull(borderResult.getValue());
-		}
-
-		var setDistanceResult = device.setDistance(100);
-		if (setDistanceResult.isSuccess()) {
-			assertTrue(setDistanceResult.getValue());
-		}
-
-		// Test parameter block
-		var getParamBlockResult = device.getParameterBlock();
-		if (getParamBlockResult.isSuccess()) {
-			assertNotNull(getParamBlockResult.getValue());
-
-			var setParamBlockResult = device.setParameterBlock(getParamBlockResult.getValue());
-			if (setParamBlockResult.isSuccess()) {
-				assertTrue(setParamBlockResult.getValue());
-			}
-		}
-
-		// Test optical trigger
-		var optTrigResult = device.getOpticalTrigger();
-		if (optTrigResult.isSuccess()) {
-			assertNotNull(optTrigResult.getValue());
-		}
-
-		// Test laser intensity
-		var laserIntResult = device.setLaserIntensity(50, 100);
-		if (laserIntResult.isSuccess()) {
-			assertTrue(laserIntResult.getValue());
-		}
-
-		// Test trigger
-		var setTriggerResult = device.setTrigger(0);
-		if (setTriggerResult.isSuccess()) {
-			assertTrue(setTriggerResult.getValue());
-		}
-
-		var setTrigTimeoutResult = device.setTriggerTimeout((short)1000);
-		if (setTrigTimeoutResult.isSuccess()) {
-			assertTrue(setTrigTimeoutResult.getValue());
-		}
-
-		// Test flash mode
-		var setFlashModeResult = device.setFlashMode(false);
-		if (setFlashModeResult.isSuccess()) {
-			assertTrue(setFlashModeResult.getValue());
-		}
-
-		var setFlashCycleResult = device.setFlashCycle(1);
-		if (setFlashCycleResult.isSuccess()) {
-			assertTrue(setFlashCycleResult.getValue());
-		}
-
-		// Test correction functions
-		var getCorrStatResult = device.getCorrectionStatus();
-		if (getCorrStatResult.isSuccess()) {
-			assertNotNull(getCorrStatResult.getValue());
-		}
-
-		var setCorrStatResult = device.setCorrectionStatus(false);
-		if (setCorrStatResult.isSuccess()) {
-			assertTrue(setCorrStatResult.getValue());
-		}
-
-		var getCorrRangeResult = device.getCorrectionRange();
-		if (getCorrRangeResult.isSuccess()) {
-			assertNotNull(getCorrRangeResult.getValue());
-		}
-
-		var setCorrRangeResult = device.setCorrectionRange(380, 780);
-		if (setCorrRangeResult.isSuccess()) {
-			assertTrue(setCorrRangeResult.getValue());
-		}
-
-		var getOffsetCorrRangeResult = device.getOffsetCorrectionRange();
-		if (getOffsetCorrRangeResult.isSuccess()) {
-			assertNotNull(getOffsetCorrRangeResult.getValue());
-		}
-
-		var setOffsetCorrRangeResult = device.setOffsetCorrectionRange(380, 780);
-		if (setOffsetCorrRangeResult.isSuccess()) {
-			assertTrue(setOffsetCorrRangeResult.getValue());
-		}
-
-		var getCorrCoeffResult = device.getCorrectionCoefficients();
-		if (getCorrCoeffResult.isSuccess()) {
-			assertNotNull(getCorrCoeffResult.getValue());
-
-			var setCorrCoeffResult = device.setCorrectionCoefficients(getCorrCoeffResult.getValue());
-			if (setCorrCoeffResult.isSuccess()) {
-				assertTrue(setCorrCoeffResult.getValue());
-			}
-		}
-
-		// Test cutoff
-		var getCutoffResult = device.getCutoffStatus();
-		if (getCutoffResult.isSuccess()) {
-			assertNotNull(getCutoffResult.getValue());
-		}
-
-		var setCutoffResult = device.setCutoffStatus(false);
-		if (setCutoffResult.isSuccess()) {
-			assertTrue(setCutoffResult.getValue());
-		}
-
-		// Test SLM
-		var getSLMResult = device.getStrayLightMatrixEnabled();
-		if (getSLMResult.isSuccess()) {
-			assertNotNull(getSLMResult.getValue());
-		}
-
-		var setSLMResult = device.setStrayLightMatrixEnabled(false);
-		if (setSLMResult.isSuccess()) {
-			assertTrue(setSLMResult.getValue());
-		}
-
-		// Test channel config
-		var getChannelResult = device.getChannelConfig();
-		if (getChannelResult.isSuccess()) {
-			assertNotNull(getChannelResult.getValue());
-		}
-
-		var setChannelResult = device.setChannelConfig("TEST");
-		if (setChannelResult.isSuccess()) {
-			assertTrue(setChannelResult.getValue());
-		}
-
-		// Test lamp mode
-		var getLampModeResult = device.getLampMode();
-		if (getLampModeResult.isSuccess()) {
-			assertNotNull(getLampModeResult.getValue());
-		}
-
-		var setLampModeResult = device.setLampMode((byte)0);
-		if (setLampModeResult.isSuccess()) {
-			assertTrue(setLampModeResult.getValue());
-		}
-
-		// Test flash
-		var getFlashResult = device.getFlash();
-		if (getFlashResult.isSuccess()) {
-			assertNotNull(getFlashResult.getValue());
-		}
-
-		var setFlashResult = device.setFlash(100.0f, 10.0f);
-		if (setFlashResult.isSuccess()) {
-			assertTrue(setFlashResult.getValue());
-		}
+		// Skip.
+		// core.setCorrectionRange(380, 780);
+		// assertNotNull(core.getOffsetCorrectionRange());
+		// core.setOffsetCorrectionRange(380, 780);
+		// core.setCorrectionCoefficients(core.getCorrectionCoefficients());
+		// core.getCutoffStatus();
+		// core.setCutoffStatus(false);
+		// core.getStrayLightMatrixEnabled();
+		// core.setStrayLightMatrixEnabled(false);
+		// assertNotNull(core.getChannelConfig());
+		// core.setChannelConfig("TEST");
+		// assertNotNull(core.getLampMode());
+		// core.setLampMode((byte)0);
+		// assertNotNull(core.getFlash());
+		// core.setFlash(100.0f, 10.0f);
 	}
 
-	private void testControlFunctions (Core device) {
-		// Test laser status
-		var getLaserResult = device.getLaserStatus();
-		if (getLaserResult.isSuccess()) {
-			assertNotNull(getLaserResult.getValue());
-		}
+	private void testControlFunctions (Core core) {
+		core.setLaserStatus(true);
+		assertTrue(core.getLaserStatus());
+		core.setLaserStatus(false);
+		assertFalse(core.getLaserStatus());
+		core.getShutterStatus();
 
-		var setLaserResult = device.setLaserStatus(false);
-		if (setLaserResult.isSuccess()) {
-			assertTrue(setLaserResult.getValue());
-		}
+		// BOZO - Not supported?
+		// core.setShutterStatus(true);
 
-		// Test shutter status
-		var getShutterResult = device.getShutterStatus();
-		if (getShutterResult.isSuccess()) {
-			assertNotNull(getShutterResult.getValue());
-		}
+		core.getMeasurementHead();
 
-		var setShutterResult = device.setShutterStatus(true);
-		if (setShutterResult.isSuccess()) {
-			assertTrue(setShutterResult.getValue());
-		}
+		// BOZO - Not supported?
+		// core.getAux1Status();
+		// core.setAux1Status(false);
+		// core.getAux2Status();
+		// core.setAux2Status(false);
+		// core.setAuxOut1(false);
+		// core.getAuxOut1Status();
+		// core.setAuxOut2(false);
+		// core.getAuxOut2Status();
+		// core.setAuxOut3(false);
+		// core.getAuxOut3Status();
+		// core.setAuxOut4(false);
+		// core.getAuxOut4Status();
+		// core.setAuxOut5(false);
+		// core.getAuxOut5Status();
+		// core.getAuxIn1Status();
+		// core.getAuxIn2Status();
 
-		// Test measurement head
-		var getMeasHeadResult = device.getMeasurementHead();
-		if (getMeasHeadResult.isSuccess()) {
-			assertNotNull(getMeasHeadResult.getValue());
-		}
+		assertNotNull(core.getFlickerFrequency());
 
-		// Test aux status
-		var getAux1Result = device.getAux1Status();
-		if (getAux1Result.isSuccess()) {
-			assertNotNull(getAux1Result.getValue());
-		}
+		core.setSyncFrequency(50.0f);
+		assertTrue(core.getSyncFrequency() >= 0);
+		core.setSyncMode(false);
+		core.getSyncMode();
 
-		var setAux1Result = device.setAux1Status(false);
-		if (setAux1Result.isSuccess()) {
-			assertTrue(setAux1Result.getValue());
-		}
-
-		var getAux2Result = device.getAux2Status();
-		if (getAux2Result.isSuccess()) {
-			assertNotNull(getAux2Result.getValue());
-		}
-
-		var setAux2Result = device.setAux2Status(false);
-		if (setAux2Result.isSuccess()) {
-			assertTrue(setAux2Result.getValue());
-		}
-
-		// Test aux outputs
-		var setAuxOut1Result = device.setAuxOut1(false);
-		if (setAuxOut1Result.isSuccess()) {
-			assertTrue(setAuxOut1Result.getValue());
-		}
-
-		var getAuxOut1Result = device.getAuxOut1Status();
-		if (getAuxOut1Result.isSuccess()) {
-			assertNotNull(getAuxOut1Result.getValue());
-		}
-
-		var setAuxOut2Result = device.setAuxOut2(false);
-		if (setAuxOut2Result.isSuccess()) {
-			assertTrue(setAuxOut2Result.getValue());
-		}
-
-		var getAuxOut2Result = device.getAuxOut2Status();
-		if (getAuxOut2Result.isSuccess()) {
-			assertNotNull(getAuxOut2Result.getValue());
-		}
-
-		var setAuxOut3Result = device.setAuxOut3(false);
-		if (setAuxOut3Result.isSuccess()) {
-			assertTrue(setAuxOut3Result.getValue());
-		}
-
-		var getAuxOut3Result = device.getAuxOut3Status();
-		if (getAuxOut3Result.isSuccess()) {
-			assertNotNull(getAuxOut3Result.getValue());
-		}
-
-		var setAuxOut4Result = device.setAuxOut4(false);
-		if (setAuxOut4Result.isSuccess()) {
-			assertTrue(setAuxOut4Result.getValue());
-		}
-
-		var getAuxOut4Result = device.getAuxOut4Status();
-		if (getAuxOut4Result.isSuccess()) {
-			assertNotNull(getAuxOut4Result.getValue());
-		}
-
-		var setAuxOut5Result = device.setAuxOut5(false);
-		if (setAuxOut5Result.isSuccess()) {
-			assertTrue(setAuxOut5Result.getValue());
-		}
-
-		var getAuxOut5Result = device.getAuxOut5Status();
-		if (getAuxOut5Result.isSuccess()) {
-			assertNotNull(getAuxOut5Result.getValue());
-		}
-
-		// Test aux inputs
-		var getAuxIn1Result = device.getAuxIn1Status();
-		if (getAuxIn1Result.isSuccess()) {
-			assertNotNull(getAuxIn1Result.getValue());
-		}
-
-		var getAuxIn2Result = device.getAuxIn2Status();
-		if (getAuxIn2Result.isSuccess()) {
-			assertNotNull(getAuxIn2Result.getValue());
-		}
-
-		// Test flicker frequency
-		var getFlickerResult = device.getFlickerFrequency();
-		if (getFlickerResult.isSuccess()) {
-			assertNotNull(getFlickerResult.getValue());
-		}
-
-		// Test sync
-		var setSyncFreqResult = device.setSyncFrequency(50.0f);
-		if (setSyncFreqResult.isSuccess()) {
-			assertTrue(setSyncFreqResult.getValue());
-		}
-
-		var getSyncFreqResult = device.getSyncFrequency();
-		if (getSyncFreqResult.isSuccess()) {
-			assertTrue(getSyncFreqResult.getValue() >= 0);
-		}
-
-		var setSyncModeResult = device.setSyncMode(false);
-		if (setSyncModeResult.isSuccess()) {
-			assertTrue(setSyncModeResult.getValue());
-		}
-
-		var getSyncModeResult = device.getSyncMode();
-		if (getSyncModeResult.isSuccess()) {
-			assertNotNull(getSyncModeResult.getValue());
-		}
-
-		// Test DIO
-		var getDIOInResult = device.getDigitalIOInput();
-		if (getDIOInResult.isSuccess()) {
-			assertNotNull(getDIOInResult.getValue());
-		}
-
-		var getDIOOutResult = device.getDigitalIOOutput();
-		if (getDIOOutResult.isSuccess()) {
-			assertNotNull(getDIOOutResult.getValue());
-		}
-
-		var setDIOOutResult = device.setDigitalIOOutput((byte)0);
-		if (setDIOOutResult.isSuccess()) {
-			assertTrue(setDIOOutResult.getValue());
-		}
-
-		var setDIOOutPinResult = device.setDigitalIOOutputPin((byte)0, false);
-		if (setDIOOutPinResult.isSuccess()) {
-			assertTrue(setDIOOutPinResult.getValue());
-		}
+		// BOZO - Not supported?
+		// core.getDigitalIOInput();
+		// core.getDigitalIOOutput();
+		// core.setDigitalIOOutput((byte)0);
+		// core.setDigitalIOOutputPin((byte)0, false);
 	}
 
-	private void testAllConfigurationFunctions (Core device) {
-		// Test exposure config
-		var getExposureResult = device.getExposureConfig();
-		if (getExposureResult.isSuccess()) {
-			assertNotNull(getExposureResult.getValue());
-		}
-
-		var setExposureResult = device.setExposureConfig((byte)0);
-		if (setExposureResult.isSuccess()) {
-			assertTrue(setExposureResult.getValue());
-		}
-
-		// Test dark mode config
-		var setDarkModeResult = device.setDarkModeConfig((byte)0);
-		if (setDarkModeResult.isSuccess()) {
-			assertTrue(setDarkModeResult.getValue());
-		}
-
-		// Test function config
-		var getFunctionResult = device.getFunctionConfig();
-		if (getFunctionResult.isSuccess()) {
-			assertNotNull(getFunctionResult.getValue());
-		}
-
-		var setFunctionResult = device.setFunctionConfig((byte)0);
-		if (setFunctionResult.isSuccess()) {
-			assertTrue(setFunctionResult.getValue());
-		}
-
-		// Test format config
-		var getFormatResult = device.getFormatConfig();
-		if (getFormatResult.isSuccess()) {
-			assertNotNull(getFormatResult.getValue());
-		}
-
-		var setFormatResult = device.setFormatConfig((byte)0);
-		if (setFormatResult.isSuccess()) {
-			assertTrue(setFormatResult.getValue());
-		}
-
-		// Test integration time config
-		var setTintConfResult = device.setIntegrationTimeConfig(100.0f);
-		if (setTintConfResult.isSuccess()) {
-			assertTrue(setTintConfResult.getValue());
-		}
-
-		// Test max integration time
-		var getMaxTintResult = device.getMaxIntegrationTimeConfig();
-		if (getMaxTintResult.isSuccess()) {
-			assertTrue(getMaxTintResult.getValue() > 0);
-		}
-
-		var setMaxTintResult = device.setMaxIntegrationTimeConfig(1000.0f);
-		if (setMaxTintResult.isSuccess()) {
-			assertTrue(setMaxTintResult.getValue());
-		}
-
-		// Test max average
-		var getMaxAverResult = device.getMaxAverageConfig();
-		if (getMaxAverResult.isSuccess()) {
-			assertTrue(getMaxAverResult.getValue() > 0);
-		}
-
-		var setMaxAverResult = device.setMaxAverageConfig((short)10);
-		if (setMaxAverResult.isSuccess()) {
-			assertTrue(setMaxAverResult.getValue());
-		}
-
-		// Test min integration times
-		var getMinTintResult = device.getMinIntegrationTimeConfig();
-		if (getMinTintResult.isSuccess()) {
-			assertTrue(getMinTintResult.getValue() >= 0);
-		}
-
-		var getImageMinTintResult = device.getImageMinIntegrationTimeConfig();
-		if (getImageMinTintResult.isSuccess()) {
-			assertTrue(getImageMinTintResult.getValue() >= 0);
-		}
-
-		var getChanMinTintResult = device.getChannelMinIntegrationTimeConfig();
-		if (getChanMinTintResult.isSuccess()) {
-			assertTrue(getChanMinTintResult.getValue() >= 0);
-		}
-
-		var getContMinTintResult = device.getContinuousMinIntegrationTimeConfig();
-		if (getContMinTintResult.isSuccess()) {
-			assertTrue(getContMinTintResult.getValue() >= 0);
-		}
-
-		var getContChanMinTintResult = device.getContinuousChannelMinIntegrationTimeConfig();
-		if (getContChanMinTintResult.isSuccess()) {
-			assertTrue(getContChanMinTintResult.getValue() >= 0);
-		}
-
-		// Test average config
-		var getAverConfResult = device.getAverageConfig();
-		if (getAverConfResult.isSuccess()) {
-			assertNotNull(getAverConfResult.getValue());
-		}
-
-		var setAverConfResult = device.setAverageConfig((short)1);
-		if (setAverConfResult.isSuccess()) {
-			assertTrue(setAverConfResult.getValue());
-		}
-
-		// Test adaptation config
-		var getAdaptConfResult = device.getAdaptationConfig();
-		if (getAdaptConfResult.isSuccess()) {
-			assertNotNull(getAdaptConfResult.getValue());
-		}
-
-		var setAdaptConfResult = device.setAdaptationConfig((byte)0);
-		if (setAdaptConfResult.isSuccess()) {
-			assertTrue(setAdaptConfResult.getValue());
-		}
-
-		// Test wavelength range config
-		var setWranConfResult = device.setWavelengthRangeConfig(380, 780, 5);
-		if (setWranConfResult.isSuccess()) {
-			assertTrue(setWranConfResult.getValue());
-		}
-
-		// Test PDA row config
-		var getPDARowResult = device.getPDARowConfig();
-		if (getPDARowResult.isSuccess()) {
-			assertNotNull(getPDARowResult.getValue());
-		}
-
-		var setPDARowResult = device.setPDARowConfig(0, 0);
-		if (setPDARowResult.isSuccess()) {
-			assertTrue(setPDARowResult.getValue());
-		}
-
-		// Test set default
-		var setDefaultResult = device.setDefault();
-		if (setDefaultResult.isSuccess()) {
-			assertTrue(setDefaultResult.getValue());
-		}
+	private void testAllConfigurationFunctions (Core core) {
+		// BOZO - Not supported?
+		// core.getExposureConfig();
+		// core.setExposureConfig((byte)0);
+		// core.setDarkModeConfig((byte)0);
+		// assertNotNull(core.getFunctionConfig());
+		// core.setFunctionConfig((byte)0);
+		// assertNotNull(core.getFormatConfig());
+		// core.setFormatConfig((byte)0);
+		// core.setIntegrationTimeConfig(100.0f);
+		// assertTrue(core.getMaxIntegrationTimeConfig() > 0);
+		// core.setMaxIntegrationTimeConfig(1000.0f);
+		// assertTrue(core.getMaxAverageConfig() > 0);
+		// core.setMaxAverageConfig((short)10);
+		// assertTrue(core.getMinIntegrationTimeConfig() >= 0);
+		// assertTrue(core.getImageMinIntegrationTimeConfig() >= 0);
+		// assertTrue(core.getChannelMinIntegrationTimeConfig() >= 0);
+		// assertTrue(core.getContinuousMinIntegrationTimeConfig() >= 0);
+		// assertTrue(core.getContinuousChannelMinIntegrationTimeConfig() >= 0);
+		// assertNotNull(core.getAverageConfig());
+		// core.setAverageConfig((short)1);
+		// core.getAdaptationConfig();
+		// core.setAdaptationConfig((byte)0);
+		// core.setWavelengthRangeConfig(380, 780, 5);
+		// assertNotNull(core.getPDARowConfig());
+		// core.setPDARowConfig(0, 0);
+		// core.setDefault();
 	}
 
-	private void testFetchFunctions (Core device) {
-		// Get pixel count for array size
-		var pixelCountResult = device.getPixelCount();
-		int pixelCount = pixelCountResult.isSuccess() ? pixelCountResult.getValue() : SPECTRUM_SIZE;
+	private void testFetchFunctions (Core core) {
+		int pixelCount = core.getPixelCount();
+		assertEquals(pixelCount, core.fetchDark(pixelCount).length);
+		assertEquals(pixelCount, core.fetchLight(pixelCount).length);
+		assertEquals(pixelCount, core.fetchReference(pixelCount).length);
 
-		// Test fetch dark
-		var fetchDarkResult = device.fetchDark(pixelCount);
-		if (fetchDarkResult.isSuccess()) {
-			assertNotNull(fetchDarkResult.getValue());
-			assertEquals(pixelCount, fetchDarkResult.getValue().length);
-		}
+		// BOZO - Times out.
+		// assertEquals(pixelCount, core.fetchSample(pixelCount).length);
 
-		// Test fetch light
-		var fetchLightResult = device.fetchLight(pixelCount);
-		if (fetchLightResult.isSuccess()) {
-			assertNotNull(fetchLightResult.getValue());
-			assertEquals(pixelCount, fetchLightResult.getValue().length);
-		}
+		assertEquals(SPECTRUM_SIZE, core.fetchSpectralRadiance(380, 780, 5).length);
+		assertNotNull(core.fetchSpectralRadianceHiRes(380, 780));
+		assertTrue(core.fetchRadiometricValue() >= 0);
+		assertTrue(core.fetchPhotometricValue() >= 0);
+		assertNotNull(core.fetchChromaXY());
+		assertNotNull(core.fetchChromaUV());
+		assertNotNull(core.fetchDominantWavelength());
+		assertTrue(core.fetchCCT() >= 0);
+		core.fetchDuv();
 
-		// Test fetch reference
-		var fetchReferenceResult = device.fetchReference(pixelCount);
-		if (fetchReferenceResult.isSuccess()) {
-			assertNotNull(fetchReferenceResult.getValue());
-			assertEquals(pixelCount, fetchReferenceResult.getValue().length);
-		}
+		float cri = core.fetchCRI();
+		assertTrue(cri >= -100 && cri <= 100);
 
-		// Test fetch sample
-		var fetchTransReflResult = device.fetchSample(pixelCount);
-		if (fetchTransReflResult.isSuccess()) {
-			assertNotNull(fetchTransReflResult.getValue());
-			assertEquals(pixelCount, fetchTransReflResult.getValue().length);
-		}
-
-		// Test fetch spectral radiance
-		var fetchSpradResult = device.fetchSpectralRadiance(400, 780, 5);
-		if (fetchSpradResult.isSuccess()) {
-			assertNotNull(fetchSpradResult.getValue());
-			assertEquals(SPECTRUM_SIZE, fetchSpradResult.getValue().length);
-		}
-
-		// Test fetch spectral radiance hi res
-		var fetchSpradHiResResult = device.fetchSpectralRadianceHiRes(400, 780);
-		if (fetchSpradHiResResult.isSuccess()) {
-			assertNotNull(fetchSpradHiResResult.getValue());
-		}
-
-		// Test fetch radiometric value
-		var fetchRadioResult = device.fetchRadiometricValue();
-		if (fetchRadioResult.isSuccess()) {
-			assertTrue(fetchRadioResult.getValue() >= 0);
-		}
-
-		// Test fetch photometric value
-		var fetchPhotoResult = device.fetchPhotometricValue();
-		if (fetchPhotoResult.isSuccess()) {
-			assertTrue(fetchPhotoResult.getValue() >= 0);
-		}
-
-		// Test fetch chromaticity XY
-		var fetchChromxyResult = device.fetchChromaXY();
-		if (fetchChromxyResult.isSuccess()) {
-			assertNotNull(fetchChromxyResult.getValue());
-		}
-
-		// Test fetch chromaticity UV
-		var fetchChromuvResult = device.fetchChromaUV();
-		if (fetchChromuvResult.isSuccess()) {
-			assertNotNull(fetchChromuvResult.getValue());
-		}
-
-		// Test fetch dominant wavelength
-		var fetchDWLPEResult = device.fetchDominantWavelength();
-		if (fetchDWLPEResult.isSuccess()) {
-			assertNotNull(fetchDWLPEResult.getValue());
-		}
-
-		// Test fetch CCT
-		var fetchCCTResult = device.fetchCCT();
-		if (fetchCCTResult.isSuccess()) {
-			assertTrue(fetchCCTResult.getValue() >= 0);
-		}
-
-		// Test fetch Duv
-		var fetchDuvResult = device.fetchDuv();
-		if (fetchDuvResult.isSuccess()) {
-			assertNotNull(fetchDuvResult.getValue());
-		}
-
-		// Test fetch CRI
-		var fetchCRIResult = device.fetchCRI();
-		if (fetchCRIResult.isSuccess()) {
-			assertTrue(fetchCRIResult.getValue() >= -100 && fetchCRIResult.getValue() <= 100);
-		}
-
-		// Test fetch XYZ
-		var fetchXYZResult = device.fetchXYZ();
-		if (fetchXYZResult.isSuccess()) {
-			assertNotNull(fetchXYZResult.getValue());
-		}
-
-		// Test fetch adaptation time
-		var fetchTiAdaptResult = device.fetchAdaptationIntegrationTime();
-		if (fetchTiAdaptResult.isSuccess()) {
-			assertTrue(fetchTiAdaptResult.getValue() >= 0);
-		}
-
-		// Test fetch adaptation average
-		var fetchAverAdaptResult = device.fetchAdaptationAverage();
-		if (fetchAverAdaptResult.isSuccess()) {
-			assertTrue(fetchAverAdaptResult.getValue() >= 0);
-		}
+		assertNotNull(core.fetchXYZ());
+		assertTrue(core.fetchAdaptationIntegrationTime() >= 0);
+		assertTrue(core.fetchAdaptationAverage() >= 0);
 	}
 
-	private void testCalculationFunctions (Core device) {
-		// Test calculate linear dark
-		var calcLintDarkResult = device.calculateLinearDark(380, 780, 5.0f);
-		if (calcLintDarkResult.isSuccess()) {
-			assertNotNull(calcLintDarkResult.getValue());
-		}
+	private void testCalculationFunctions (Core core) {
+		// BOZO - Not supported? Some crash.
+		// assertNotNull(core.calculateSplineDark(380, 780, 5.0f));
+		// assertNotNull(core.calculateSplineLight(380, 780, 5.0f));
+		// assertNotNull(core.calculateSplineReference(380, 780, 5.0f));
+		// assertNotNull(core.calculateSplineSample(380, 780, 5.0f));
+		// assertNotNull(core.calculateLinearDark(380, 780, 5.0f));
+		// assertNotNull(core.calculateLinearLight(380, 780, 5.0f));
+		// assertNotNull(core.calculateLinearReference(380, 780, 5.0f));
+		// assertNotNull(core.calculateLinearSample(380, 780, 5.0f));
 
-		// Test calculate spline dark
-		var calcSplinDarkResult = device.calculateSplineDark(380, 780, 5.0f);
-		if (calcSplinDarkResult.isSuccess()) {
-			assertNotNull(calcSplinDarkResult.getValue());
-		}
+		assertTrue(core.calculateRadiometricValue(380, 780) >= 0);
+		assertTrue(core.calculatePhotometricValue() >= 0);
+		assertNotNull(core.calculateChromaXY());
+		assertNotNull(core.calculateChromaXY10());
+		assertNotNull(core.calculateChromaUV());
+		assertNotNull(core.calculateDominantWavelength());
+		assertTrue(core.calculateCCT() >= 0);
+		core.calculateDuv();
+		assertNotNull(core.calculateXYZ());
 
-		// Test calculate linear light
-		var calcLintLightResult = device.calculateLinearLight(380, 780, 5.0f);
-		if (calcLintLightResult.isSuccess()) {
-			assertNotNull(calcLintLightResult.getValue());
-		}
+		float cri = core.calculateCRI(5000.0f);
+		assertTrue(cri >= -100 && cri <= 100);
 
-		// Test calculate spline light
-		var calcSplinLightResult = device.calculateSplineLight(380, 780, 5.0f);
-		if (calcSplinLightResult.isSuccess()) {
-			assertNotNull(calcSplinLightResult.getValue());
-		}
+		// BOZO - Not supported?
+		// assertNotNull(core.calculateAllValues(380, 780));
 
-		// Test calculate linear reference
-		var calcLintReferResult = device.calculateLinearReference(380, 780, 5.0f);
-		if (calcLintReferResult.isSuccess()) {
-			assertNotNull(calcLintReferResult.getValue());
-		}
-
-		// Test calculate spline reference
-		var calcSplinReferResult = device.calculateSplineReference(380, 780, 5.0f);
-		if (calcSplinReferResult.isSuccess()) {
-			assertNotNull(calcSplinReferResult.getValue());
-		}
-
-		// Test calculate linear trans/refl
-		var calcLintTransReflResult = device.calculateLinearSample(380, 780, 5.0f);
-		if (calcLintTransReflResult.isSuccess()) {
-			assertNotNull(calcLintTransReflResult.getValue());
-		}
-
-		// Test calculate spline trans/refl
-		var calcSplinTransReflResult = device.calculateSplineSample(380, 780, 5.0f);
-		if (calcSplinTransReflResult.isSuccess()) {
-			assertNotNull(calcSplinTransReflResult.getValue());
-		}
-
-		// Test calculate radiometric value
-		var calcRadioResult = device.calculateRadiometricValue(380, 780);
-		if (calcRadioResult.isSuccess()) {
-			assertTrue(calcRadioResult.getValue() >= 0);
-		}
-
-		// Test calculate photometric value
-		var calcPhotoResult = device.calculatePhotometricValue();
-		if (calcPhotoResult.isSuccess()) {
-			assertTrue(calcPhotoResult.getValue() >= 0);
-		}
-
-		// Test calculate chromaticity XY
-		var calcChromxyResult = device.calculateChromaXY();
-		if (calcChromxyResult.isSuccess()) {
-			assertNotNull(calcChromxyResult.getValue());
-		}
-
-		// Test calculate chromaticity XY10
-		var calcChromxy10Result = device.calculateChromaXY10();
-		if (calcChromxy10Result.isSuccess()) {
-			assertNotNull(calcChromxy10Result.getValue());
-		}
-
-		// Test calculate chromaticity UV
-		var calcChromuvResult = device.calculateChromaUV();
-		if (calcChromuvResult.isSuccess()) {
-			assertNotNull(calcChromuvResult.getValue());
-		}
-
-		// Test calculate dominant wavelength
-		var calcDWLPEResult = device.calculateDominantWavelength();
-		if (calcDWLPEResult.isSuccess()) {
-			assertNotNull(calcDWLPEResult.getValue());
-		}
-
-		// Test calculate CCT
-		var calcCCTResult = device.calculateCCT();
-		if (calcCCTResult.isSuccess()) {
-			assertTrue(calcCCTResult.getValue() >= 0);
-		}
-
-		// Test calculate Duv
-		var calcDuvResult = device.calculateDuv();
-		if (calcDuvResult.isSuccess()) {
-			assertNotNull(calcDuvResult.getValue());
-		}
-
-		// Test calculate CRI
-		var calcCRIResult = device.calculateCRI(5000.0f);
-		if (calcCRIResult.isSuccess()) {
-			assertTrue(calcCRIResult.getValue() >= -100 && calcCRIResult.getValue() <= 100);
-		}
-
-		// Test calculate XYZ
-		var calcXYZResult = device.calculateXYZ();
-		if (calcXYZResult.isSuccess()) {
-			assertNotNull(calcXYZResult.getValue());
-		}
-
-		// Test calculate all values
-		var calcAllResult = device.calculateAllValues(380, 780);
-		if (calcAllResult.isSuccess()) {
-			assertNotNull(calcAllResult.getValue());
-		}
-
-		// Test calculate TM30
-		var calcTM30Result = device.calculateTM30(true);
-		if (calcTM30Result.isSuccess()) {
-			assertNotNull(calcTM30Result.getValue());
-		}
-
-		// Test calculate peak FWHM
-		var calcPeakFWHMResult = device.calculatePeakFWHM(0.5f);
-		if (calcPeakFWHMResult.isSuccess()) {
-			assertNotNull(calcPeakFWHMResult.getValue());
-		}
-
-		// Test calculate blue measurement
-		var calcBlueResult = device.calculateBlueMeasurement();
-		if (calcBlueResult.isSuccess()) {
-			assertNotNull(calcBlueResult.getValue());
-		}
+		assertNotNull(core.calculateTM30(true));
+		assertNotNull(core.calculatePeakFWHM(0.5f));
+		assertNotNull(core.calculateBlueMeasurement());
 	}
 
 	@Test
@@ -1190,8 +434,7 @@ public class CoreTest extends JetiTest {
 	@DisplayName("Test import straylight matrix")
 	void testImportStraylightMatrix () {
 		// This will likely fail without a valid matrix file, but we're testing it's callable
-		var importResult = Core.importStraylightMatrix("test_matrix.slm");
-		assertNotNull(importResult);
+		Core.importStraylightMatrix("test_matrix.slm");
 	}
 
 	static private String getTestLicenseKey () {

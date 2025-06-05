@@ -9,7 +9,6 @@ import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.JetiSDK.TM30;
 import com.esotericsoftware.jeti.JetiSDK.XY;
 import com.esotericsoftware.jeti.RadioEx;
-import com.esotericsoftware.jeti.Result;
 
 public class RadioExSample {
 	private RadioEx radioEx;
@@ -24,19 +23,14 @@ public class RadioExSample {
 		JetiSDK.initialize();
 
 		System.out.println("Searching for devices...");
-		Result<Integer> deviceCount = RadioEx.getDeviceCount();
-		if (deviceCount.isError() || deviceCount.getValue() == 0) {
-			System.out.println("No radio ex devices found! Error: " + deviceCount);
+		int count = RadioEx.getDeviceCount();
+		if (count == 0) {
+			System.out.println("No RadioEx devices found!");
 			return;
 		}
-		System.out.println("Radio ex devices: " + deviceCount.getValue());
+		System.out.println("RadioEx devices: " + count);
 
-		Result<RadioEx> deviceResult = RadioEx.openDevice(0);
-		if (deviceResult.isError()) {
-			System.out.println("Could not open radio ex device! Error: " + deviceResult);
-			return;
-		}
-		radioEx = deviceResult.getValue();
+		radioEx = RadioEx.openDevice(0);
 		System.out.println("Connected.");
 
 		char choice;
@@ -71,8 +65,8 @@ public class RadioExSample {
 			case '1' -> performRadioMeasurement();
 			case '2' -> getDeviceInfo();
 			case 'a' -> startMeasurement();
-			case 'b' -> breakMeasurement();
-			case 'c' -> getMeasurementStatus();
+			case 'b' -> cancelMeasurement();
+			case 'c' -> isMeasuring();
 			case 'd' -> getRadiometricValue();
 			case 'e' -> getPhotometricValue();
 			case 'f' -> getChromaticityCoordinates();
@@ -105,33 +99,15 @@ public class RadioExSample {
 			int stepWidth = promptStepWidth(scanner);
 
 			System.out.println("Performing measurement...\n");
+			radioEx.measure(integrationTime, averageCount, stepWidth);
 
-			// Start measurement.
-			Result<Boolean> measureResult = radioEx.measure(integrationTime, averageCount, stepWidth);
-			if (measureResult.isError()) {
-				System.out.println("Could not start measurement! Error: " + measureResult);
-				return;
-			}
-
-			// Wait for completion.
 			boolean measuring = true;
 			while (measuring) {
 				Thread.sleep(100);
-				Result<Boolean> statusResult = radioEx.getMeasurementStatus();
-				if (statusResult.isSuccess())
-					measuring = statusResult.getValue();
-				else {
-					System.out.println("Could not determine measurement status! Error: " + statusResult);
-					return;
-				}
+				measuring = radioEx.isMeasuring();
 			}
 
-			// Get radiometric value.
-			Result<Float> radioResult = radioEx.getRadiometricValue(380, 780);
-			if (radioResult.isError())
-				System.out.println("Could not get radiometric value! Error: " + radioResult);
-			else
-				System.out.println(String.format("Radiometric value: %.3E", radioResult.getValue()));
+			System.out.println(String.format("Radiometric value: %.3E", radioEx.getRadiometricValue(380, 780)));
 		} catch (Throwable ex) {
 			System.err.println("Error during measurement: " + ex.getMessage());
 		}
@@ -140,15 +116,10 @@ public class RadioExSample {
 	/** Get serial numbers from the first found device */
 	private void getDeviceInfo () {
 		try {
-			Result<DeviceSerials> serialsResult = RadioEx.getDeviceSerials(0);
-			if (serialsResult.isError())
-				System.out.println("Could not get device serial information (normal for TCP devices) Error: " + serialsResult);
-			else {
-				DeviceSerials serials = serialsResult.getValue();
-				System.out.println("Electronics serial number: " + serials.electronics());
-				System.out.println("Spectrometer serial number: " + serials.spectrometer());
-				System.out.println("Device serial number: " + serials.device());
-			}
+			DeviceSerials serials = RadioEx.getDeviceSerials(0);
+			System.out.println("Electronics serial number: " + serials.electronics());
+			System.out.println("Spectrometer serial number: " + serials.spectrometer());
+			System.out.println("Device serial number: " + serials.device());
 		} catch (Throwable ex) {
 			System.err.println("Error getting device info: " + ex.getMessage());
 		}
@@ -160,37 +131,27 @@ public class RadioExSample {
 			float integrationTime = promptIntegrationTime(scanner);
 			int averageCount = promptAveragingCount(scanner);
 			int stepWidth = promptStepWidth(scanner);
-
-			Result<Boolean> result = radioEx.measure(integrationTime, averageCount, stepWidth);
-			if (result.isError())
-				System.out.println("Could not start measurement! Error: " + result);
-			else
-				System.out.println("Measurement successfully started.");
+			radioEx.measure(integrationTime, averageCount, stepWidth);
+			System.out.println("Measurement started.");
 		} catch (Throwable ex) {
 			System.err.println("Error starting measurement: " + ex.getMessage());
 		}
 	}
 
 	/** Cancels an initiated measurement. */
-	private void breakMeasurement () {
+	private void cancelMeasurement () {
 		try {
-			Result<Boolean> result = radioEx.breakMeasurement();
-			if (result.isError())
-				System.out.println("Could not break measurement! Error: " + result);
-			else
-				System.out.println("Measurement cancelled.");
+			radioEx.cancelMeasurement();
+			System.out.println("Measurement cancelled.");
 		} catch (Throwable ex) {
 			System.err.println("Error breaking measurement: " + ex.getMessage());
 		}
 	}
 
 	/** Returns the status of any current measurement. */
-	private void getMeasurementStatus () {
+	private void isMeasuring () {
 		try {
-			Result<Boolean> result = radioEx.getMeasurementStatus();
-			if (result.isError())
-				System.out.println("Could not determine measurement status! Error: " + result);
-			else if (result.getValue())
+			if (radioEx.isMeasuring())
 				System.out.println("Measurement in progress.");
 			else
 				System.out.println("No measurement in progress.");
@@ -202,11 +163,7 @@ public class RadioExSample {
 	/** Returns the radiometric value determined by the last measurement. */
 	private void getRadiometricValue () {
 		try {
-			Result<Float> result = radioEx.getRadiometricValue(380, 780);
-			if (result.isError())
-				System.out.println("Could not get radiometric value! Error: " + result);
-			else
-				System.out.println(String.format("Radiometric value: %.3E", result.getValue()));
+			System.out.println(String.format("Radiometric value: %.3E", radioEx.getRadiometricValue(380, 780)));
 		} catch (Throwable ex) {
 			System.err.println("Error getting radiometric value: " + ex.getMessage());
 		}
@@ -215,11 +172,7 @@ public class RadioExSample {
 	/** Returns the photometric value determined by the last measuement. */
 	private void getPhotometricValue () {
 		try {
-			Result<Float> result = radioEx.getPhotometricValue();
-			if (result.isError())
-				System.out.println("Could not get photometric value! Error: " + result);
-			else
-				System.out.println(String.format("Photometric value: %.3E", result.getValue()));
+			System.out.println(String.format("Photometric value: %.3E", radioEx.getPhotometricValue()));
 		} catch (Throwable ex) {
 			System.err.println("Error getting photometric value: " + ex.getMessage());
 		}
@@ -228,13 +181,8 @@ public class RadioExSample {
 	/** Returns the CIE-1931 chromaticity coordinates xy determined by the last measurement. */
 	private void getChromaticityCoordinates () {
 		try {
-			Result<XY> result = radioEx.getChromaXY();
-			if (result.isError())
-				System.out.println("Could not get chromaticity coordinates x and y! Error: " + result);
-			else {
-				XY xy = result.getValue();
-				System.out.println(String.format("Chromaticity coordinates:\nx: %.4f\ny: %.4f", xy.x(), xy.y()));
-			}
+			XY xy = radioEx.getChromaXY();
+			System.out.println(String.format("Chromaticity coordinates:\nx: %.4f\ny: %.4f", xy.x(), xy.y()));
 		} catch (Throwable ex) {
 			System.err.println("Error getting chromaticity coordinates: " + ex.getMessage());
 		}
@@ -243,11 +191,7 @@ public class RadioExSample {
 	/** Returns the CCT determined by the last measurement. */
 	private void getCCT () {
 		try {
-			Result<Float> result = radioEx.getCCT();
-			if (result.isError())
-				System.out.println("Could not get CCT! Error: " + result);
-			else
-				System.out.println(String.format("CCT: %.1f", result.getValue()));
+			System.out.println(String.format("CCT: %.1f", radioEx.getCCT()));
 		} catch (Throwable ex) {
 			System.err.println("Error getting CCT: " + ex.getMessage());
 		}
@@ -261,18 +205,13 @@ public class RadioExSample {
 			if (input.isEmpty()) input = "0";
 			try {
 				float cct = Float.parseFloat(input);
-				Result<CRI> result = radioEx.getCRI(cct);
-				if (result.isError())
-					System.out.println("Could not get colour rendering indices! Error: " + result);
-				else {
-					CRI cri = result.getValue();
-					System.out.println(String.format("DC: %.1E", cri.dcError()));
-					System.out.println(String.format("Inaccuracy: %.1f%%", cri.inaccuracyPercent()));
-					System.out.println(String.format("Ra: %.2f", cri.ra()));
-					float[] samples = cri.samples();
-					for (int i = 0; i < samples.length; i++)
-						System.out.println(String.format("R%d: %.1f", i + 1, samples[i]));
-				}
+				CRI cri = radioEx.getCRI(cct);
+				System.out.println(String.format("DC: %.1E", cri.dcError()));
+				System.out.println(String.format("Inaccuracy: %.1f%%", cri.inaccuracyPercent()));
+				System.out.println(String.format("Ra: %.2f", cri.ra()));
+				float[] samples = cri.samples();
+				for (int i = 0; i < samples.length; i++)
+					System.out.println(String.format("R%d: %.1f", i + 1, samples[i]));
 			} catch (NumberFormatException ex) {
 				throw new RuntimeException("Invalid color temperature: " + input);
 			}
@@ -283,16 +222,11 @@ public class RadioExSample {
 
 	private void getTM30 () {
 		try {
-			Result<TM30> result = radioEx.getTM30(false);
-			if (result.isError())
-				System.out.println("Could not get TM-30! Error: " + result);
-			else {
-				TM30 tm30 = result.getValue();
-				System.out.println(String.format("Fidelity Rf: %.2f", tm30.rf()));
-				System.out.println(String.format("Color saturation Rg: %.2f", tm30.rg()));
-			}
+			TM30 tm30 = radioEx.getTM30(false);
+			System.out.println(String.format("Fidelity Rf: %.2f", tm30.rf()));
+			System.out.println(String.format("Color saturation Rg: %.2f", tm30.rg()));
 		} catch (Throwable ex) {
-			System.err.println("Error getting TM-30: " + ex.getMessage());
+			System.err.println("Error getting TM-30 (requires 1nm step): " + ex.getMessage());
 		}
 	}
 

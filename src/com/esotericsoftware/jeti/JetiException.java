@@ -4,7 +4,7 @@ package com.esotericsoftware.jeti;
 import static com.esotericsoftware.jeti.JetiSDK.*;
 
 /** @author Nathan Sweet <misc@n4te.com> */
-public class JetiException extends Exception {
+public class JetiException extends RuntimeException {
 	private final int errorCode;
 
 	public JetiException (int errorCode) {

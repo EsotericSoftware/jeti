@@ -21,8 +21,4 @@ public class JetiTest {
 		}
 	}
 
-	static <T> T result (Result<T> result) {
-		assertTrue(result.isSuccess(), result.toString());
-		return result.getValue();
-	}
 }

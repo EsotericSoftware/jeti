@@ -84,7 +84,7 @@ public interface CoreLibrary extends Library {
 
 	// Calibration
 
-	int JETI_StartAdaption (Pointer dwDevice, int boReference);
+	int JETI_StartAdaption (Pointer dwDevice, boolean boReference);
 
 	int JETI_CheckAdaptionStat (Pointer dwDevice, FloatByReference fTint, ShortByReference wAverage, IntByReference boStatus);
 
@@ -169,13 +169,13 @@ public interface CoreLibrary extends Library {
 
 	int JETI_SetTrigTimeout (Pointer dwDevice, short wTimeout);
 
-	int JETI_SetFlashMode (Pointer dwDevice, int boFlashMode);
+	int JETI_SetFlashMode (Pointer dwDevice, boolean boFlashMode);
 
 	int JETI_SetFlashCycle (Pointer dwDevice, int dwFlashCycle);
 
 	int JETI_GetCorrectionStat (Pointer dwDevice, IntByReference boCorrStat);
 
-	int JETI_SetCorrectionStat (Pointer dwDevice, int boCorrStat);
+	int JETI_SetCorrectionStat (Pointer dwDevice, boolean boCorrStat);
 
 	int JETI_GetCorrectionRange (Pointer dwDevice, IntByReference dwCorrStart, IntByReference dwCorrEnd);
 
@@ -191,7 +191,7 @@ public interface CoreLibrary extends Library {
 
 	int JETI_GetCutoffStat (Pointer dwDevice, IntByReference boCutoffStat);
 
-	int JETI_SetCutoffStat (Pointer dwDevice, int boCutoffStat);
+	int JETI_SetCutoffStat (Pointer dwDevice, boolean boCutoffStat);
 
 	int JETI_GetBaudrate (Pointer dwDevice, IntByReference dwBaudrate);
 
@@ -215,39 +215,39 @@ public interface CoreLibrary extends Library {
 
 	int JETI_GetLaserStat (Pointer dwDevice, IntByReference boLaserStat);
 
-	int JETI_SetLaserStat (Pointer dwDevice, int boLaserStat);
+	int JETI_SetLaserStat (Pointer dwDevice, boolean boLaserStat);
 
 	int JETI_GetShutterStat (Pointer dwDevice, IntByReference boShutterStat);
 
-	int JETI_SetShutterStat (Pointer dwDevice, int boShutterStat);
+	int JETI_SetShutterStat (Pointer dwDevice, boolean boShutterStat);
 
 	int JETI_GetMeasHead (Pointer dwDevice, ByteByReference bMeasHead);
 
 	int JETI_GetAux1Stat (Pointer dwDevice, IntByReference boAuxStat);
 
-	int JETI_SetAux1Stat (Pointer dwDevice, int boAuxStat);
+	int JETI_SetAux1Stat (Pointer dwDevice, boolean boAuxStat);
 
 	int JETI_GetAux2Stat (Pointer dwDevice, IntByReference boAuxStat);
 
-	int JETI_SetAux2Stat (Pointer dwDevice, int boAuxStat);
+	int JETI_SetAux2Stat (Pointer dwDevice, boolean boAuxStat);
 
-	int JETI_AuxOut1 (Pointer dwDevice, int boAux1);
+	int JETI_AuxOut1 (Pointer dwDevice, boolean boAux1);
 
 	int JETI_AuxOut1Stat (Pointer dwDevice, IntByReference boAux1Stat);
 
-	int JETI_AuxOut2 (Pointer dwDevice, int boAux2);
+	int JETI_AuxOut2 (Pointer dwDevice, boolean boAux2);
 
 	int JETI_AuxOut2Stat (Pointer dwDevice, IntByReference boAux2Stat);
 
-	int JETI_AuxOut3 (Pointer dwDevice, int boAux3);
+	int JETI_AuxOut3 (Pointer dwDevice, boolean boAux3);
 
 	int JETI_AuxOut3Stat (Pointer dwDevice, IntByReference boAux3Stat);
 
-	int JETI_AuxOut4 (Pointer dwDevice, int boAux4);
+	int JETI_AuxOut4 (Pointer dwDevice, boolean boAux4);
 
 	int JETI_AuxOut4Stat (Pointer dwDevice, IntByReference boAux4Stat);
 
-	int JETI_AuxOut5 (Pointer dwDevice, int boAux5);
+	int JETI_AuxOut5 (Pointer dwDevice, boolean boAux5);
 
 	int JETI_AuxOut5Stat (Pointer dwDevice, IntByReference boAux5Stat);
 
@@ -271,7 +271,7 @@ public interface CoreLibrary extends Library {
 
 	int JETI_SetDIOOut (Pointer dwDevice, byte bDIOOut);
 
-	int JETI_SetDIOOutPin (Pointer dwDevice, byte bPinNr, int boDIOOut);
+	int JETI_SetDIOOutPin (Pointer dwDevice, byte bPinNr, boolean boDIOOut);
 
 	int JETI_GetTemperature (Pointer dwDevice, FloatByReference fTemperature);
 
