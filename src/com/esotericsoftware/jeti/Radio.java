@@ -144,6 +144,11 @@ public class Radio extends Device<RadioLibrary> {
 		return new Radio(handle.getValue());
 	}
 
+	static public Radio openDevice () {
+		if (getDeviceCount() <= 0) throw new JetiException(INVALID_DEVICE_NUMBER, "No Radio device found.");
+		return openDevice(0);
+	}
+
 	static public DllVersion getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();

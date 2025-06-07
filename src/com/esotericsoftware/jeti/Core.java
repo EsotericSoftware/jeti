@@ -958,6 +958,11 @@ public class Core extends Device<CoreLibrary> {
 		return new Core(handle.getValue());
 	}
 
+	static public Core openDevice () {
+		if (getDeviceCount() <= 0) throw new JetiException(INVALID_DEVICE_NUMBER, "No Core device found.");
+		return openDevice(0);
+	}
+
 	static public Core openComDevice (int comPort, int baudrate) {
 		var handle = new PointerByReference();
 		check(CoreLibrary.INSTANCE.JETI_OpenCOMDevice(comPort, baudrate, handle));

@@ -7,7 +7,6 @@ import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.CRI;
 import com.esotericsoftware.jeti.JetiSDK.XY;
 import com.esotericsoftware.jeti.Radio;
-import com.esotericsoftware.jeti.RadioEx;
 
 /** This sample shows how to perform basic radiometric measurements using the JETI SDK.
  * 
@@ -26,17 +25,7 @@ public class RadioSample {
 		System.out.println("Initializing the JETI SDK...");
 		JetiSDK.initialize();
 
-		// Determines the number of connected JETI devices
-		System.out.println("Searching for devices...");
-		int count = RadioEx.getDeviceCount();
-		if (count == 0) {
-			System.out.println("No radio ex devices found!");
-			return;
-		}
-		System.out.println("Radio devices: " + count);
-
-		// Open the first found device (zero-based index)
-		radio = Radio.openDevice(0);
+		radio = Radio.openDevice();
 		System.out.println("Connected.");
 
 		// Main menu loop

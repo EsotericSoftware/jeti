@@ -66,6 +66,11 @@ public class Spectro extends Device<SpectroLibrary> {
 		return new Spectro(handle.getValue());
 	}
 
+	static public Spectro openDevice () {
+		if (getDeviceCount() <= 0) throw new JetiException(INVALID_DEVICE_NUMBER, "No Spectro device found.");
+		return openDevice(0);
+	}
+
 	static public DllVersion getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();

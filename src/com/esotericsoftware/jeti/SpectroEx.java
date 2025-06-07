@@ -234,6 +234,11 @@ public class SpectroEx extends Device<SpectroExLibrary> {
 		return new SpectroEx(handle.getValue());
 	}
 
+	static public SpectroEx openDevice () {
+		if (getDeviceCount() <= 0) throw new JetiException(INVALID_DEVICE_NUMBER, "No SpectroEx device found.");
+		return openDevice(0);
+	}
+
 	static public DllVersion getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();

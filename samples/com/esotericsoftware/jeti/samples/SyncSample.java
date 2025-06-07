@@ -6,7 +6,6 @@ import java.util.Scanner;
 import com.esotericsoftware.jeti.Core;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.Radio;
-import com.esotericsoftware.jeti.RadioEx;
 
 /** This sample shows how to make synchronized measurements with the use of an optical trigger and the cycle mode.
  * 
@@ -26,16 +25,7 @@ public class SyncSample {
 		System.out.println("Initializing the JETI SDK...");
 		JetiSDK.initialize();
 
-		System.out.println("Searching for devices...");
-		int count = RadioEx.getDeviceCount();
-		if (count == 0) {
-			System.out.println("No radio devices found!");
-			return;
-		}
-		System.out.println("Radio devices: " + count);
-
-		// Open the first found device (zero-based index)
-		radio = Radio.openDevice(0);
+		radio = Radio.openDevice();
 		core = new Core(radio);
 		System.out.println("Connected.");
 

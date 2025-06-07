@@ -190,6 +190,11 @@ public class RadioEx extends Device<RadioExLibrary> {
 		return new RadioEx(handle.getValue());
 	}
 
+	static public RadioEx openDevice () {
+		if (getDeviceCount() <= 0) throw new JetiException(INVALID_DEVICE_NUMBER, "No RadioEx device found.");
+		return openDevice(0);
+	}
+
 	static public DllVersion getDllVersion () {
 		var major = new ShortByReference();
 		var minor = new ShortByReference();

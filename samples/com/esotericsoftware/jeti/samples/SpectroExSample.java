@@ -1,10 +1,10 @@
+
 package com.esotericsoftware.jeti.samples;
 
 import static com.esotericsoftware.jeti.samples.RadioExSample.*;
 
 import java.util.Scanner;
 
-import com.esotericsoftware.jeti.JetiException;
 import com.esotericsoftware.jeti.JetiSDK;
 import com.esotericsoftware.jeti.JetiSDK.DeviceSerials;
 import com.esotericsoftware.jeti.SpectroEx;
@@ -21,21 +21,8 @@ public class SpectroExSample {
 		System.out.println("Initializing the JETI SDK...");
 		JetiSDK.initialize();
 
-		System.out.println("Searching for devices...");
-		try {
-			int count = SpectroEx.getDeviceCount();
-			if (count == 0) {
-				System.out.println("No SpectroEx devices found!");
-				return;
-			}
-			System.out.println("SpectroEx devices: " + count);
-
-			spectroEx = SpectroEx.openDevice(0);
-			System.out.println("Connected.");
-		} catch (JetiException e) {
-			System.err.println("Error initializing device: " + e.getMessage());
-			return;
-		}
+		spectroEx = SpectroEx.openDevice();
+		System.out.println("Connected.");
 
 		char choice;
 		do {

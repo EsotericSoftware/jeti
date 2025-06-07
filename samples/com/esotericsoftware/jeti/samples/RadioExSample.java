@@ -22,15 +22,7 @@ public class RadioExSample {
 		System.out.println("Initializing the JETI SDK...");
 		JetiSDK.initialize();
 
-		System.out.println("Searching for devices...");
-		int count = RadioEx.getDeviceCount();
-		if (count == 0) {
-			System.out.println("No RadioEx devices found!");
-			return;
-		}
-		System.out.println("RadioEx devices: " + count);
-
-		radioEx = RadioEx.openDevice(0);
+		radioEx = RadioEx.openDevice();
 		System.out.println("Connected.");
 
 		char choice;
